@@ -365,6 +365,8 @@ window.kittyConfirm = function(msg, onYes, onNo) {
 
   * { margin:0; padding:0; box-sizing:border-box; }
 
+  * { -webkit-tap-highlight-color: transparent; }
+
   body {
     background: var(--bg);
     color: var(--text);
@@ -10073,14 +10075,12 @@ document.addEventListener('DOMContentLoaded', function() {
   .diario-card-tag { font-size: .62rem; font-weight: 700; padding: .15rem .5rem; border-radius: 20px; background: var(--surface); border: 1.5px solid var(--border); color: var(--muted); }
 
   /* Modal */
-  .diario-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 1000; display: flex; align-items: flex-end; justify-content: center; padding: 0; }
-  @media (min-width: 600px) { .diario-modal-backdrop { align-items: center; padding: 1rem; } }
+  .diario-modal-backdrop { position: fixed; inset: 0; background: rgba(244,167,192,.22); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 9000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
   .diario-modal {
-    background: var(--card); border-radius: 20px 20px 0 0; width: 100%; max-width: 620px;
-    max-height: 95vh; overflow-y: auto; box-shadow: 0 -4px 40px rgba(0,0,0,.2);
-    display: flex; flex-direction: column;
+    background: var(--card); border-radius: 20px; width: 100%; max-width: 620px;
+    max-height: 88vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.18);
+    display: flex; flex-direction: column; margin: auto;
   }
-  @media (min-width: 600px) { .diario-modal { border-radius: 20px; max-height: 90vh; } }
   .diario-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.3rem .8rem; border-bottom: 1px solid var(--border); font-size: .8rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); flex-shrink: 0; }
   .diario-modal-close { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--muted); }
   .diario-modal-body { padding: 1rem 1.3rem; display: flex; flex-direction: column; gap: .9rem; overflow-y: auto; }
@@ -12707,8 +12707,8 @@ renderTracker();
   .pets-card-btn:hover { background: var(--surface); }
 
   /* Modal */
-  .pets-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-  .pets-modal { background: var(--card); border-radius: 20px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.18); }
+  .pets-modal-backdrop { position: fixed; inset: 0; background: rgba(244,167,192,.22); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 9000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .pets-modal { background: var(--card); border-radius: 20px; width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.18); position: relative; margin: auto; }
   .pets-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.3rem .8rem; font-family: var(--font-title); font-style: italic; font-size: 1.1rem; font-weight: 700; border-bottom: 1px solid var(--border); }
   .pets-modal-body { padding: 1rem 1.3rem; display: flex; flex-direction: column; gap: .7rem; }
   .pets-modal-footer { display: flex; justify-content: flex-end; gap: .6rem; padding: .9rem 1.3rem; border-top: 1px solid var(--border); }
@@ -12822,7 +12822,7 @@ renderTracker();
 
   window.petsOpenModal = function(id) {
     load();
-    editingId = id || null;
+    editingId = id ? id : null;
     var pet = id ? pets.find(function(p){ return p.id===id; }) : null;
     document.getElementById('petsModalTitle').textContent = pet ? 'Editar mascota' : 'Nueva mascota';
     document.getElementById('petsNombre').value = pet ? pet.nombre : '';
@@ -12916,6 +12916,7 @@ renderTracker();
     } else {
       pets.push(pet);
     }
+    editingId = null;
     save(); petsCloseModal(); render();
   };
 
@@ -13058,8 +13059,8 @@ renderTracker();
   .plants-card-btn { background: none; border: none; font-size: .8rem; cursor: pointer; padding: .2rem .4rem; border-radius: 8px; color: var(--muted); }
   .plants-card-btn:hover { background: var(--surface); }
 
-  .plants-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-  .plants-modal { background: var(--card); border-radius: 20px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.18); }
+  .plants-modal-backdrop { position: fixed; inset: 0; background: rgba(180,220,180,.22); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 9000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .plants-modal { background: var(--card); border-radius: 20px; width: 100%; max-width: 500px; max-height: 88vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.18); position: relative; margin: auto; }
   .plants-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.3rem .8rem; font-family: var(--font-title); font-style: italic; font-size: 1.1rem; font-weight: 700; border-bottom: 1px solid var(--border); }
   .plants-modal-body { padding: 1rem 1.3rem; display: flex; flex-direction: column; gap: .7rem; }
   .plants-modal-footer { display: flex; justify-content: flex-end; gap: .6rem; padding: .9rem 1.3rem; border-top: 1px solid var(--border); }
@@ -13146,7 +13147,7 @@ renderTracker();
 
   window.plantsOpenModal = function(id) {
     load();
-    editingId = id || null;
+    editingId = id ? id : null;
     var plant = id ? plants.find(function(p){ return p.id===id; }) : null;
     document.getElementById('plantsModalTitle').textContent = plant ? 'Editar planta' : 'Nueva planta';
     document.getElementById('plantsNombre').value = plant ? plant.nombre : '';
@@ -13221,6 +13222,7 @@ renderTracker();
     } else {
       plants.push(plant);
     }
+    editingId = null;
     save(); plantsCloseModal(); render();
   };
 
@@ -20984,7 +20986,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <h2 class="section-title" style="margin-bottom:1rem"><em>Buscar</em> en la app</h2>
   <div class="buscar-input-wrap">
     <span class="buscar-input-icon">🔍</span>
-    <input class="buscar-input" id="buscarInput" placeholder="Busca tareas, recetas, notas, listas…" autocomplete="off">
+    <input class="buscar-input" id="buscarInput" placeholder="Busca tareas, recetas, notas, listas…" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
     <button class="buscar-clear" id="buscarClear" onclick="buscarClear()">✕</button>
   </div>
   <div class="buscar-filters" id="buscarFilters"></div>
@@ -22905,6 +22907,28 @@ function openWelcomeModal() {
 
 setTimeout(function(){ if(typeof checkWelcomeModal==='function') checkWelcomeModal(); }, 900);
 setTimeout(function(){ if(typeof recuperInit==='function') recuperInit(); }, 200);
+</script>
+
+<script>
+// Desactivar autocompletado del navegador en todos los campos
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('input, textarea').forEach(function(el) {
+    if (!el.type || el.type === 'text' || el.type === 'search' || el.type === 'email') {
+      el.setAttribute('autocomplete', 'new-password');
+    }
+    el.setAttribute('autocorrect', 'off');
+    el.setAttribute('autocapitalize', 'off');
+    el.setAttribute('spellcheck', 'false');
+  });
+});
+var _origCreate = document.createElement.bind(document);
+document.createElement = function(tag) {
+  var el = _origCreate(tag);
+  if (tag.toLowerCase() === 'input' || tag.toLowerCase() === 'textarea') {
+    setTimeout(function(){ el.setAttribute('autocomplete','new-password'); }, 0);
+  }
+  return el;
+};
 </script>
 </body>
 </html>
