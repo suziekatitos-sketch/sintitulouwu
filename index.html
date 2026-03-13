@@ -153,7 +153,9 @@ window.kittyConfirm = function(msg, onYes, onNo) {
           'ci_state','nd_state','calm_tools','water_goal','water_state','food_state',
           'logros_data','fortalezas','cambio_state','cambio_custom',
           'univ_links','univ_proyectos','spark_pins','spark_historial','spark_total_minutes',
-          'trans_data','custom_notifs','eventos_prep','recuper_registros'];
+          'trans_data','custom_notifs','eventos_prep','recuper_registros',
+          'notas_intereses_data','notas_intereses_cats',
+          'yuki_mascotas','yuki_plantas','yuki_biblioteca_playlists','yuki_biblioteca_dopamina','yuki_diario'];
         mirrorKeys.forEach(function(k) {
           if (raw[k] !== undefined) {
             try { localStorage.setItem(k, raw[k]); } catch(e) {}
@@ -458,68 +460,95 @@ window.kittyConfirm = function(msg, onYes, onNo) {
 
   /* ── GRID WRAPPER ── */
   .grid-outer {
-    max-width: 900px;
+    max-width: 860px;
     margin: 0 auto;
     animation: fadeUp .5s .15s ease both;
     opacity: 0;
     animation-fill-mode: both;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 
-  /* Days header row */
-  .days-header {
-    display: grid;
-    grid-template-columns: 90px repeat(3, 1fr);
-    gap: 6px;
-    margin-bottom: 6px;
-  }
-
-  .day-col {
-    text-align: center;
-    padding: .5rem .2rem .3rem;
+  /* Bloque de un día */
+  .day-block {
     background: var(--card);
     border: 1.5px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color .2s;
   }
-
-  .day-col.today {
-    background: var(--rosa-soft);
+  .day-block.today-block {
     border-color: var(--rosa);
+    box-shadow: 0 0 0 3px var(--rosa-soft);
   }
 
-  .day-name {
-    font-size: .68rem;
-    font-weight: 700;
-    letter-spacing: .1em;
+  .day-block-header {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .55rem 1rem .5rem;
+    background: var(--surface);
+    border-bottom: 1.5px solid var(--border);
+  }
+  .today-block .day-block-header {
+    background: var(--rosa-soft);
+    border-bottom-color: var(--rosa);
+  }
+  .day-block-name {
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .12em;
     text-transform: uppercase;
     color: var(--muted);
   }
-
-  .day-col.today .day-name { color: var(--rosa); }
-
-  .day-num {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.2;
+  .today-block .day-block-name { color: var(--rosa); }
+  .day-block-num {
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--muted2);
+  }
+  .day-block-today-badge {
+    font-size: .6rem;
+    font-weight: 800;
+    background: var(--rosa);
+    color: white;
+    border-radius: 20px;
+    padding: .1rem .5rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
   }
 
-  .day-col.today .day-num { color: var(--rosa); }
-
-  /* Slot label column */
-  .slot-label-col {
-    /* filled by JS */
-  }
-
-  /* ── BLOCK ROW ── */
-  .block-section {
-    margin-bottom: 8px;
-  }
-
-  .block-row {
+  /* Fila de slots dentro del día */
+  .day-slots-row {
     display: grid;
-    grid-template-columns: 90px repeat(3, 1fr);
-    gap: 6px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
   }
+  .day-slot-wrap {
+    border-right: 1px solid var(--border);
+    padding: .6rem .7rem;
+  }
+  .day-slot-wrap:last-child { border-right: none; }
+
+  .day-slot-label {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    margin-bottom: .45rem;
+    padding: .2rem .4rem;
+    border-radius: 8px;
+    font-size: .6rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    width: fit-content;
+  }
+  .day-slot-label .slot-icon { font-size: .85rem; }
+
+  /* Ocultar el viejo header de días y block-row (ya no se usan) */
+  .days-header { display: none; }
+  .block-row { display: none; }
 
   /* Slot label */
   .slot-label {
@@ -3776,6 +3805,8 @@ window.kittyConfirm = function(msg, onYes, onNo) {
     border: 1.5px solid var(--beige);
     border-radius: 10px;
     padding: .7rem .8rem;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .spark-panel-title {
@@ -3815,7 +3846,10 @@ window.kittyConfirm = function(msg, onYes, onNo) {
     display: block;
     cursor: text;
     word-break: break-word;
+    overflow-wrap: break-word;
     white-space: pre-wrap;
+    overflow: hidden;
+    max-width: 100%;
   }
   .spark-note:focus { border-color: var(--beige); outline: none; }
   .spark-note:empty::before {
@@ -3889,6 +3923,300 @@ window.kittyConfirm = function(msg, onYes, onNo) {
     transition: opacity .2s;
   }
   .idea-add-btn:hover { opacity: .85; }
+
+  /* ══ NOTAS POR INTERÉS ══ */
+  .ni-section {
+    max-width: 900px;
+    margin: 2rem auto 0;
+    animation: fadeUp .5s .55s ease both;
+    opacity: 0;
+    animation-fill-mode: both;
+  }
+  .ni-card {
+    background: var(--card);
+    border: 2px solid var(--beige);
+    border-radius: 16px;
+    padding: 1.2rem 1.3rem 1.4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .ni-card::before {
+    content: '📓';
+    position: absolute;
+    top: -6px; right: 18px;
+    font-size: 3.5rem;
+    opacity: .12;
+    pointer-events: none;
+    line-height: 1;
+  }
+  .ni-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: .6rem;
+  }
+  .ni-title-wrap { display: flex; flex-direction: column; gap: .1rem; }
+  .ni-section-sub {
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--beige);
+  }
+  .ni-section-title {
+    font-family: var(--font-title);
+    font-size: 1.3rem;
+    font-style: italic;
+    color: var(--text);
+  }
+  .ni-section-title em { color: var(--rosa); font-style: italic; }
+
+  /* Categorías chips */
+  .ni-cats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin-bottom: 1rem;
+    align-items: center;
+  }
+  .ni-cat-chip {
+    background: var(--beige-soft);
+    border: 1.5px solid var(--beige);
+    border-radius: 20px;
+    padding: .22rem .75rem;
+    font-size: .68rem;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .18s;
+    display: flex; align-items: center; gap: .3rem;
+    font-family: var(--font-body);
+  }
+  .ni-cat-chip:hover { background: var(--beige); color: white; }
+  .ni-cat-chip.active {
+    background: var(--beige);
+    color: white;
+    border-color: var(--beige);
+  }
+  .ni-cat-chip.all-chip { background: var(--verde-soft); border-color: var(--verde); color: var(--muted); }
+  .ni-cat-chip.all-chip.active { background: var(--verde); color: white; border-color: var(--verde); }
+  .ni-cat-del {
+    background: none; border: none; cursor: pointer;
+    font-size: .7rem; color: inherit; opacity: .6;
+    padding: 0; line-height: 1;
+    transition: opacity .15s;
+  }
+  .ni-cat-del:hover { opacity: 1; }
+  .ni-add-cat-row {
+    display: flex; gap: .35rem; align-items: center;
+    margin-bottom: 1rem;
+  }
+  .ni-add-cat-input {
+    flex: 1; max-width: 180px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: .7rem;
+    font-weight: 600;
+    padding: .3rem .75rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .ni-add-cat-input::placeholder { color: var(--muted2); font-style: italic; }
+  .ni-add-cat-input:focus { border-color: var(--beige); }
+  .ni-add-cat-btn {
+    background: var(--beige);
+    color: white; border: none;
+    border-radius: 20px;
+    padding: .3rem .85rem;
+    font-size: .68rem; font-weight: 800;
+    cursor: pointer; font-family: var(--font-body);
+    transition: opacity .2s;
+  }
+  .ni-add-cat-btn:hover { opacity: .85; }
+
+  /* Botón nueva nota */
+  .ni-new-note-btn {
+    background: var(--rosa);
+    color: white; border: none;
+    border-radius: 20px;
+    padding: .35rem 1rem;
+    font-size: .7rem; font-weight: 800;
+    cursor: pointer; font-family: var(--font-body);
+    transition: opacity .2s;
+    white-space: nowrap;
+  }
+  .ni-new-note-btn:hover { opacity: .85; }
+
+  /* Grid de tarjetas */
+  .ni-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: .8rem;
+    margin-top: .2rem;
+  }
+  @media (max-width: 520px) { .ni-cards-grid { grid-template-columns: 1fr; } }
+
+  .ni-note-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: .75rem .9rem .7rem;
+    display: flex; flex-direction: column; gap: .4rem;
+    position: relative;
+    transition: box-shadow .18s, border-color .18s;
+    border-left: 4px solid var(--beige);
+  }
+  .ni-note-card:hover { box-shadow: 0 4px 18px rgba(244,167,192,.18); border-color: var(--beige); }
+
+  .ni-note-top {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: .4rem;
+  }
+  .ni-note-emoji { font-size: 1.2rem; flex-shrink: 0; cursor: pointer; }
+  .ni-note-title {
+    flex: 1;
+    font-family: var(--font-title);
+    font-style: italic;
+    font-size: .92rem;
+    color: var(--text);
+    font-weight: 700;
+    word-break: break-word;
+  }
+  .ni-note-actions { display: flex; gap: .25rem; flex-shrink: 0; }
+  .ni-note-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: .75rem; color: var(--muted2);
+    padding: 2px 4px; border-radius: 6px;
+    transition: color .15s, background .15s;
+  }
+  .ni-note-btn:hover { color: var(--rosa); background: var(--rosa-soft); }
+
+  .ni-note-body {
+    font-size: .72rem; font-weight: 600;
+    color: var(--muted);
+    line-height: 1.55;
+    word-break: break-word;
+    white-space: pre-wrap;
+    max-height: 90px; overflow: hidden;
+    transition: max-height .2s;
+  }
+  .ni-note-body.expanded { max-height: 600px; }
+
+  .ni-note-link {
+    font-size: .65rem; font-weight: 700;
+    color: var(--beige);
+    text-decoration: none;
+    display: flex; align-items: center; gap: .25rem;
+    word-break: break-all;
+    opacity: .85;
+  }
+  .ni-note-link:hover { opacity: 1; text-decoration: underline; }
+
+  .ni-note-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: .1rem;
+  }
+  .ni-note-cat-badge {
+    background: var(--beige-soft);
+    border: 1px solid var(--beige);
+    border-radius: 20px;
+    padding: .1rem .5rem;
+    font-size: .6rem; font-weight: 700;
+    color: var(--muted);
+  }
+  .ni-note-date {
+    font-size: .6rem; color: var(--muted2); font-weight: 600;
+  }
+  .ni-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--muted2);
+    font-size: .78rem;
+    font-weight: 600;
+    font-style: italic;
+  }
+
+  /* Modal nueva/editar nota */
+  .ni-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(90,45,74,.35);
+    z-index: 9000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem;
+    animation: fadeIn .15s ease;
+  }
+  .ni-modal {
+    background: var(--card);
+    border: 2px solid var(--beige);
+    border-radius: 18px;
+    padding: 1.4rem 1.4rem 1.2rem;
+    width: 100%; max-width: 420px;
+    display: flex; flex-direction: column; gap: .75rem;
+    box-shadow: 0 16px 60px rgba(0,0,0,.2);
+    animation: fadeUp .2s ease;
+  }
+  .ni-modal-title {
+    font-family: var(--font-title);
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--text);
+    margin-bottom: .1rem;
+  }
+  .ni-modal label {
+    font-size: .62rem; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--beige); display: block; margin-bottom: .25rem;
+  }
+  .ni-modal input, .ni-modal textarea, .ni-modal select {
+    width: 100%;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: .78rem;
+    font-weight: 600;
+    padding: .45rem .75rem;
+    outline: none;
+    transition: border-color .2s;
+    box-sizing: border-box;
+  }
+  .ni-modal input:focus, .ni-modal textarea:focus, .ni-modal select:focus { border-color: var(--beige); }
+  .ni-modal textarea { min-height: 90px; resize: vertical; line-height: 1.55; }
+  .ni-modal-emoji-row {
+    display: flex; flex-wrap: wrap; gap: .35rem;
+  }
+  .ni-emoji-opt {
+    font-size: 1.1rem; cursor: pointer;
+    padding: .2rem .3rem; border-radius: 8px;
+    border: 1.5px solid transparent;
+    transition: border-color .15s, background .15s;
+  }
+  .ni-emoji-opt:hover, .ni-emoji-opt.selected { border-color: var(--beige); background: var(--beige-soft); }
+  .ni-modal-actions {
+    display: flex; justify-content: flex-end; gap: .5rem; margin-top: .2rem;
+  }
+  .ni-modal-cancel {
+    background: none; border: 1.5px solid var(--border);
+    border-radius: 20px; padding: .35rem .9rem;
+    font-size: .72rem; font-weight: 800;
+    color: var(--muted); cursor: pointer;
+    font-family: var(--font-body);
+  }
+  .ni-modal-save {
+    background: var(--rosa); color: white; border: none;
+    border-radius: 20px; padding: .35rem 1.1rem;
+    font-size: .72rem; font-weight: 800;
+    cursor: pointer; font-family: var(--font-body);
+    transition: opacity .2s;
+  }
+  .ni-modal-save:hover { opacity: .85; }
+
+  /* ══ FIN NOTAS POR INTERÉS ══ */
 
   /* ── Pill drag & edit controls */
   .pill-handle {
@@ -4755,6 +5083,22 @@ window.kittyConfirm = function(msg, onYes, onNo) {
   .focus-timer-digits {
     font-size: 3rem; font-weight: 800; color: var(--text); line-height: 1;
     font-variant-numeric: tabular-nums;
+  }
+  .focus-timer-phase {
+    font-size: .72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .1em; margin-top: .3rem;
+  }
+  /* Texto centrado encima */
+  .focus-timer-text {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 4;
+  }
+  .focus-timer-digits {
+    font-size: 3rem; font-weight: 800; color: var(--text); line-height: 1;
+    font-variant-numeric: tabular-nums;
+    opacity: .35;
   }
   .focus-timer-phase {
     font-size: .72rem; font-weight: 700; color: var(--muted);
@@ -5692,11 +6036,6 @@ function todayKey() { return dateKey(new Date()); }
     <span class="current-week" id="weekLabel"></span>
     <button class="nav-btn" id="nextWeek">›</button>
   </div>
-  <button class="user-chip" id="signout-btn" title="Cerrar sesión">
-    <img id="user-avatar" src="" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-    <span class="user-avatar-placeholder" style="display:none">🐱</span>
-    Hola, <span id="user-display-name">tú</span> · salir
-  </button>
 </header>
 
 <div class="legend">
@@ -6891,7 +7230,7 @@ function openRutinaTipoModal() {
       <button class="modal-btn-save" style="flex:1;" onclick="openRutinaModal(null, 'foto')">📸 Foto</button>
     </button>
     <div style="margin-top:1rem;">
-      <button class="modal-btn-cancel" style="width:100%;" onclick="document.parentElement.parentElement.remove()">Cancelar</button>
+      <button class="modal-btn-cancel" style="width:100%;" onclick="this.closest('.rutina-modal-backdrop').remove()">Cancelar</button>
     </div>
   `;
 
@@ -9235,7 +9574,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- MOOD TRACKER -->
 <style>
-  .prompt-section { margin-bottom: 2rem; animation: fadeUp .5s .1s ease both; opacity:0; animation-fill-mode:both; }
+  .prompt-section { max-width: 860px; margin: 0 auto 2rem; animation: fadeUp .5s .1s ease both; opacity:0; animation-fill-mode:both; }
   .prompt-card {
     background: linear-gradient(135deg, var(--card), var(--surface));
     border: 1.5px solid var(--border);
@@ -9286,6 +9625,8 @@ document.addEventListener('DOMContentLoaded', function() {
     padding: .6rem .4rem;
     display: flex; flex-direction: column; align-items: center; gap: .35rem;
     cursor: pointer; transition: all .18s;
+    min-width: 0;
+    overflow: hidden;
   }
   .mood-day-card:hover { border-color: var(--rosa-soft); }
   .mood-day-card.today-cell { border-color: var(--rosa); }
@@ -9293,7 +9634,7 @@ document.addEventListener('DOMContentLoaded', function() {
   .mood-day-card.today-cell .mood-day-name { color:var(--rosa); }
   .mood-emoji-display { font-size:1.4rem; line-height:1; min-height:1.4rem; }
   .mood-score-display { font-size:.65rem; font-weight:800; color:var(--muted); }
-  .mood-note-preview { font-size:.58rem; color:var(--muted2); font-weight:600; text-align:center; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .mood-note-preview { font-size:.58rem; color:var(--muted2); font-weight:600; text-align:center; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   /* Modal */
   .mood-modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1rem; }
   .mood-modal-box { background:var(--card);border-radius:24px;padding:1.6rem;max-width:400px;width:100%;box-shadow:0 12px 48px rgba(0,0,0,.18); }
@@ -9541,6 +9882,534 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 </div><!-- end page-journal -->
+
+<!-- ══════════════════════════════════════════
+     PÁGINA · DIARIO 📖
+══════════════════════════════════════════ -->
+<div id="page-diario" class="page-section">
+<section class="diario-section">
+
+  <div class="diario-page-header">
+    <div>
+      <span class="section-sub">🌸 personal</span>
+      <h1 class="section-title"><em>Mi</em> Diario 📖</h1>
+    </div>
+    <button class="diario-new-btn" id="diarioNewBtn" onclick="diarioOpenEntry()">+ nueva entrada</button>
+  </div>
+
+  <!-- Calendario -->
+  <div class="diario-cal-wrap">
+    <div class="diario-cal-nav">
+      <button class="diario-cal-nav-btn" onclick="diarioCalPrev()">‹</button>
+      <span class="diario-cal-month" id="diarioCalMonth"></span>
+      <button class="diario-cal-nav-btn" onclick="diarioCalNext()">›</button>
+    </div>
+    <div class="diario-cal-grid" id="diarioCalGrid"></div>
+  </div>
+
+  <!-- Entrada del día seleccionado -->
+  <div class="diario-entry-view" id="diarioEntryView" style="display:none">
+    <div class="diario-entry-view-header">
+      <div>
+        <div class="diario-entry-view-date" id="diarioEntryViewDate"></div>
+        <div class="diario-entry-view-title" id="diarioEntryViewTitle"></div>
+      </div>
+      <div style="display:flex;gap:.4rem">
+        <button class="diario-entry-view-btn" onclick="diarioEditEntry()" title="Editar">✏️</button>
+        <button class="diario-entry-view-btn" onclick="diarioDeleteEntry()" title="Eliminar">🗑️</button>
+        <button class="diario-entry-view-btn" onclick="diarioCloseView()" title="Cerrar">✕</button>
+      </div>
+    </div>
+    <div class="diario-entry-view-tags" id="diarioEntryViewTags"></div>
+    <div class="diario-entry-view-photo" id="diarioEntryViewPhoto"></div>
+    <div class="diario-entry-view-text" id="diarioEntryViewText"></div>
+  </div>
+
+  <!-- Lista de entradas recientes -->
+  <div id="diarioList"></div>
+
+</section>
+
+<!-- Modal editor -->
+<div class="diario-modal-backdrop" id="diarioModalBackdrop" style="display:none" onclick="if(event.target===this)diarioCloseModal()">
+  <div class="diario-modal">
+    <div class="diario-modal-header">
+      <span id="diarioModalDateLabel"></span>
+      <button onclick="diarioCloseModal()" class="diario-modal-close">✕</button>
+    </div>
+    <div class="diario-modal-body">
+
+      <div class="diario-field">
+        <label class="diario-label">Título <span style="font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
+        <input class="diario-input" id="diarioTitulo" placeholder="¿Cómo resumirías este día?">
+      </div>
+
+      <div class="diario-field">
+        <label class="diario-label">Mood</label>
+        <div class="diario-mood-row" id="diarioMoodRow">
+          <span class="diario-mood-opt" onclick="diarioPickMood(this,'😊')">😊</span>
+          <span class="diario-mood-opt" onclick="diarioPickMood(this,'🥰')">🥰</span>
+          <span class="diario-mood-opt" onclick="diarioPickMood(this,'😌')">😌</span>
+          <span class="diario-mood-opt" onclick="diarioPickMood(this,'😔')">😔</span>
+          <span class="diario-mood-opt" onclick="diarioPickMood(this,'😢')">😢</span>
+          <span class="diario-mood-opt" onclick="diarioPickMood(this,'😤')">😤</span>
+          <span class="diario-mood-opt" onclick="diarioPickMood(this,'😰')">😰</span>
+          <span class="diario-mood-opt" onclick="diarioPickMood(this,'🤩')">🤩</span>
+          <span class="diario-mood-opt" onclick="diarioPickMood(this,'😴')">😴</span>
+          <span class="diario-mood-opt" onclick="diarioPickMood(this,'🤔')">🤔</span>
+          <span class="diario-mood-opt" onclick="diarioPickMood(this,'💪')">💪</span>
+          <span class="diario-mood-opt" onclick="diarioPickMood(this,'🥺')">🥺</span>
+        </div>
+        <input type="hidden" id="diarioMood">
+      </div>
+
+      <div class="diario-field">
+        <label class="diario-label">Etiquetas</label>
+        <div class="diario-tags-input-wrap">
+          <div class="diario-tags-chips" id="diarioTagsChips"></div>
+          <input class="diario-tag-inp" id="diarioTagInp" placeholder="Escribe y presiona Enter…" onkeydown="diarioTagKeydown(event)">
+        </div>
+      </div>
+
+      <div class="diario-field">
+        <label class="diario-label">Foto del día</label>
+        <div class="diario-photo-row">
+          <div class="diario-photo-preview" id="diarioPhotoPreview" onclick="document.getElementById('diarioPhotoInput').click()">
+            <img id="diarioPhotoImg" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:10px">
+            <span id="diarioPhotoPlaceholder" style="color:var(--muted);font-size:.75rem">📷 agregar foto</span>
+          </div>
+          <button class="diario-photo-remove" id="diarioPhotoRemove" style="display:none" onclick="diarioRemovePhoto()">✕ quitar</button>
+        </div>
+        <input type="file" id="diarioPhotoInput" accept="image/*" style="display:none" onchange="diarioHandlePhoto(this)">
+        <input type="hidden" id="diarioPhotoData">
+      </div>
+
+      <div class="diario-field">
+        <label class="diario-label">¿Qué pasó hoy? ✍️</label>
+        <textarea class="diario-textarea" id="diarioTexto" placeholder="Escribe todo lo que quieras… sin límite, sin filtros 🌸"></textarea>
+      </div>
+
+    </div>
+    <div class="diario-modal-footer">
+      <button class="diario-cancel-btn" onclick="diarioCloseModal()">Cancelar</button>
+      <button class="diario-save-btn" onclick="diarioSave()">Guardar entrada</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .diario-section { max-width: 780px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+  .diario-page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; }
+  .diario-new-btn {
+    background: var(--rosa); color: white; border: none; border-radius: 20px;
+    padding: .45rem 1.1rem; font-size: .78rem; font-weight: 700; cursor: pointer;
+    font-family: var(--font-body); transition: opacity .2s; white-space: nowrap;
+  }
+  .diario-new-btn:hover { opacity: .85; }
+
+  /* Calendario */
+  .diario-cal-wrap { background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 1rem; margin-bottom: 1.5rem; }
+  .diario-cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: .8rem; }
+  .diario-cal-nav-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--muted); padding: .2rem .5rem; border-radius: 8px; }
+  .diario-cal-nav-btn:hover { background: var(--surface); }
+  .diario-cal-month { font-size: .88rem; font-weight: 800; color: var(--text); text-transform: capitalize; letter-spacing: .04em; }
+  .diario-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .diario-cal-dayname { text-align: center; font-size: .6rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding-bottom: .4rem; }
+  .diario-cal-cell {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; font-size: .78rem; font-weight: 600; cursor: pointer;
+    color: var(--muted2); transition: background .15s;
+    position: relative;
+  }
+  .diario-cal-cell:hover:not(.empty) { background: var(--surface); color: var(--text); }
+  .diario-cal-cell.has-entry { color: var(--text); font-weight: 800; }
+  .diario-cal-cell.has-entry::after {
+    content: ''; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
+    width: 4px; height: 4px; border-radius: 50%; background: var(--rosa);
+  }
+  .diario-cal-cell.today { background: var(--rosa-soft); color: var(--rosa); font-weight: 800; }
+  .diario-cal-cell.selected { background: var(--rosa); color: white; font-weight: 800; }
+  .diario-cal-cell.selected::after { background: white; }
+  .diario-cal-cell.empty { cursor: default; }
+  .diario-cal-cell.other-month { opacity: .3; }
+
+  /* Entry view */
+  .diario-entry-view {
+    background: var(--card); border: 1.5px solid var(--rosa); border-radius: 16px;
+    padding: 1.2rem; margin-bottom: 1.5rem; animation: fadeUp .3s ease both;
+  }
+  .diario-entry-view-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .6rem; }
+  .diario-entry-view-date { font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: .2rem; }
+  .diario-entry-view-title { font-size: 1.1rem; font-weight: 800; color: var(--text); font-family: var(--font-title); font-style: italic; }
+  .diario-entry-view-btn { background: none; border: none; font-size: .85rem; cursor: pointer; padding: .2rem .35rem; border-radius: 8px; color: var(--muted); }
+  .diario-entry-view-btn:hover { background: var(--surface); }
+  .diario-entry-view-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .7rem; }
+  .diario-entry-view-tag {
+    font-size: .65rem; font-weight: 700; padding: .2rem .55rem; border-radius: 20px;
+    background: var(--rosa-soft); border: 1.5px solid var(--rosa); color: var(--rosa);
+  }
+  .diario-entry-view-mood { font-size: 1.2rem; }
+  .diario-entry-view-photo { margin-bottom: .8rem; }
+  .diario-entry-view-photo img { width: 100%; max-height: 260px; object-fit: cover; border-radius: 12px; }
+  .diario-entry-view-text {
+    font-size: .88rem; color: var(--text); line-height: 1.8;
+    white-space: pre-wrap; word-break: break-word;
+  }
+
+  /* Lista reciente */
+  .diario-list-title { font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .7rem; margin-top: .3rem; }
+  .diario-card {
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 14px;
+    padding: .9rem 1rem; margin-bottom: .7rem; cursor: pointer;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .diario-card:hover { border-color: var(--rosa); box-shadow: 0 3px 14px rgba(244,167,192,.15); }
+  .diario-card-top { display: flex; align-items: center; gap: .6rem; margin-bottom: .35rem; }
+  .diario-card-mood { font-size: 1.1rem; }
+  .diario-card-date { font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .diario-card-title { font-size: .9rem; font-weight: 800; color: var(--text); font-family: var(--font-title); font-style: italic; }
+  .diario-card-preview { font-size: .78rem; color: var(--muted); line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-top: .25rem; }
+  .diario-card-tags { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .5rem; }
+  .diario-card-tag { font-size: .62rem; font-weight: 700; padding: .15rem .5rem; border-radius: 20px; background: var(--surface); border: 1.5px solid var(--border); color: var(--muted); }
+
+  /* Modal */
+  .diario-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 1000; display: flex; align-items: flex-end; justify-content: center; padding: 0; }
+  @media (min-width: 600px) { .diario-modal-backdrop { align-items: center; padding: 1rem; } }
+  .diario-modal {
+    background: var(--card); border-radius: 20px 20px 0 0; width: 100%; max-width: 620px;
+    max-height: 95vh; overflow-y: auto; box-shadow: 0 -4px 40px rgba(0,0,0,.2);
+    display: flex; flex-direction: column;
+  }
+  @media (min-width: 600px) { .diario-modal { border-radius: 20px; max-height: 90vh; } }
+  .diario-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.3rem .8rem; border-bottom: 1px solid var(--border); font-size: .8rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); flex-shrink: 0; }
+  .diario-modal-close { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--muted); }
+  .diario-modal-body { padding: 1rem 1.3rem; display: flex; flex-direction: column; gap: .9rem; overflow-y: auto; }
+  .diario-modal-footer { display: flex; justify-content: flex-end; gap: .6rem; padding: .9rem 1.3rem; border-top: 1px solid var(--border); flex-shrink: 0; }
+  .diario-field { display: flex; flex-direction: column; gap: .3rem; }
+  .diario-label { font-size: .67rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+  .diario-input { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: .55rem .8rem; font-family: var(--font-body); font-size: .88rem; color: var(--text); outline: none; width: 100%; box-sizing: border-box; }
+  .diario-input:focus { border-color: var(--rosa); }
+  .diario-textarea {
+    background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px;
+    padding: .8rem 1rem; font-family: var(--font-body); font-size: .9rem; color: var(--text);
+    outline: none; width: 100%; box-sizing: border-box; min-height: 220px;
+    line-height: 1.8; resize: vertical;
+  }
+  .diario-textarea:focus { border-color: var(--rosa); }
+
+  /* Mood picker */
+  .diario-mood-row { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .diario-mood-opt { font-size: 1.5rem; cursor: pointer; padding: .2rem .3rem; border-radius: 10px; border: 2px solid transparent; transition: all .15s; }
+  .diario-mood-opt:hover { background: var(--surface); }
+  .diario-mood-opt.selected { border-color: var(--rosa); background: var(--rosa-soft); }
+
+  /* Tags */
+  .diario-tags-input-wrap { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: .4rem .6rem; display: flex; flex-wrap: wrap; gap: .3rem; align-items: center; cursor: text; }
+  .diario-tags-input-wrap:focus-within { border-color: var(--rosa); }
+  .diario-tags-chip { display: flex; align-items: center; gap: .25rem; font-size: .7rem; font-weight: 700; background: var(--rosa-soft); border: 1.5px solid var(--rosa); color: var(--rosa); border-radius: 20px; padding: .15rem .55rem; }
+  .diario-tags-chip button { background: none; border: none; cursor: pointer; font-size: .75rem; color: var(--rosa); padding: 0; line-height: 1; }
+  .diario-tag-inp { border: none; background: none; outline: none; font-family: var(--font-body); font-size: .82rem; color: var(--text); min-width: 120px; flex: 1; padding: .2rem 0; }
+
+  /* Photo */
+  .diario-photo-row { display: flex; align-items: center; gap: .8rem; }
+  .diario-photo-preview {
+    width: 90px; height: 70px; border: 2px dashed var(--border); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    overflow: hidden; flex-shrink: 0; transition: border-color .2s;
+  }
+  .diario-photo-preview:hover { border-color: var(--rosa); }
+  .diario-photo-remove { background: none; border: 1.5px solid var(--border); border-radius: 20px; padding: .3rem .7rem; font-size: .72rem; font-weight: 700; color: var(--muted); cursor: pointer; font-family: var(--font-body); }
+
+  .diario-save-btn { background: var(--rosa); color: white; border: none; border-radius: 20px; padding: .5rem 1.4rem; font-size: .84rem; font-weight: 700; cursor: pointer; font-family: var(--font-body); }
+  .diario-cancel-btn { background: none; border: 1.5px solid var(--border); border-radius: 20px; padding: .5rem 1.2rem; font-size: .84rem; font-weight: 600; cursor: pointer; font-family: var(--font-body); color: var(--muted); }
+</style>
+
+<script>
+(function(){
+  var KEY = 'yuki_diario';
+  var entries = [];
+  var calYear, calMonth, selectedDate, editingId;
+
+  function load() { try { entries = JSON.parse(localStorage.getItem(KEY)) || []; } catch(e){ entries=[]; } }
+  function save() { localStorage.setItem(KEY, JSON.stringify(entries)); if(window.cloudSave) window.cloudSave(KEY, entries); }
+
+  function dateKey(d) {
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function todayKey() { return dateKey(new Date()); }
+  function fmtDate(dk) {
+    var p = dk.split('-');
+    var d = new Date(+p[0], +p[1]-1, +p[2]);
+    return d.toLocaleDateString('es-MX', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  }
+
+  // ── Calendario
+  function renderCal() {
+    var now = new Date();
+    if (calYear === undefined) { calYear = now.getFullYear(); calMonth = now.getMonth(); }
+    var monthName = new Date(calYear, calMonth, 1).toLocaleDateString('es-MX', {month:'long', year:'numeric'});
+    document.getElementById('diarioCalMonth').textContent = monthName;
+
+    var grid = document.getElementById('diarioCalGrid');
+    grid.innerHTML = '';
+    var days = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    days.forEach(function(d){
+      var el = document.createElement('div');
+      el.className = 'diario-cal-dayname';
+      el.textContent = d;
+      grid.appendChild(el);
+    });
+
+    var firstDay = new Date(calYear, calMonth, 1).getDay();
+    var daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+    var todayDk = todayKey();
+    var entryKeys = new Set(entries.map(function(e){ return e.fecha; }));
+
+    // Celdas vacías inicio
+    for (var i = 0; i < firstDay; i++) {
+      var el = document.createElement('div');
+      el.className = 'diario-cal-cell empty';
+      grid.appendChild(el);
+    }
+
+    for (var day = 1; day <= daysInMonth; day++) {
+      var dk = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+      var el = document.createElement('div');
+      var cls = 'diario-cal-cell';
+      if (dk === todayDk) cls += ' today';
+      if (dk === selectedDate) cls += ' selected';
+      if (entryKeys.has(dk)) cls += ' has-entry';
+      el.className = cls;
+      el.textContent = day;
+      el.onclick = (function(d){ return function(){ diarioSelectDate(d); }; })(dk);
+      grid.appendChild(el);
+    }
+  }
+
+  function diarioSelectDate(dk) {
+    selectedDate = dk;
+    renderCal();
+    var entry = entries.find(function(e){ return e.fecha === dk; });
+    if (entry) {
+      showEntryView(entry);
+    } else {
+      diarioCloseView();
+      // Si es hoy o pasado, ofrecer crear
+      var d = new Date(dk.replace(/-/g,'/')); 
+      var hoy = new Date(); hoy.setHours(0,0,0,0);
+      if (d <= hoy) diarioOpenEntry(dk);
+    }
+  }
+
+  function showEntryView(entry) {
+    var view = document.getElementById('diarioEntryView');
+    document.getElementById('diarioEntryViewDate').textContent = fmtDate(entry.fecha);
+    document.getElementById('diarioEntryViewTitle').textContent = entry.titulo || '';
+    document.getElementById('diarioEntryViewTitle').style.display = entry.titulo ? '' : 'none';
+
+    // Tags + mood
+    var tagsEl = document.getElementById('diarioEntryViewTags');
+    tagsEl.innerHTML = '';
+    if (entry.mood) {
+      var m = document.createElement('span');
+      m.className = 'diario-entry-view-mood';
+      m.textContent = entry.mood;
+      tagsEl.appendChild(m);
+    }
+    (entry.tags||[]).forEach(function(t){
+      var chip = document.createElement('span');
+      chip.className = 'diario-entry-view-tag';
+      chip.textContent = t;
+      tagsEl.appendChild(chip);
+    });
+
+    // Foto
+    var photoEl = document.getElementById('diarioEntryViewPhoto');
+    photoEl.innerHTML = entry.foto ? '<img src="'+entry.foto+'" alt="foto del día">' : '';
+
+    // Texto
+    document.getElementById('diarioEntryViewText').textContent = entry.texto || '';
+    view.style.display = '';
+    view.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  window.diarioCloseView = function() {
+    document.getElementById('diarioEntryView').style.display = 'none';
+  };
+
+  window.diarioCalPrev = function() { calMonth--; if(calMonth<0){ calMonth=11; calYear--; } renderCal(); };
+  window.diarioCalNext = function() { calMonth++; if(calMonth>11){ calMonth=0; calYear++; } renderCal(); };
+
+  // ── Modal
+  var currentTags = [];
+
+  window.diarioOpenEntry = function(fecha) {
+    load();
+    var dk = fecha || todayKey();
+    var existing = entries.find(function(e){ return e.fecha === dk; });
+    editingId = existing ? existing.id : null;
+    selectedDate = dk;
+
+    document.getElementById('diarioModalDateLabel').textContent = fmtDate(dk);
+    document.getElementById('diarioTitulo').value = existing ? (existing.titulo||'') : '';
+    document.getElementById('diarioMood').value = existing ? (existing.mood||'') : '';
+    document.getElementById('diarioTexto').value = existing ? (existing.texto||'') : '';
+    document.getElementById('diarioPhotoData').value = existing ? (existing.foto||'') : '';
+
+    // Mood
+    document.querySelectorAll('.diario-mood-opt').forEach(function(o){
+      o.classList.toggle('selected', o.textContent === (existing ? existing.mood : ''));
+    });
+
+    // Tags
+    currentTags = existing ? (existing.tags||[]).slice() : [];
+    renderTagChips();
+
+    // Foto
+    var img = document.getElementById('diarioPhotoImg');
+    var ph = document.getElementById('diarioPhotoPlaceholder');
+    var rmv = document.getElementById('diarioPhotoRemove');
+    if (existing && existing.foto) {
+      img.src = existing.foto; img.style.display=''; ph.style.display='none'; rmv.style.display='';
+    } else {
+      img.style.display='none'; ph.style.display=''; rmv.style.display='none';
+    }
+
+    document.getElementById('diarioModalBackdrop').style.display='flex';
+    setTimeout(function(){ document.getElementById('diarioTexto').focus(); }, 200);
+  };
+
+  window.diarioCloseModal = function() {
+    document.getElementById('diarioModalBackdrop').style.display='none';
+  };
+
+  window.diarioEditEntry = function() {
+    var entry = entries.find(function(e){ return e.fecha === selectedDate; });
+    if (entry) diarioOpenEntry(entry.fecha);
+  };
+
+  window.diarioDeleteEntry = function() {
+    if (!confirm('¿Eliminar esta entrada del diario?')) return;
+    entries = entries.filter(function(e){ return e.fecha !== selectedDate; });
+    save(); diarioCloseView(); renderCal(); renderList();
+  };
+
+  // Tags
+  function renderTagChips() {
+    var wrap = document.getElementById('diarioTagsChips');
+    wrap.innerHTML = '';
+    currentTags.forEach(function(t, i) {
+      var chip = document.createElement('span');
+      chip.className = 'diario-tags-chip';
+      chip.innerHTML = t + '<button onclick="diarioRemoveTag('+i+')">✕</button>';
+      wrap.appendChild(chip);
+    });
+  }
+  window.diarioRemoveTag = function(i) { currentTags.splice(i,1); renderTagChips(); };
+  window.diarioTagKeydown = function(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      var val = e.target.value.trim().replace(',','');
+      if (val && !currentTags.includes(val)) { currentTags.push(val); renderTagChips(); }
+      e.target.value = '';
+    }
+  };
+
+  window.diarioPickMood = function(el, mood) {
+    document.querySelectorAll('.diario-mood-opt').forEach(function(o){ o.classList.remove('selected'); });
+    el.classList.add('selected');
+    document.getElementById('diarioMood').value = mood;
+  };
+
+  window.diarioHandlePhoto = function(input) {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('diarioPhotoData').value = e.target.result;
+      var img = document.getElementById('diarioPhotoImg');
+      img.src = e.target.result; img.style.display='';
+      document.getElementById('diarioPhotoPlaceholder').style.display='none';
+      document.getElementById('diarioPhotoRemove').style.display='';
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.diarioRemovePhoto = function() {
+    document.getElementById('diarioPhotoData').value = '';
+    document.getElementById('diarioPhotoImg').style.display='none';
+    document.getElementById('diarioPhotoPlaceholder').style.display='';
+    document.getElementById('diarioPhotoRemove').style.display='none';
+  };
+
+  window.diarioSave = function() {
+    var texto = document.getElementById('diarioTexto').value.trim();
+    var titulo = document.getElementById('diarioTitulo').value.trim();
+    if (!texto && !titulo) { alert('Escribe algo antes de guardar 🌸'); return; }
+
+    // Flush tag input si quedó algo sin Enter
+    var tagInp = document.getElementById('diarioTagInp').value.trim();
+    if (tagInp && !currentTags.includes(tagInp)) currentTags.push(tagInp);
+    document.getElementById('diarioTagInp').value = '';
+
+    var entry = {
+      id: editingId || ('diario_' + Date.now()),
+      fecha: selectedDate || todayKey(),
+      titulo: titulo,
+      mood: document.getElementById('diarioMood').value,
+      tags: currentTags.slice(),
+      foto: document.getElementById('diarioPhotoData').value,
+      texto: texto,
+    };
+
+    if (editingId) {
+      var idx = entries.findIndex(function(e){ return e.id===editingId; });
+      if (idx>=0) entries[idx] = entry; else entries.push(entry);
+    } else {
+      // Reemplazar si ya existe para esa fecha
+      var existIdx = entries.findIndex(function(e){ return e.fecha===entry.fecha; });
+      if (existIdx>=0) entries[existIdx] = entry; else entries.push(entry);
+    }
+
+    entries.sort(function(a,b){ return b.fecha.localeCompare(a.fecha); });
+    save(); diarioCloseModal(); renderCal(); renderList();
+    showEntryView(entry);
+  };
+
+  // ── Lista reciente
+  function renderList() {
+    load();
+    var el = document.getElementById('diarioList');
+    if (!el) return;
+    if (entries.length === 0) { el.innerHTML = ''; return; }
+    var recent = entries.slice(0, 10);
+    var html = '<div class="diario-list-title">Entradas recientes</div>';
+    recent.forEach(function(e) {
+      var tagsHtml = (e.tags||[]).map(function(t){ return '<span class="diario-card-tag">'+t+'</span>'; }).join('');
+      html +=
+        '<div class="diario-card" onclick="diarioSelectDate(\''+e.fecha+'\')">' +
+          '<div class="diario-card-top">' +
+            (e.mood ? '<span class="diario-card-mood">'+e.mood+'</span>' : '') +
+            '<span class="diario-card-date">'+fmtDate(e.fecha)+'</span>' +
+          '</div>' +
+          (e.titulo ? '<div class="diario-card-title">'+e.titulo+'</div>' : '') +
+          (e.texto ? '<div class="diario-card-preview">'+e.texto+'</div>' : '') +
+          (tagsHtml ? '<div class="diario-card-tags">'+tagsHtml+'</div>' : '') +
+        '</div>';
+    });
+    el.innerHTML = html;
+  }
+
+  // Init
+  load(); renderCal(); renderList();
+
+  if (window._watchCloud) window._watchCloud(KEY, function(val){
+    entries = val||[]; renderCal(); renderList();
+  });
+})();
+</script>
+</div><!-- end page-diario -->
+
 <div id="page-selfcare" class="page-section">
 <div id="sec-selfcare-nav" style="scroll-margin-top:60px"></div>
 <div id="sec-belleza" style="scroll-margin-top:60px"></div>
@@ -9895,11 +10764,15 @@ let customTasks = {};
 
 function getWeekDates(offset) {
   const now = new Date();
-  const start = new Date(now);
-  start.setDate(now.getDate() + offset * 3);
-  return Array.from({length:3}, (_,i) => {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i);
+  // Encuentra el domingo de la semana actual
+  const day = now.getDay(); // 0=dom, 1=lun... 6=sab
+  const diffToSun = -day; // domingo siempre es 0, así que retrocedemos `day` días
+  const sun = new Date(now);
+  sun.setDate(now.getDate() + diffToSun + offset * 7);
+  sun.setHours(0,0,0,0);
+  return Array.from({length:7}, (_,i) => {
+    const d = new Date(sun);
+    d.setDate(sun.getDate() + i);
     return d;
   });
 }
@@ -9940,54 +10813,59 @@ function completionKey(taskId, date) {
 function render() {
   const dates = getWeekDates(weekOffset);
 
-  const fmt = d => d.toLocaleDateString('es-MX', {weekday:'short', day:'numeric', month:'short'});
-  const _wl = document.getElementById('weekLabel'); if (_wl) _wl.textContent =
-    fmt(dates[0]) + ' - ' + fmt(dates[2]);
+  // Etiqueta semana: Lun 9 - Dom 15 mar
+  const fmtShort = d => d.toLocaleDateString('es-MX', {weekday:'short', day:'numeric'});
+  const fmtMonth = d => d.toLocaleDateString('es-MX', {month:'short'});
+  const _wl = document.getElementById('weekLabel');
+  if (_wl) _wl.textContent = fmtShort(dates[0]) + ' — ' + fmtShort(dates[6]) + ' ' + fmtMonth(dates[6]);
 
   const container = document.getElementById('gridOuter');
   if (!container) return;
   container.innerHTML = '';
 
-  // Days header
-  const daysRow = document.createElement('div');
-  daysRow.className = 'days-header';
-  daysRow.innerHTML = '<div></div>';
-  dates.forEach((d) => {
-    const isToday = isTodayDate(d);
-    const col = document.createElement('div');
-    col.className = 'day-col' + (isToday ? ' today' : '');
-    const jsDay = d.getDay();
+  // Layout VERTICAL: cada día es un bloque
+  dates.forEach((date) => {
+    const isToday = isTodayDate(date);
+    const jsDay = date.getDay();
     const dayIdx = jsDay === 0 ? 6 : jsDay - 1;
-    col.innerHTML = `<div class="day-name">${DAYS[dayIdx]}</div><div class="day-num">${d.getDate()}</div>`;
-    daysRow.appendChild(col);
-  });
-  container.appendChild(daysRow);
 
-  // Slot rows
-  SLOTS.forEach(slot => {
-    const section = document.createElement('div');
-    section.className = 'block-section';
-    const row = document.createElement('div');
-    row.className = 'block-row';
+    // Cabecera del día
+    const dayBlock = document.createElement('div');
+    dayBlock.className = 'day-block' + (isToday ? ' today-block' : '');
 
-    const label = document.createElement('div');
-    label.className = `slot-label ${slot.cls}`;
-    label.innerHTML = `
-      <span class="slot-icon">${slot.icon}</span>
-      <span class="slot-name">${slot.name}</span>
-      <span class="slot-time">${slot.time}</span>`;
-    row.appendChild(label);
+    const dayHeader = document.createElement('div');
+    dayHeader.className = 'day-block-header';
+    dayHeader.innerHTML =
+      '<span class="day-block-name">' + date.toLocaleDateString('es-MX', {weekday:'short'}).replace('.','').toUpperCase() + '</span>' +
+      '<span class="day-block-num">' + date.toLocaleDateString('es-MX', {day:'numeric', month:'short'}) + '</span>' +
+      (isToday ? '<span class="day-block-today-badge">hoy</span>' : '');
+    dayBlock.appendChild(dayHeader);
 
-    dates.forEach((date) => {
-      const isToday = isTodayDate(date);
+    // Franjas del día (mañana, tarde, noche) en fila
+    const slotsRow = document.createElement('div');
+    slotsRow.className = 'day-slots-row';
+
+    SLOTS.forEach(slot => {
+      const slotWrap = document.createElement('div');
+      slotWrap.className = 'day-slot-wrap';
+
+      const slotLabel = document.createElement('div');
+      slotLabel.className = 'day-slot-label ' + slot.cls;
+      slotLabel.innerHTML =
+        '<span class="slot-icon">' + slot.icon + '</span>' +
+        '<span class="slot-name">' + slot.name + '</span>';
+      slotWrap.appendChild(slotLabel);
+
       const cell = document.createElement('div');
-      cell.className = `cell ${slot.cellCls}` + (isToday ? ' today-cell' : '');
+      cell.className = 'cell ' + slot.cellCls + (isToday ? ' today-cell' : '');
       renderCell(cell, slot, date);
-      row.appendChild(cell);
+      slotWrap.appendChild(cell);
+
+      slotsRow.appendChild(slotWrap);
     });
 
-    section.appendChild(row);
-    container.appendChild(section);
+    dayBlock.appendChild(slotsRow);
+    container.appendChild(dayBlock);
   });
 
   updateProgress();
@@ -11018,6 +11896,249 @@ function archiveCurrentSpark() {
   if (prev) prev.textContent = title.trim();
 }
 
+// ══════════════════════════════════════════
+//  NOTAS POR INTERÉS
+// ══════════════════════════════════════════
+(function() {
+  var NI_EMOJIS = ['📝','💡','🌟','🔭','🎨','🎵','📚','🌿','✨','🦋','🌙','🔬','🎯','🌈','💭','🧩'];
+  var _niData = { cats: [], notes: [] };
+  var _niActiveCat = '__all__';
+  var _niEditId = null;
+  var _niSelEmoji = '📝';
+
+  function niLoad() {
+    try {
+      var raw = localStorage.getItem('notas_intereses_data');
+      if (raw) _niData = JSON.parse(raw);
+      if (!_niData.cats) _niData.cats = [];
+      if (!_niData.notes) _niData.notes = [];
+    } catch(e) { _niData = { cats: [], notes: [] }; }
+  }
+
+  function niSave() {
+    try { localStorage.setItem('notas_intereses_data', JSON.stringify(_niData)); } catch(e) {}
+    if (window.cloudSave) window.cloudSave('notas_intereses_data', _niData);
+  }
+
+  function niRenderCats() {
+    var row = document.getElementById('niCatsRow');
+    if (!row) return;
+    row.innerHTML = '<button class="ni-cat-chip all-chip' + (_niActiveCat==='__all__'?' active':'') + '" data-cat="__all__" onclick="niSelectCat(\'__all__\')">🗂 Todas</button>';
+    _niData.cats.forEach(function(cat) {
+      var btn = document.createElement('button');
+      btn.className = 'ni-cat-chip' + (_niActiveCat===cat?' active':'');
+      btn.innerHTML = cat + ' <button class="ni-cat-del" title="Eliminar categoría" onclick="event.stopPropagation();niDeleteCat(\'' + cat.replace(/'/g,"\\'") + '\')">×</button>';
+      btn.onclick = function(){ niSelectCat(cat); };
+      row.appendChild(btn);
+    });
+  }
+
+  function niRenderCards() {
+    var grid = document.getElementById('niCardsGrid');
+    if (!grid) return;
+    var notes = _niActiveCat === '__all__'
+      ? _niData.notes
+      : _niData.notes.filter(function(n){ return n.cat === _niActiveCat; });
+    if (!notes.length) {
+      grid.innerHTML = '<div class="ni-empty">No hay notas aquí todavía ✨<br>' +
+        (_niActiveCat==='__all__' ? '¡Crea tu primera nota!' : 'Agrega una nota en esta categoría.') + '</div>';
+      return;
+    }
+    grid.innerHTML = '';
+    // Más reciente primero
+    var sorted = notes.slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+    sorted.forEach(function(note) {
+      var card = document.createElement('div');
+      card.className = 'ni-note-card';
+      // Color accent per cat
+      var catIdx = _niData.cats.indexOf(note.cat);
+      var colors = ['#f4a7c0','#b39ddb','#80cbc4','#ffcc80','#ef9a9a','#a5d6a7'];
+      card.style.borderLeftColor = colors[catIdx % colors.length] || 'var(--beige)';
+
+      var dateStr = note.ts ? new Date(note.ts).toLocaleDateString('es-MX', {day:'numeric',month:'short',year:'numeric'}) : '';
+      var bodyPreview = (note.body||'').trim();
+      var linkHtml = note.link ? '<a class="ni-note-link" href="' + note.link + '" target="_blank" rel="noopener">🔗 ' + note.link + '</a>' : '';
+
+      card.innerHTML =
+        '<div class="ni-note-top">' +
+          '<span class="ni-note-emoji" title="Cambiar emoji" onclick="niCycleEmoji(\'' + note.id + '\')">' + (note.emoji||'📝') + '</span>' +
+          '<span class="ni-note-title">' + escHtml(note.title||'Sin título') + '</span>' +
+          '<div class="ni-note-actions">' +
+            '<button class="ni-note-btn" title="Editar" onclick="niOpenModal(\'' + note.id + '\')">✏️</button>' +
+            '<button class="ni-note-btn" title="Eliminar" onclick="niDeleteNote(\'' + note.id + '\')">🗑</button>' +
+          '</div>' +
+        '</div>' +
+        (bodyPreview ? '<div class="ni-note-body" id="nibody-' + note.id + '">' + escHtml(bodyPreview) + '</div>' : '') +
+        (bodyPreview && bodyPreview.length > 120 ? '<button class="ni-note-btn" style="font-size:.62rem;align-self:flex-start" onclick="niToggleExpand(\'' + note.id + '\')">ver más ▾</button>' : '') +
+        linkHtml +
+        '<div class="ni-note-footer">' +
+          '<span class="ni-note-cat-badge">' + escHtml(note.cat||'Sin cat') + '</span>' +
+          '<span class="ni-note-date">' + dateStr + '</span>' +
+        '</div>';
+      grid.appendChild(card);
+    });
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  window.niSelectCat = function(cat) {
+    _niActiveCat = cat;
+    niRenderCats();
+    niRenderCards();
+  };
+
+  window.niAddCat = function() {
+    var inp = document.getElementById('niCatInput');
+    if (!inp) return;
+    var val = inp.value.trim();
+    if (!val || _niData.cats.indexOf(val) !== -1) { inp.value=''; return; }
+    _niData.cats.push(val);
+    niSave();
+    niRenderCats();
+    inp.value = '';
+  };
+
+  window.niDeleteCat = function(cat) {
+    if (!window.kittyConfirm) {
+      if (!confirm('¿Eliminar categoría "' + cat + '"? Las notas de esta categoría quedarán sin categoría.')) return;
+      doCatDel(cat);
+    } else {
+      window.kittyConfirm('¿Eliminar categoría "' + cat + '"? Las notas quedarán sin categoría.', function(){ doCatDel(cat); });
+    }
+  };
+  function doCatDel(cat) {
+    _niData.cats = _niData.cats.filter(function(c){ return c!==cat; });
+    _niData.notes.forEach(function(n){ if(n.cat===cat) n.cat='Sin categoría'; });
+    if (_niActiveCat===cat) _niActiveCat='__all__';
+    niSave(); niRenderCats(); niRenderCards();
+  }
+
+  window.niDeleteNote = function(id) {
+    if (!window.kittyConfirm) {
+      if (!confirm('¿Eliminar esta nota?')) return;
+      doNoteDel(id);
+    } else {
+      window.kittyConfirm('¿Eliminar esta nota?', function(){ doNoteDel(id); });
+    }
+  };
+  function doNoteDel(id) {
+    _niData.notes = _niData.notes.filter(function(n){ return n.n!==id && n.id!==id; });
+    niSave(); niRenderCards();
+  }
+
+  window.niCycleEmoji = function(id) {
+    var note = _niData.notes.find(function(n){ return n.id===id; });
+    if (!note) return;
+    var idx = NI_EMOJIS.indexOf(note.emoji||'📝');
+    note.emoji = NI_EMOJIS[(idx+1) % NI_EMOJIS.length];
+    niSave(); niRenderCards();
+  };
+
+  window.niToggleExpand = function(id) {
+    var el = document.getElementById('nibody-'+id);
+    if (!el) return;
+    el.classList.toggle('expanded');
+  };
+
+  window.niOpenModal = function(editId) {
+    _niEditId = editId || null;
+    var note = editId ? _niData.notes.find(function(n){ return n.id===editId; }) : null;
+    _niSelEmoji = note ? (note.emoji||'📝') : '📝';
+
+    var overlay = document.createElement('div');
+    overlay.className = 'ni-modal-overlay';
+    overlay.id = 'niModalOverlay';
+    overlay.onclick = function(e){ if(e.target===overlay) niCloseModal(); };
+
+    var catOptions = _niData.cats.map(function(c){
+      return '<option value="' + escHtml(c) + '"' + (note&&note.cat===c?' selected':'') + '>' + escHtml(c) + '</option>';
+    }).join('');
+    if (!_niData.cats.length) catOptions = '<option value="">— Sin categoría —</option>';
+
+    overlay.innerHTML =
+      '<div class="ni-modal" onclick="event.stopPropagation()">' +
+        '<div class="ni-modal-title">' + (editId ? '✏️ Editar nota' : '✦ Nueva nota') + '</div>' +
+        '<div>' +
+          '<label>Emoji</label>' +
+          '<div class="ni-modal-emoji-row" id="niEmojiRow">' +
+            NI_EMOJIS.map(function(e){ return '<span class="ni-emoji-opt' + (e===_niSelEmoji?' selected':'') + '" onclick="niPickEmoji(\'' + e + '\')">' + e + '</span>'; }).join('') +
+          '</div>' +
+        '</div>' +
+        '<div><label>Título</label><input id="niModalTitle" placeholder="¿Sobre qué es esta nota?" value="' + escHtml(note?note.title:'') + '" /></div>' +
+        '<div><label>Categoría</label><select id="niModalCat">' + catOptions + '</select></div>' +
+        '<div><label>Contenido</label><textarea id="niModalBody" placeholder="Escribe tus ideas, descubrimientos, reflexiones…">' + escHtml(note?note.body:'') + '</textarea></div>' +
+        '<div><label>Link (opcional)</label><input id="niModalLink" type="url" placeholder="https://…" value="' + escHtml(note?note.link||'':'') + '" /></div>' +
+        '<div class="ni-modal-actions">' +
+          '<button class="ni-modal-cancel" onclick="niCloseModal()">Cancelar</button>' +
+          '<button class="ni-modal-save" onclick="niSaveNote()">Guardar ✦</button>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(overlay);
+  };
+
+  window.niPickEmoji = function(em) {
+    _niSelEmoji = em;
+    document.querySelectorAll('.ni-emoji-opt').forEach(function(el){ el.classList.remove('selected'); });
+    document.querySelectorAll('.ni-emoji-opt').forEach(function(el){ if(el.textContent===em) el.classList.add('selected'); });
+  };
+
+  window.niCloseModal = function() {
+    var ov = document.getElementById('niModalOverlay');
+    if (ov) ov.remove();
+    _niEditId = null;
+  };
+
+  window.niSaveNote = function() {
+    var title = (document.getElementById('niModalTitle')||{}).value || '';
+    var cat   = (document.getElementById('niModalCat')||{}).value || 'Sin categoría';
+    var body  = (document.getElementById('niModalBody')||{}).value || '';
+    var link  = (document.getElementById('niModalLink')||{}).value || '';
+    if (!title.trim()) { alert('El título no puede estar vacío.'); return; }
+    if (_niEditId) {
+      var note = _niData.notes.find(function(n){ return n.id===_niEditId; });
+      if (note) { note.title=title.trim(); note.cat=cat; note.body=body.trim(); note.link=link.trim(); note.emoji=_niSelEmoji; }
+    } else {
+      _niData.notes.push({
+        id: 'ni_' + Date.now(),
+        title: title.trim(), cat: cat, body: body.trim(),
+        link: link.trim(), emoji: _niSelEmoji,
+        ts: Date.now()
+      });
+    }
+    niSave(); niCloseModal(); niRenderCats(); niRenderCards();
+    // Si la cat activa era la nueva, seleccionarla
+    if (_niActiveCat !== '__all__' && _niActiveCat !== cat) {
+      _niActiveCat = cat; niRenderCats(); niRenderCards();
+    }
+  };
+
+  // Sincronizar desde nube
+  var _origSyncFromCloud = window.syncFromCloud;
+  window.syncFromCloud = function() {
+    if (_origSyncFromCloud) _origSyncFromCloud();
+    try {
+      var raw = localStorage.getItem('notas_intereses_data');
+      if (raw) { _niData = JSON.parse(raw); niRenderCats(); niRenderCards(); }
+    } catch(e){}
+  };
+
+  // Inicializar cuando el DOM esté listo
+  function niInit() {
+    niLoad();
+    niRenderCats();
+    niRenderCards();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', niInit);
+  } else {
+    niInit();
+  }
+})();
+
 window.archHandlePhotos = function(input) {
   var files = Array.from(input.files);
   if (!files.length) return;
@@ -11462,6 +12583,659 @@ renderTracker();
 
 </section>
 </div><!-- end page-finanzas -->
+
+
+<!-- ══════════════════════════════════════════
+     PÁGINA · MASCOTAS 🐾
+══════════════════════════════════════════ -->
+<div id="page-mascotas" class="page-section">
+<section class="pets-section">
+  <div class="pets-header">
+    <div>
+      <span class="section-sub">🏠 hogar</span>
+      <h1 class="section-title"><em>Mis</em> Mascotas 🐾</h1>
+    </div>
+    <button class="pets-add-btn" onclick="petsOpenModal()">+ agregar</button>
+  </div>
+
+  <div class="pets-grid" id="petsGrid">
+    <div class="pets-empty" id="petsEmpty">
+      <div style="font-size:3rem">🐾</div>
+      <p>Aún no has agregado ninguna mascota</p>
+      <button class="pets-add-btn" onclick="petsOpenModal()">+ agregar mascota</button>
+    </div>
+  </div>
+</section>
+
+<!-- Modal mascotas -->
+<div class="pets-modal-backdrop" id="petsModalBackdrop" style="display:none" onclick="if(event.target===this)petsCloseModal()">
+  <div class="pets-modal">
+    <div class="pets-modal-header">
+      <span id="petsModalTitle">Nueva mascota</span>
+      <button onclick="petsCloseModal()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted)">✕</button>
+    </div>
+    <div class="pets-modal-body">
+      <div class="pets-photo-upload" id="petsPhotoPreview" onclick="document.getElementById('petsPhotoInput').click()">
+        <span id="petsPhotoPlaceholder">📷 foto</span>
+        <img id="petsPhotoImg" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%">
+      </div>
+      <input type="file" id="petsPhotoInput" accept="image/*" style="display:none" onchange="petsHandlePhoto(this)">
+      <input type="hidden" id="petsPhotoData">
+
+      <div class="pets-field">
+        <label class="pets-label">Nombre *</label>
+        <input class="pets-input" id="petsNombre" placeholder="¿Cómo se llama?">
+      </div>
+      <div class="pets-field" style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+        <div>
+          <label class="pets-label">Especie</label>
+          <input class="pets-input" id="petsEspecie" placeholder="Perro, gato, conejo…">
+        </div>
+        <div>
+          <label class="pets-label">Raza</label>
+          <input class="pets-input" id="petsRaza" placeholder="Opcional">
+        </div>
+      </div>
+      <div class="pets-field" style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+        <div>
+          <label class="pets-label">Fecha de nacimiento</label>
+          <input class="pets-input" type="date" id="petsFechaNac">
+        </div>
+        <div>
+          <label class="pets-label">Color / apariencia</label>
+          <input class="pets-input" id="petsColor" placeholder="Café, blanco…">
+        </div>
+      </div>
+      <div class="pets-field">
+        <label class="pets-label">Notas</label>
+        <textarea class="pets-input" id="petsNotas" rows="2" placeholder="Personalidad, gustos, cosas importantes…" style="resize:vertical"></textarea>
+      </div>
+
+      <div class="pets-cuidados-title">🩺 Cuidados y recordatorios</div>
+      <div id="petsCuidadosList"></div>
+      <button class="pets-add-cuidado-btn" onclick="petsAddCuidado()">+ agregar cuidado</button>
+
+      <div class="pets-diario-title">📓 Diario</div>
+      <div id="petsDiarioList"></div>
+      <button class="pets-add-cuidado-btn" onclick="petsAddDiario()">+ agregar entrada</button>
+    </div>
+    <div class="pets-modal-footer">
+      <button class="pets-cancel-btn" onclick="petsCloseModal()">Cancelar</button>
+      <button class="pets-save-btn" onclick="petsSave()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .pets-section { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  .pets-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; }
+  .pets-add-btn {
+    background: var(--rosa); color: white; border: none; border-radius: 20px;
+    padding: .45rem 1.1rem; font-size: .78rem; font-weight: 700; cursor: pointer;
+    font-family: var(--font-body); transition: opacity .2s;
+  }
+  .pets-add-btn:hover { opacity: .85; }
+  .pets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+  .pets-empty { grid-column: 1/-1; text-align: center; padding: 3rem 1rem; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: .8rem; }
+  .pets-card {
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 16px;
+    overflow: hidden; transition: box-shadow .2s, border-color .2s; cursor: pointer;
+  }
+  .pets-card:hover { border-color: var(--rosa); box-shadow: 0 4px 18px rgba(244,167,192,.18); }
+  .pets-card-top { display: flex; align-items: center; gap: .9rem; padding: 1rem; }
+  .pets-card-photo {
+    width: 56px; height: 56px; border-radius: 50%; background: var(--surface);
+    border: 2px solid var(--border); overflow: hidden; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
+  }
+  .pets-card-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .pets-card-info { flex: 1; min-width: 0; }
+  .pets-card-name { font-size: 1rem; font-weight: 800; color: var(--text); font-family: var(--font-title); font-style: italic; }
+  .pets-card-especie { font-size: .7rem; font-weight: 600; color: var(--muted); margin-top: .1rem; }
+  .pets-card-edad { font-size: .68rem; color: var(--muted2); margin-top: .1rem; }
+  .pets-card-body { padding: 0 1rem .8rem; }
+  .pets-card-notas { font-size: .75rem; color: var(--muted); line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .pets-card-cuidados { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .6rem; }
+  .pets-card-cuidado-chip {
+    font-size: .64rem; font-weight: 700; padding: .2rem .55rem; border-radius: 20px;
+    background: var(--surface); border: 1.5px solid var(--border); color: var(--muted);
+  }
+  .pets-card-cuidado-chip.vence-hoy { background: var(--rosa-soft); border-color: var(--rosa); color: var(--rosa); }
+  .pets-card-cuidado-chip.vencido { background: #fff0f0; border-color: #f4a0a0; color: #c0392b; }
+  .pets-card-footer { display: flex; justify-content: flex-end; gap: .4rem; padding: .5rem .7rem; border-top: 1px solid var(--border); }
+  .pets-card-btn { background: none; border: none; font-size: .8rem; cursor: pointer; padding: .2rem .4rem; border-radius: 8px; color: var(--muted); }
+  .pets-card-btn:hover { background: var(--surface); }
+
+  /* Modal */
+  .pets-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .pets-modal { background: var(--card); border-radius: 20px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.18); }
+  .pets-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.3rem .8rem; font-family: var(--font-title); font-style: italic; font-size: 1.1rem; font-weight: 700; border-bottom: 1px solid var(--border); }
+  .pets-modal-body { padding: 1rem 1.3rem; display: flex; flex-direction: column; gap: .7rem; }
+  .pets-modal-footer { display: flex; justify-content: flex-end; gap: .6rem; padding: .9rem 1.3rem; border-top: 1px solid var(--border); }
+  .pets-photo-upload {
+    width: 80px; height: 80px; border-radius: 50%; background: var(--surface);
+    border: 2px dashed var(--border); cursor: pointer; margin: 0 auto;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .7rem; color: var(--muted); overflow: hidden; transition: border-color .2s;
+  }
+  .pets-photo-upload:hover { border-color: var(--rosa); }
+  .pets-field { display: flex; flex-direction: column; gap: .25rem; }
+  .pets-label { font-size: .67rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+  .pets-input { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: .55rem .8rem; font-family: var(--font-body); font-size: .84rem; color: var(--text); outline: none; width: 100%; box-sizing: border-box; }
+  .pets-input:focus { border-color: var(--rosa); }
+  .pets-cuidados-title, .pets-diario-title { font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-top: .4rem; }
+  .pets-add-cuidado-btn { background: none; border: 1.5px dashed var(--border); border-radius: 10px; padding: .4rem .9rem; font-size: .75rem; font-weight: 700; color: var(--muted); cursor: pointer; font-family: var(--font-body); transition: border-color .2s, color .2s; }
+  .pets-add-cuidado-btn:hover { border-color: var(--rosa); color: var(--rosa); }
+  .pets-cuidado-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: .4rem; align-items: center; margin-bottom: .4rem; }
+  .pets-diario-row { display: grid; grid-template-columns: auto 1fr auto; gap: .4rem; align-items: center; margin-bottom: .4rem; }
+  .pets-remove-btn { background: none; border: none; font-size: 1rem; cursor: pointer; color: var(--muted); padding: .2rem; }
+  .pets-save-btn { background: var(--rosa); color: white; border: none; border-radius: 20px; padding: .5rem 1.3rem; font-size: .82rem; font-weight: 700; cursor: pointer; font-family: var(--font-body); }
+  .pets-cancel-btn { background: none; border: 1.5px solid var(--border); border-radius: 20px; padding: .5rem 1.3rem; font-size: .82rem; font-weight: 600; cursor: pointer; font-family: var(--font-body); color: var(--muted); }
+</style>
+
+<script>
+(function(){
+  var PETS_KEY = 'yuki_mascotas';
+  var pets = [];
+  var editingId = null;
+
+  function load() {
+    try { pets = JSON.parse(localStorage.getItem(PETS_KEY)) || []; } catch(e){ pets=[]; }
+  }
+  function save() {
+    localStorage.setItem(PETS_KEY, JSON.stringify(pets));
+    if (window.cloudSave) window.cloudSave(PETS_KEY, pets);
+  }
+
+  function calcEdad(fechaNac) {
+    if (!fechaNac) return '';
+    var hoy = new Date(), nac = new Date(fechaNac);
+    var anos = hoy.getFullYear() - nac.getFullYear();
+    var meses = hoy.getMonth() - nac.getMonth();
+    if (meses < 0) { anos--; meses += 12; }
+    if (anos > 0) return anos + (anos === 1 ? ' año' : ' años');
+    if (meses > 0) return meses + (meses === 1 ? ' mes' : ' meses');
+    return 'recién llegado 🐣';
+  }
+
+  function render() {
+    load();
+    var grid = document.getElementById('petsGrid');
+    var empty = document.getElementById('petsEmpty');
+    if (!grid) return;
+    // Clear cards but keep empty
+    Array.from(grid.querySelectorAll('.pets-card')).forEach(el => el.remove());
+    if (pets.length === 0) { if(empty) empty.style.display='flex'; return; }
+    if(empty) empty.style.display='none';
+    pets.forEach(function(pet) {
+      var card = document.createElement('div');
+      card.className = 'pets-card';
+      var photoHtml = pet.foto
+        ? '<img src="'+pet.foto+'" style="width:100%;height:100%;object-fit:cover">'
+        : (pet.especie ? especieEmoji(pet.especie) : '🐾');
+      var cuidadosHtml = (pet.cuidados||[]).map(function(c){
+        var cls = getCuidadoStatus(c);
+        return '<span class="pets-card-cuidado-chip '+cls+'">'+c.nombre+'</span>';
+      }).join('');
+      card.innerHTML =
+        '<div class="pets-card-top">'+
+          '<div class="pets-card-photo">'+photoHtml+'</div>'+
+          '<div class="pets-card-info">'+
+            '<div class="pets-card-name">'+pet.nombre+'</div>'+
+            '<div class="pets-card-especie">'+(pet.especie||'')+(pet.raza?' · '+pet.raza:'')+'</div>'+
+            (pet.fechaNac?'<div class="pets-card-edad">'+calcEdad(pet.fechaNac)+'</div>':'')+
+          '</div>'+
+        '</div>'+
+        '<div class="pets-card-body">'+
+          (pet.notas?'<div class="pets-card-notas">'+pet.notas+'</div>':'')+
+          (cuidadosHtml?'<div class="pets-card-cuidados">'+cuidadosHtml+'</div>':'')+
+        '</div>'+
+        '<div class="pets-card-footer">'+
+          '<button class="pets-card-btn" title="Editar" onclick="petsOpenModal(\''+pet.id+'\');event.stopPropagation()">✏️</button>'+
+          '<button class="pets-card-btn" title="Eliminar" onclick="petsDelete(\''+pet.id+'\');event.stopPropagation()">🗑️</button>'+
+        '</div>';
+      card.onclick = function(){ petsOpenModal(pet.id); };
+      grid.appendChild(card);
+    });
+  }
+
+  function especieEmoji(esp) {
+    esp = esp.toLowerCase();
+    if (esp.includes('perro') || esp.includes('dog')) return '🐶';
+    if (esp.includes('gato') || esp.includes('cat')) return '🐱';
+    if (esp.includes('conejo')) return '🐰';
+    if (esp.includes('pez') || esp.includes('peces')) return '🐠';
+    if (esp.includes('ave') || esp.includes('pájaro') || esp.includes('pajaro') || esp.includes('loro')) return '🦜';
+    if (esp.includes('hamster') || esp.includes('hámster')) return '🐹';
+    if (esp.includes('tortuga')) return '🐢';
+    return '🐾';
+  }
+
+  function getCuidadoStatus(c) {
+    if (!c.fecha) return '';
+    var hoy = new Date(); hoy.setHours(0,0,0,0);
+    var f = new Date(c.fecha); f.setHours(0,0,0,0);
+    if (f < hoy) return 'vencido';
+    if (f.getTime() === hoy.getTime()) return 'vence-hoy';
+    return '';
+  }
+
+  window.petsOpenModal = function(id) {
+    load();
+    editingId = id || null;
+    var pet = id ? pets.find(function(p){ return p.id===id; }) : null;
+    document.getElementById('petsModalTitle').textContent = pet ? 'Editar mascota' : 'Nueva mascota';
+    document.getElementById('petsNombre').value = pet ? pet.nombre : '';
+    document.getElementById('petsEspecie').value = pet ? (pet.especie||'') : '';
+    document.getElementById('petsRaza').value = pet ? (pet.raza||'') : '';
+    document.getElementById('petsFechaNac').value = pet ? (pet.fechaNac||'') : '';
+    document.getElementById('petsColor').value = pet ? (pet.color||'') : '';
+    document.getElementById('petsNotas').value = pet ? (pet.notas||'') : '';
+    document.getElementById('petsPhotoData').value = pet ? (pet.foto||'') : '';
+    var img = document.getElementById('petsPhotoImg');
+    var ph = document.getElementById('petsPhotoPlaceholder');
+    if (pet && pet.foto) { img.src = pet.foto; img.style.display=''; ph.style.display='none'; }
+    else { img.style.display='none'; ph.style.display=''; }
+    // Cuidados
+    var cl = document.getElementById('petsCuidadosList'); cl.innerHTML='';
+    (pet ? pet.cuidados||[] : []).forEach(function(c){ addCuidadoRow(c); });
+    // Diario
+    var dl = document.getElementById('petsDiarioList'); dl.innerHTML='';
+    (pet ? pet.diario||[] : []).forEach(function(d){ addDiarioRow(d); });
+    document.getElementById('petsModalBackdrop').style.display='flex';
+  };
+
+  window.petsCloseModal = function() {
+    document.getElementById('petsModalBackdrop').style.display='none';
+  };
+
+  window.petsHandlePhoto = function(input) {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('petsPhotoData').value = e.target.result;
+      var img = document.getElementById('petsPhotoImg');
+      var ph = document.getElementById('petsPhotoPlaceholder');
+      img.src = e.target.result; img.style.display=''; ph.style.display='none';
+    };
+    reader.readAsDataURL(file);
+  };
+
+  function addCuidadoRow(c) {
+    c = c || { nombre:'', fecha:'' };
+    var row = document.createElement('div');
+    row.className = 'pets-cuidado-row';
+    row.innerHTML =
+      '<input class="pets-input" placeholder="Ej: Vacuna rabia, desparasitar…" value="'+(c.nombre||'')+'" style="font-size:.78rem">'+
+      '<input class="pets-input" type="date" value="'+(c.fecha||'')+'" style="font-size:.78rem">'+
+      '<button class="pets-remove-btn" onclick="this.parentElement.remove()">✕</button>';
+    document.getElementById('petsCuidadosList').appendChild(row);
+  }
+
+  function addDiarioRow(d) {
+    d = d || { fecha: new Date().toISOString().slice(0,10), texto:'' };
+    var row = document.createElement('div');
+    row.className = 'pets-diario-row';
+    row.innerHTML =
+      '<input class="pets-input" type="date" value="'+(d.fecha||'')+'" style="font-size:.78rem;width:130px">'+
+      '<input class="pets-input" placeholder="¿Qué pasó hoy?" value="'+(d.texto||'')+'" style="font-size:.78rem">'+
+      '<button class="pets-remove-btn" onclick="this.parentElement.remove()">✕</button>';
+    document.getElementById('petsDiarioList').appendChild(row);
+  }
+
+  window.petsAddCuidado = function() { addCuidadoRow(); };
+  window.petsAddDiario  = function() { addDiarioRow(); };
+
+  window.petsSave = function() {
+    var nombre = document.getElementById('petsNombre').value.trim();
+    if (!nombre) { alert('El nombre es obligatorio 🐾'); return; }
+    var cuidados = Array.from(document.querySelectorAll('#petsCuidadosList .pets-cuidado-row')).map(function(row){
+      var inputs = row.querySelectorAll('input');
+      return { nombre: inputs[0].value.trim(), fecha: inputs[1].value };
+    }).filter(function(c){ return c.nombre; });
+    var diario = Array.from(document.querySelectorAll('#petsDiarioList .pets-diario-row')).map(function(row){
+      var inputs = row.querySelectorAll('input');
+      return { fecha: inputs[0].value, texto: inputs[1].value.trim() };
+    }).filter(function(d){ return d.texto; });
+    var pet = {
+      id: editingId || ('pet_' + Date.now()),
+      nombre: nombre,
+      especie: document.getElementById('petsEspecie').value.trim(),
+      raza: document.getElementById('petsRaza').value.trim(),
+      fechaNac: document.getElementById('petsFechaNac').value,
+      color: document.getElementById('petsColor').value.trim(),
+      notas: document.getElementById('petsNotas').value.trim(),
+      foto: document.getElementById('petsPhotoData').value,
+      cuidados: cuidados,
+      diario: diario,
+    };
+    if (editingId) {
+      var idx = pets.findIndex(function(p){ return p.id===editingId; });
+      if (idx >= 0) pets[idx] = pet;
+    } else {
+      pets.push(pet);
+    }
+    save(); petsCloseModal(); render();
+  };
+
+  window.petsDelete = function(id) {
+    if (!confirm('¿Eliminar esta mascota?')) return;
+    pets = pets.filter(function(p){ return p.id!==id; });
+    save(); render();
+  };
+
+  // Init
+  load(); render();
+
+  // Cloud sync
+  if (window._watchCloud) window._watchCloud(PETS_KEY, function(val){ pets = val||[]; render(); });
+})();
+</script>
+</div><!-- end page-mascotas -->
+
+
+<!-- ══════════════════════════════════════════
+     PÁGINA · PLANTAS 🪴
+══════════════════════════════════════════ -->
+<div id="page-plantas" class="page-section">
+<section class="plants-section">
+  <div class="plants-header">
+    <div>
+      <span class="section-sub">🏠 hogar</span>
+      <h1 class="section-title"><em>Mis</em> Plantas 🪴</h1>
+    </div>
+    <button class="plants-add-btn" onclick="plantsOpenModal()">+ agregar</button>
+  </div>
+
+  <div class="plants-grid" id="plantsGrid">
+    <div class="plants-empty" id="plantsEmpty">
+      <div style="font-size:3rem">🪴</div>
+      <p>Aún no has agregado ninguna planta</p>
+      <button class="plants-add-btn" onclick="plantsOpenModal()">+ agregar planta</button>
+    </div>
+  </div>
+</section>
+
+<!-- Modal plantas -->
+<div class="plants-modal-backdrop" id="plantsModalBackdrop" style="display:none" onclick="if(event.target===this)plantsCloseModal()">
+  <div class="plants-modal">
+    <div class="plants-modal-header">
+      <span id="plantsModalTitle">Nueva planta</span>
+      <button onclick="plantsCloseModal()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted)">✕</button>
+    </div>
+    <div class="plants-modal-body">
+      <div class="plants-photo-upload" id="plantsPhotoPreview" onclick="document.getElementById('plantsPhotoInput').click()">
+        <span id="plantsPhotoPlaceholder">📷 foto</span>
+        <img id="plantsPhotoImg" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%">
+      </div>
+      <input type="file" id="plantsPhotoInput" accept="image/*" style="display:none" onchange="plantsHandlePhoto(this)">
+      <input type="hidden" id="plantsPhotoData">
+
+      <div class="plants-field">
+        <label class="plants-label">Nombre *</label>
+        <input class="plants-input" id="plantsNombre" placeholder="¿Cómo se llama?">
+      </div>
+      <div class="plants-field" style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+        <div>
+          <label class="plants-label">Especie / tipo</label>
+          <input class="plants-input" id="plantsEspecie" placeholder="Suculenta, helecho…">
+        </div>
+        <div>
+          <label class="plants-label">Ubicación</label>
+          <input class="plants-input" id="plantsUbicacion" placeholder="Sala, balcón, baño…">
+        </div>
+      </div>
+      <div class="plants-field" style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+        <div>
+          <label class="plants-label">Frecuencia de riego</label>
+          <input class="plants-input" id="plantsFrecuencia" placeholder="Cada 3 días…">
+        </div>
+        <div>
+          <label class="plants-label">Último riego</label>
+          <input class="plants-input" type="date" id="plantsUltimoRiego">
+        </div>
+      </div>
+      <div class="plants-field">
+        <label class="plants-label">Próximo riego</label>
+        <input class="plants-input" type="date" id="plantsProximoRiego">
+      </div>
+      <div class="plants-field">
+        <label class="plants-label">Notas de cuidado</label>
+        <textarea class="plants-input" id="plantsNotas" rows="2" placeholder="Luz indirecta, no regar de más, abono mensual…" style="resize:vertical"></textarea>
+      </div>
+
+      <div class="plants-diario-title">📓 Diario de cuidados</div>
+      <div id="plantsDiarioList"></div>
+      <button class="plants-add-cuidado-btn" onclick="plantsAddDiario()">+ agregar entrada</button>
+    </div>
+    <div class="plants-modal-footer">
+      <button class="plants-cancel-btn" onclick="plantsCloseModal()">Cancelar</button>
+      <button class="plants-save-btn" onclick="plantsSave()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .plants-section { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  .plants-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; }
+  .plants-add-btn {
+    background: var(--verde); color: white; border: none; border-radius: 20px;
+    padding: .45rem 1.1rem; font-size: .78rem; font-weight: 700; cursor: pointer;
+    font-family: var(--font-body); transition: opacity .2s;
+  }
+  .plants-add-btn:hover { opacity: .85; }
+  .plants-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+  .plants-empty { grid-column: 1/-1; text-align: center; padding: 3rem 1rem; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: .8rem; }
+  .plants-card {
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 16px;
+    overflow: hidden; transition: box-shadow .2s, border-color .2s; cursor: pointer;
+  }
+  .plants-card:hover { border-color: var(--verde); box-shadow: 0 4px 18px rgba(100,180,100,.15); }
+  .plants-card-top { display: flex; align-items: center; gap: .9rem; padding: 1rem; }
+  .plants-card-photo {
+    width: 56px; height: 56px; border-radius: 50%; background: var(--surface);
+    border: 2px solid var(--border); overflow: hidden; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
+  }
+  .plants-card-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .plants-card-info { flex: 1; min-width: 0; }
+  .plants-card-name { font-size: 1rem; font-weight: 800; color: var(--text); font-family: var(--font-title); font-style: italic; }
+  .plants-card-especie { font-size: .7rem; font-weight: 600; color: var(--muted); margin-top: .1rem; }
+  .plants-card-riego { font-size: .68rem; color: var(--muted2); margin-top: .1rem; }
+  .plants-card-body { padding: 0 1rem .8rem; }
+  .plants-card-notas { font-size: .75rem; color: var(--muted); line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .plants-riego-badge {
+    display: inline-flex; align-items: center; gap: .3rem;
+    font-size: .68rem; font-weight: 700; padding: .25rem .65rem; border-radius: 20px;
+    margin-top: .5rem;
+  }
+  .plants-riego-badge.ok { background: #e8f5e9; border: 1.5px solid #81c784; color: #2e7d32; }
+  .plants-riego-badge.pronto { background: #fff8e1; border: 1.5px solid #ffd54f; color: #f57f17; }
+  .plants-riego-badge.hoy { background: var(--rosa-soft); border: 1.5px solid var(--rosa); color: var(--rosa); }
+  .plants-riego-badge.vencido { background: #fce4ec; border: 1.5px solid #e57373; color: #c62828; }
+  .plants-card-footer { display: flex; justify-content: flex-end; gap: .4rem; padding: .5rem .7rem; border-top: 1px solid var(--border); }
+  .plants-card-btn { background: none; border: none; font-size: .8rem; cursor: pointer; padding: .2rem .4rem; border-radius: 8px; color: var(--muted); }
+  .plants-card-btn:hover { background: var(--surface); }
+
+  .plants-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .plants-modal { background: var(--card); border-radius: 20px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.18); }
+  .plants-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.3rem .8rem; font-family: var(--font-title); font-style: italic; font-size: 1.1rem; font-weight: 700; border-bottom: 1px solid var(--border); }
+  .plants-modal-body { padding: 1rem 1.3rem; display: flex; flex-direction: column; gap: .7rem; }
+  .plants-modal-footer { display: flex; justify-content: flex-end; gap: .6rem; padding: .9rem 1.3rem; border-top: 1px solid var(--border); }
+  .plants-photo-upload {
+    width: 80px; height: 80px; border-radius: 50%; background: var(--surface);
+    border: 2px dashed var(--border); cursor: pointer; margin: 0 auto;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .7rem; color: var(--muted); overflow: hidden; transition: border-color .2s;
+  }
+  .plants-photo-upload:hover { border-color: var(--verde); }
+  .plants-field { display: flex; flex-direction: column; gap: .25rem; }
+  .plants-label { font-size: .67rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+  .plants-input { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: .55rem .8rem; font-family: var(--font-body); font-size: .84rem; color: var(--text); outline: none; width: 100%; box-sizing: border-box; }
+  .plants-input:focus { border-color: var(--verde); }
+  .plants-diario-title { font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-top: .4rem; }
+  .plants-add-cuidado-btn { background: none; border: 1.5px dashed var(--border); border-radius: 10px; padding: .4rem .9rem; font-size: .75rem; font-weight: 700; color: var(--muted); cursor: pointer; font-family: var(--font-body); transition: border-color .2s, color .2s; }
+  .plants-add-cuidado-btn:hover { border-color: var(--verde); color: var(--verde); }
+  .plants-diario-row { display: grid; grid-template-columns: auto 1fr auto; gap: .4rem; align-items: center; margin-bottom: .4rem; }
+  .plants-remove-btn { background: none; border: none; font-size: 1rem; cursor: pointer; color: var(--muted); padding: .2rem; }
+  .plants-save-btn { background: var(--verde); color: white; border: none; border-radius: 20px; padding: .5rem 1.3rem; font-size: .82rem; font-weight: 700; cursor: pointer; font-family: var(--font-body); }
+  .plants-cancel-btn { background: none; border: 1.5px solid var(--border); border-radius: 20px; padding: .5rem 1.3rem; font-size: .82rem; font-weight: 600; cursor: pointer; font-family: var(--font-body); color: var(--muted); }
+</style>
+
+<script>
+(function(){
+  var PLANTS_KEY = 'yuki_plantas';
+  var plants = [];
+  var editingId = null;
+
+  function load() {
+    try { plants = JSON.parse(localStorage.getItem(PLANTS_KEY)) || []; } catch(e){ plants=[]; }
+  }
+  function save() {
+    localStorage.setItem(PLANTS_KEY, JSON.stringify(plants));
+    if (window.cloudSave) window.cloudSave(PLANTS_KEY, plants);
+  }
+
+  function getRiegoBadge(proximoRiego) {
+    if (!proximoRiego) return '';
+    var hoy = new Date(); hoy.setHours(0,0,0,0);
+    var prox = new Date(proximoRiego); prox.setHours(0,0,0,0);
+    var diff = Math.round((prox - hoy) / 86400000);
+    if (diff < 0) return '<span class="plants-riego-badge vencido">💧 regar hace '+Math.abs(diff)+' día'+(Math.abs(diff)===1?'':'s')+'</span>';
+    if (diff === 0) return '<span class="plants-riego-badge hoy">💧 regar hoy!</span>';
+    if (diff <= 2) return '<span class="plants-riego-badge pronto">💧 regar en '+diff+' día'+(diff===1?'':'s')+'</span>';
+    return '<span class="plants-riego-badge ok">💧 próximo riego: '+prox.toLocaleDateString('es-MX',{day:'numeric',month:'short'})+'</span>';
+  }
+
+  function render() {
+    load();
+    var grid = document.getElementById('plantsGrid');
+    var empty = document.getElementById('plantsEmpty');
+    if (!grid) return;
+    Array.from(grid.querySelectorAll('.plants-card')).forEach(el => el.remove());
+    if (plants.length === 0) { if(empty) empty.style.display='flex'; return; }
+    if(empty) empty.style.display='none';
+    plants.forEach(function(plant) {
+      var card = document.createElement('div');
+      card.className = 'plants-card';
+      var photoHtml = plant.foto
+        ? '<img src="'+plant.foto+'" style="width:100%;height:100%;object-fit:cover">'
+        : '🪴';
+      card.innerHTML =
+        '<div class="plants-card-top">'+
+          '<div class="plants-card-photo">'+photoHtml+'</div>'+
+          '<div class="plants-card-info">'+
+            '<div class="plants-card-name">'+plant.nombre+'</div>'+
+            '<div class="plants-card-especie">'+(plant.especie||'')+(plant.ubicacion?' · '+plant.ubicacion:'')+'</div>'+
+            (plant.frecuencia?'<div class="plants-card-riego">🚿 '+plant.frecuencia+'</div>':'')+
+          '</div>'+
+        '</div>'+
+        '<div class="plants-card-body">'+
+          (plant.notas?'<div class="plants-card-notas">'+plant.notas+'</div>':'')+
+          getRiegoBadge(plant.proximoRiego)+
+        '</div>'+
+        '<div class="plants-card-footer">'+
+          '<button class="plants-card-btn" title="Editar" onclick="plantsOpenModal(\''+plant.id+'\');event.stopPropagation()">✏️</button>'+
+          '<button class="plants-card-btn" title="Eliminar" onclick="plantsDelete(\''+plant.id+'\');event.stopPropagation()">🗑️</button>'+
+        '</div>';
+      card.onclick = function(){ plantsOpenModal(plant.id); };
+      grid.appendChild(card);
+    });
+  }
+
+  window.plantsOpenModal = function(id) {
+    load();
+    editingId = id || null;
+    var plant = id ? plants.find(function(p){ return p.id===id; }) : null;
+    document.getElementById('plantsModalTitle').textContent = plant ? 'Editar planta' : 'Nueva planta';
+    document.getElementById('plantsNombre').value = plant ? plant.nombre : '';
+    document.getElementById('plantsEspecie').value = plant ? (plant.especie||'') : '';
+    document.getElementById('plantsUbicacion').value = plant ? (plant.ubicacion||'') : '';
+    document.getElementById('plantsFrecuencia').value = plant ? (plant.frecuencia||'') : '';
+    document.getElementById('plantsUltimoRiego').value = plant ? (plant.ultimoRiego||'') : '';
+    document.getElementById('plantsProximoRiego').value = plant ? (plant.proximoRiego||'') : '';
+    document.getElementById('plantsNotas').value = plant ? (plant.notas||'') : '';
+    document.getElementById('plantsPhotoData').value = plant ? (plant.foto||'') : '';
+    var img = document.getElementById('plantsPhotoImg');
+    var ph = document.getElementById('plantsPhotoPlaceholder');
+    if (plant && plant.foto) { img.src = plant.foto; img.style.display=''; ph.style.display='none'; }
+    else { img.style.display='none'; ph.style.display=''; }
+    var dl = document.getElementById('plantsDiarioList'); dl.innerHTML='';
+    (plant ? plant.diario||[] : []).forEach(function(d){ addDiarioRow(d); });
+    document.getElementById('plantsModalBackdrop').style.display='flex';
+  };
+
+  window.plantsCloseModal = function() {
+    document.getElementById('plantsModalBackdrop').style.display='none';
+  };
+
+  window.plantsHandlePhoto = function(input) {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('plantsPhotoData').value = e.target.result;
+      var img = document.getElementById('plantsPhotoImg');
+      var ph = document.getElementById('plantsPhotoPlaceholder');
+      img.src = e.target.result; img.style.display=''; ph.style.display='none';
+    };
+    reader.readAsDataURL(file);
+  };
+
+  function addDiarioRow(d) {
+    d = d || { fecha: new Date().toISOString().slice(0,10), texto:'' };
+    var row = document.createElement('div');
+    row.className = 'plants-diario-row';
+    row.innerHTML =
+      '<input class="plants-input" type="date" value="'+(d.fecha||'')+'" style="font-size:.78rem;width:130px">'+
+      '<input class="plants-input" placeholder="¿Qué hiciste hoy?" value="'+(d.texto||'')+'" style="font-size:.78rem">'+
+      '<button class="plants-remove-btn" onclick="this.parentElement.remove()">✕</button>';
+    document.getElementById('plantsDiarioList').appendChild(row);
+  }
+
+  window.plantsAddDiario = function() { addDiarioRow(); };
+
+  window.plantsSave = function() {
+    var nombre = document.getElementById('plantsNombre').value.trim();
+    if (!nombre) { alert('El nombre es obligatorio 🪴'); return; }
+    var diario = Array.from(document.querySelectorAll('#plantsDiarioList .plants-diario-row')).map(function(row){
+      var inputs = row.querySelectorAll('input');
+      return { fecha: inputs[0].value, texto: inputs[1].value.trim() };
+    }).filter(function(d){ return d.texto; });
+    var plant = {
+      id: editingId || ('plant_' + Date.now()),
+      nombre: nombre,
+      especie: document.getElementById('plantsEspecie').value.trim(),
+      ubicacion: document.getElementById('plantsUbicacion').value.trim(),
+      frecuencia: document.getElementById('plantsFrecuencia').value.trim(),
+      ultimoRiego: document.getElementById('plantsUltimoRiego').value,
+      proximoRiego: document.getElementById('plantsProximoRiego').value,
+      notas: document.getElementById('plantsNotas').value.trim(),
+      foto: document.getElementById('plantsPhotoData').value,
+      diario: diario,
+    };
+    if (editingId) {
+      var idx = plants.findIndex(function(p){ return p.id===editingId; });
+      if (idx >= 0) plants[idx] = plant;
+    } else {
+      plants.push(plant);
+    }
+    save(); plantsCloseModal(); render();
+  };
+
+  window.plantsDelete = function(id) {
+    if (!confirm('¿Eliminar esta planta?')) return;
+    plants = plants.filter(function(p){ return p.id!==id; });
+    save(); render();
+  };
+
+  load(); render();
+
+  if (window._watchCloud) window._watchCloud(PLANTS_KEY, function(val){ plants = val||[]; render(); });
+})();
+</script>
+</div><!-- end page-plantas -->
 
 
 <script>
@@ -12984,7 +14758,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <style>
   /* ── AGRADECIMIENTO ── */
   /* ── HÁBITOS ── */
-  .habitos-section { margin-bottom: 2rem; max-width: 680px; }
+  .habitos-section { margin: 0 auto 2rem; max-width: 680px; }
   .habitos-toolbar { display:flex; justify-content:flex-start; margin-bottom:1rem; }
   .habito-card {
     background: var(--card); border: 1.5px solid var(--border);
@@ -15028,8 +16802,10 @@ const DRAWER_STRUCTURE = {
       { icon:'', label:'Fe',          page:'page-fe'        },
       { icon:'', label:'Universidad', page:'page-univ'      },
       { icon:'', label:'Journal',     page:'page-journal'   },
+      { icon:'', label:'Diario',      page:'page-diario'    },
       { icon:'', label:'Intereses',   page:'page-intereses' },
       { icon:'', label:'Braindump',   page:'page-braindump' },
+      { icon:'', label:'Biblioteca',  page:'page-biblioteca'},
     ]},
     { id:'bienestar', icon:'🌱', label:'Bienestar', items: [
       { icon:'', label:'Salud',    page:'page-salud'    },
@@ -15042,6 +16818,8 @@ const DRAWER_STRUCTURE = {
       { icon:'', label:'Limpieza',  page:'page-limpieza'  },
       { icon:'', label:'Listas',    page:'page-listas'    },
       { icon:'', label:'Finanzas',  page:'page-finanzas'  },
+      { icon:'', label:'Mascotas',  page:'page-mascotas'  },
+      { icon:'', label:'Plantas',   page:'page-plantas'   },
     ]},
     { id:'organizacion', icon:'📌', label:'Organización', items: [
       { icon:'', label:'Tareas',  page:'page-tareas'  },
@@ -15061,50 +16839,47 @@ let activePage = 'page-inicio';
 function showPage(pageId) {
   if (activePage === pageId) { closeDrawer(); return; }
 
-  // Exit animation on current page
   var prevEl = document.getElementById(activePage);
-  if (prevEl && prevEl.classList.contains('active')) {
-    prevEl.classList.add('page-exit');
-    prevEl.classList.remove('active');
-    setTimeout(function() {
-      prevEl.classList.remove('page-exit');
-      prevEl.style.display = '';
-    }, 180);
-  }
+  var nextEl = document.getElementById(pageId);
 
   activePage = pageId;
 
-  // Enter animation on new page
-  var nextEl = document.getElementById(pageId);
-  if (nextEl) {
-    nextEl.style.display = 'block';
-    // Force reflow so animation triggers
-    void nextEl.offsetWidth;
-    nextEl.classList.add('active');
-  }
-
-  // Update drawer items
+  // Update drawer items immediately
   document.querySelectorAll('.drawer-item').forEach(function(btn) {
     btn.classList.toggle('active', btn.dataset.page === pageId);
   });
-  // Auto-open group containing active page
   document.querySelectorAll('.drawer-group').forEach(function(group) {
     var hasActive = group.querySelector('.drawer-item.active');
     if (hasActive) {
       var hdr = group.querySelector('.drawer-group-header');
       var itms = group.querySelector('.drawer-group-items');
       if (hdr && itms && !itms.classList.contains('open')) {
-        hdr.classList.add('open');
-        itms.classList.add('open');
+        hdr.classList.add('open'); itms.classList.add('open');
       }
     }
   });
-  // Close drawer
   closeDrawer();
-  // Scroll to top
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  // Sync img column height
-  setTimeout(syncImgColHeight, 300);
+
+  function enterNext() {
+    if (!nextEl) return;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    nextEl.style.display = 'block';
+    void nextEl.offsetWidth; // force reflow
+    nextEl.classList.add('active');
+    setTimeout(syncImgColHeight, 300);
+  }
+
+  if (prevEl && prevEl.classList.contains('active')) {
+    prevEl.classList.add('page-exit');
+    prevEl.classList.remove('active');
+    setTimeout(function() {
+      prevEl.classList.remove('page-exit');
+      prevEl.style.display = '';
+      enterNext();
+    }, 160);
+  } else {
+    enterNext();
+  }
 }
 
 function syncImgColHeight() {
@@ -16488,17 +18263,74 @@ document.addEventListener('DOMContentLoaded', function() {
     transition: all .18s;
   }
   .pom-mode-btn.active { background: var(--rosa); border-color: var(--rosa); color: #fff; }
-  .pomodoro-display {
-    font-family: var(--font-title);
-    font-size: 3.5rem;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: .04em;
-    line-height: 1;
+  .pomodoro-display { display: none; }
+
+  /* ── Liquid timer ── */
+  .pom-liquid-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
     margin: .6rem 0 1rem;
   }
-  .pomodoro-display.running { color: var(--rosa); }
-  .pomodoro-display.break { color: var(--verde); }
+  .pom-bottle {
+    position: relative;
+    width: 72px;
+    height: 120px;
+  }
+  .pom-bottle-svg {
+    width: 100%; height: 100%;
+    position: absolute; top: 0; left: 0;
+    pointer-events: none;
+  }
+  .pom-liquid {
+    position: absolute;
+    bottom: 6px;
+    left: 7px;
+    right: 7px;
+    border-radius: 0 0 12px 12px;
+    overflow: hidden;
+    transition: height .9s ease;
+  }
+  .pom-liquid-inner {
+    position: absolute;
+    inset: 0;
+    background: var(--rosa);
+    opacity: .8;
+  }
+  .pom-wave {
+    position: absolute;
+    top: -10px; left: -40%;
+    width: 180%; height: 22px;
+    background: var(--rosa);
+    opacity: .85;
+    border-radius: 40%;
+    animation: waveAnim 2.4s ease-in-out infinite;
+  }
+  .pom-wave2 {
+    position: absolute;
+    top: -5px; left: -40%;
+    width: 180%; height: 16px;
+    background: var(--beige-soft);
+    opacity: .7;
+    border-radius: 40%;
+    animation: waveAnim 3.2s ease-in-out infinite reverse;
+  }
+  @keyframes waveAnim {
+    0%,100% { transform: translateX(0) scaleY(1); }
+    50%      { transform: translateX(12%) scaleY(1.2); }
+  }
+  .pom-bottle.mode-short .pom-liquid-inner,
+  .pom-bottle.mode-short .pom-wave { background: var(--verde); }
+  .pom-bottle.mode-long .pom-liquid-inner,
+  .pom-bottle.mode-long .pom-wave { background: #b39ddb; }
+  .pom-liquid-label {
+    font-family: var(--font-title);
+    font-style: italic;
+    font-size: .88rem;
+    color: var(--muted);
+    font-weight: 700;
+  }
   .pomodoro-btns {
     display: flex;
     gap: .6rem;
@@ -16618,6 +18450,27 @@ document.addEventListener('DOMContentLoaded', function() {
       <div id="pomCat" class="pom-cat-wrap"></div>
     </div>
     <div class="pomodoro-display" id="pomDisplay">25:00</div>
+    <div class="pom-liquid-wrap" id="pomLiquidWrap">
+      <div class="pom-bottle mode-work" id="pomBottle">
+        <!-- Vaso SVG outline -->
+        <svg class="pom-bottle-svg" viewBox="0 0 72 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Cuerpo del vaso -->
+          <path d="M12 10 L8 108 Q8 114 14 114 L58 114 Q64 114 64 108 L60 10 Z"
+            fill="none" stroke="var(--border)" stroke-width="2.5" stroke-linejoin="round"/>
+          <!-- Borde superior -->
+          <line x1="10" y1="10" x2="62" y2="10" stroke="var(--border)" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Brillo lateral -->
+          <path d="M18 20 L15 100" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+        </svg>
+        <!-- Líquido -->
+        <div class="pom-liquid" id="pomLiquid" style="height:100px">
+          <div class="pom-wave"></div>
+          <div class="pom-wave2"></div>
+          <div class="pom-liquid-inner"></div>
+        </div>
+      </div>
+      <div class="pom-liquid-label" id="pomLiquidLabel">listo para empezar ✦</div>
+    </div>
     <div class="pomodoro-btns">
       <button class="pom-btn primary" id="pomStartBtn" onclick="pomToggle()">▶ Iniciar</button>
       <button class="pom-btn" onclick="pomReset()">↺ Reset</button>
@@ -16686,6 +18539,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  function pomUpdateLiquid() {
+    var liquid = document.getElementById('pomLiquid');
+    var bottle = document.getElementById('pomBottle');
+    var label  = document.getElementById('pomLiquidLabel');
+    if (!liquid) return;
+    var total = POM_MODES[pomMode];
+    var pct   = pomTimeLeft / total; // 1 = full, 0 = empty
+    var maxH  = 100; // px max liquid height inside bottle
+    var h     = Math.max(0, Math.round(pct * maxH));
+    liquid.style.height = h + 'px';
+    // Color del vaso según modo
+    if (bottle) {
+      bottle.className = 'pom-bottle mode-' + pomMode;
+    }
+    // Label descriptivo
+    if (label) {
+      if (!pomRunning && pomTimeLeft === total) {
+        label.textContent = 'listo para empezar ✦';
+      } else if (!pomRunning && pomTimeLeft < total && pomTimeLeft > 0) {
+        label.textContent = 'en pausa…';
+      } else if (pomTimeLeft <= 0) {
+        label.textContent = '¡completado! 🌸';
+      } else {
+        var minsLeft = Math.ceil(pomTimeLeft / 60);
+        label.textContent = minsLeft + (minsLeft === 1 ? ' min restante' : ' mins restantes');
+      }
+    }
+  }
+
   function pomUpdateDisplay() {
     var disp = document.getElementById('pomDisplay');
     var btn = document.getElementById('pomStartBtn');
@@ -16694,6 +18576,7 @@ document.addEventListener('DOMContentLoaded', function() {
     disp.className = 'pomodoro-display' + (pomRunning ? (pomMode==='work' ? ' running' : ' break') : '');
     if (btn) btn.textContent = pomRunning ? '⏸ Pausar' : '▶ Iniciar';
     pomUpdateGif();
+    pomUpdateLiquid();
   }
 
   function pomUpdateSessions() {
@@ -16930,6 +18813,36 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- ══════════════════════════════════════════
      SECCIÓN 6 · AGUA & COMIDAS
 ══════════════════════════════════════════ -->
+
+<!-- ══════════════════════════════════════════
+     NOTAS POR INTERÉS
+══════════════════════════════════════════ -->
+<section class="ni-section" id="sec-notas-interes">
+  <span class="section-sub">✦ mis notas</span>
+  <h2 class="section-title"><em>Notas por</em> Interés</h2>
+  <div class="ni-card">
+
+    <!-- Fila: agregar categoría + botón nueva nota -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem;margin-bottom:.75rem">
+      <div class="ni-add-cat-row" style="margin-bottom:0">
+        <input class="ni-add-cat-input" id="niCatInput" placeholder="Nueva categoría…" onkeydown="if(event.key==='Enter')niAddCat()" />
+        <button class="ni-add-cat-btn" onclick="niAddCat()">＋ Categoría</button>
+      </div>
+      <button class="ni-new-note-btn" onclick="niOpenModal()">✦ Nueva nota</button>
+    </div>
+
+    <!-- Chips de categorías -->
+    <div class="ni-cats-row" id="niCatsRow">
+      <button class="ni-cat-chip all-chip active" data-cat="__all__" onclick="niSelectCat('__all__')">🗂 Todas</button>
+    </div>
+
+    <!-- Grid de tarjetas -->
+    <div class="ni-cards-grid" id="niCardsGrid">
+      <div class="ni-empty">Aún no hay notas ✨<br>¡Agrega una categoría y crea tu primera nota!</div>
+    </div>
+
+  </div>
+</section>
 
 </div><!-- end page-intereses -->
 <div id="page-historial" class="page-section">
@@ -18015,6 +19928,413 @@ document.addEventListener('DOMContentLoaded', function() {
 })();
 </script>
 </div><!-- end page-braindump -->
+
+<!-- ══════════════════════════════════════════
+     PÁGINA · BIBLIOTECA 🎵⚡
+══════════════════════════════════════════ -->
+<div id="page-biblioteca" class="page-section">
+<section class="bib-section">
+  <div class="bib-page-header">
+    <span class="section-sub">🌸 personal</span>
+    <h1 class="section-title"><em>Biblioteca</em> 🎵</h1>
+  </div>
+
+  <!-- Tabs -->
+  <div class="bib-tabs">
+    <button class="bib-tab active" onclick="bibSwitchTab('playlists', this)">🎵 Playlists</button>
+    <button class="bib-tab" onclick="bibSwitchTab('dopamina', this)">⚡ Menú de dopamina</button>
+  </div>
+
+  <!-- ── PLAYLISTS ── -->
+  <div class="bib-panel" id="bibPanelPlaylists">
+    <div class="bib-panel-toolbar">
+      <div class="bib-cats" id="bibPlaylistCats"></div>
+      <button class="bib-add-btn" onclick="bibOpenPlaylistModal()">+ agregar</button>
+    </div>
+    <div class="bib-grid" id="bibPlaylistGrid">
+      <div class="bib-empty" id="bibPlaylistEmpty">
+        <div style="font-size:2.5rem">🎵</div>
+        <p>Agrega tus playlists favoritas</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DOPAMINA ── -->
+  <div class="bib-panel" id="bibPanelDopamina" style="display:none">
+    <div class="bib-panel-toolbar">
+      <div class="bib-cats" id="bibDopCats"></div>
+      <button class="bib-add-btn" onclick="bibOpenDopModal()">+ agregar</button>
+    </div>
+    <div class="bib-grid" id="bibDopGrid">
+      <div class="bib-empty" id="bibDopEmpty">
+        <div style="font-size:2.5rem">⚡</div>
+        <p>Agrega cosas que te den un boost</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Modal Playlist -->
+<div class="bib-modal-backdrop" id="bibPlaylistModalBackdrop" style="display:none" onclick="if(event.target===this)bibClosePlaylistModal()">
+  <div class="bib-modal">
+    <div class="bib-modal-header">
+      <span id="bibPlaylistModalTitle">Nueva playlist</span>
+      <button onclick="bibClosePlaylistModal()" class="bib-modal-close">✕</button>
+    </div>
+    <div class="bib-modal-body">
+      <div class="bib-field">
+        <label class="bib-label">Nombre *</label>
+        <input class="bib-input" id="bibPlNombre" placeholder="Ej: Lo-fi para estudiar">
+      </div>
+      <div class="bib-field">
+        <label class="bib-label">Mood / estado de ánimo</label>
+        <div class="bib-mood-picker" id="bibPlMoodPicker">
+          <span class="bib-mood-opt" onclick="bibPickMood(this,'😴')">😴</span>
+          <span class="bib-mood-opt" onclick="bibPickMood(this,'😌')">😌</span>
+          <span class="bib-mood-opt" onclick="bibPickMood(this,'😊')">😊</span>
+          <span class="bib-mood-opt" onclick="bibPickMood(this,'🥰')">🥰</span>
+          <span class="bib-mood-opt" onclick="bibPickMood(this,'😤')">😤</span>
+          <span class="bib-mood-opt" onclick="bibPickMood(this,'😔')">😔</span>
+          <span class="bib-mood-opt" onclick="bibPickMood(this,'😰')">😰</span>
+          <span class="bib-mood-opt" onclick="bibPickMood(this,'🤩')">🤩</span>
+          <span class="bib-mood-opt" onclick="bibPickMood(this,'💪')">💪</span>
+          <span class="bib-mood-opt" onclick="bibPickMood(this,'🧠')">🧠</span>
+        </div>
+        <input type="hidden" id="bibPlMood">
+      </div>
+      <div class="bib-field">
+        <label class="bib-label">Categoría</label>
+        <input class="bib-input" id="bibPlCat" placeholder="Ej: trabajo, descanso, ejercicio…">
+      </div>
+      <div class="bib-field">
+        <label class="bib-label">Link</label>
+        <input class="bib-input" id="bibPlLink" placeholder="https://open.spotify.com/… o YouTube…" type="url">
+      </div>
+      <div class="bib-field">
+        <label class="bib-label">Notas</label>
+        <input class="bib-input" id="bibPlNotas" placeholder="Para cuando necesito concentrarme…">
+      </div>
+    </div>
+    <div class="bib-modal-footer">
+      <button class="bib-cancel-btn" onclick="bibClosePlaylistModal()">Cancelar</button>
+      <button class="bib-save-btn" onclick="bibSavePlaylist()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Dopamina -->
+<div class="bib-modal-backdrop" id="bibDopModalBackdrop" style="display:none" onclick="if(event.target===this)bibCloseDopModal()">
+  <div class="bib-modal">
+    <div class="bib-modal-header">
+      <span id="bibDopModalTitle">Nueva entrada</span>
+      <button onclick="bibCloseDopModal()" class="bib-modal-close">✕</button>
+    </div>
+    <div class="bib-modal-body">
+      <div class="bib-field">
+        <label class="bib-label">¿Qué es? *</label>
+        <input class="bib-input" id="bibDopNombre" placeholder="Ej: Videos de gatitos, bailar sola, ese video de…">
+      </div>
+      <div class="bib-field">
+        <label class="bib-label">Categoría</label>
+        <input class="bib-input" id="bibDopCat" placeholder="Ej: videos, música, actividad, comida…">
+      </div>
+      <div class="bib-field">
+        <label class="bib-label">Link <span style="font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
+        <input class="bib-input" id="bibDopLink" placeholder="https://…" type="url">
+      </div>
+      <div class="bib-field">
+        <label class="bib-label">Notas</label>
+        <input class="bib-input" id="bibDopNotas" placeholder="Por qué te funciona, cuándo usarlo…">
+      </div>
+    </div>
+    <div class="bib-modal-footer">
+      <button class="bib-cancel-btn" onclick="bibCloseDopModal()">Cancelar</button>
+      <button class="bib-save-btn" onclick="bibSaveDop()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .bib-section { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  .bib-page-header { margin-bottom: 1.2rem; }
+
+  /* Tabs */
+  .bib-tabs { display: flex; gap: .5rem; margin-bottom: 1.4rem; border-bottom: 2px solid var(--border); padding-bottom: .6rem; }
+  .bib-tab {
+    background: none; border: none; font-family: var(--font-body); font-size: .82rem;
+    font-weight: 700; color: var(--muted); cursor: pointer; padding: .4rem .9rem;
+    border-radius: 20px; transition: all .2s;
+  }
+  .bib-tab.active { background: var(--rosa-soft); color: var(--rosa); }
+  .bib-tab:hover:not(.active) { background: var(--surface); color: var(--text); }
+
+  /* Toolbar */
+  .bib-panel-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: .5rem; }
+  .bib-cats { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .bib-cat-chip {
+    font-size: .68rem; font-weight: 700; padding: .25rem .7rem; border-radius: 20px;
+    background: var(--surface); border: 1.5px solid var(--border); color: var(--muted);
+    cursor: pointer; transition: all .2s;
+  }
+  .bib-cat-chip.active { background: var(--rosa-soft); border-color: var(--rosa); color: var(--rosa); }
+  .bib-add-btn {
+    background: var(--rosa); color: white; border: none; border-radius: 20px;
+    padding: .4rem 1rem; font-size: .76rem; font-weight: 700; cursor: pointer;
+    font-family: var(--font-body); white-space: nowrap; transition: opacity .2s;
+  }
+  .bib-add-btn:hover { opacity: .85; }
+
+  /* Grid */
+  .bib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .85rem; }
+  .bib-empty { grid-column: 1/-1; text-align: center; padding: 3rem 1rem; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: .7rem; font-size: .88rem; }
+
+  /* Cards */
+  .bib-card {
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 14px;
+    padding: .9rem 1rem; display: flex; flex-direction: column; gap: .5rem;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .bib-card:hover { border-color: var(--rosa); box-shadow: 0 4px 16px rgba(244,167,192,.15); }
+  .bib-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
+  .bib-card-mood { font-size: 1.4rem; line-height: 1; flex-shrink: 0; }
+  .bib-card-name { font-size: .9rem; font-weight: 800; color: var(--text); font-family: var(--font-title); font-style: italic; flex: 1; }
+  .bib-card-btns { display: flex; gap: .2rem; flex-shrink: 0; }
+  .bib-card-btn { background: none; border: none; font-size: .78rem; cursor: pointer; padding: .15rem .3rem; border-radius: 6px; color: var(--muted); }
+  .bib-card-btn:hover { background: var(--surface); }
+  .bib-card-cat {
+    font-size: .62rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    background: var(--surface); border: 1.5px solid var(--border); color: var(--muted);
+    padding: .15rem .5rem; border-radius: 20px; width: fit-content;
+  }
+  .bib-card-notas { font-size: .74rem; color: var(--muted); line-height: 1.5; }
+  .bib-card-link {
+    display: inline-flex; align-items: center; gap: .3rem;
+    font-size: .72rem; font-weight: 700; color: var(--rosa);
+    text-decoration: none; background: var(--rosa-soft); padding: .25rem .7rem;
+    border-radius: 20px; width: fit-content; transition: opacity .2s;
+  }
+  .bib-card-link:hover { opacity: .8; }
+
+  /* Dopamina card accent */
+  .bib-card.dopamina:hover { border-color: #f4c430; box-shadow: 0 4px 16px rgba(244,196,48,.15); }
+  .bib-card.dopamina .bib-card-link { color: #b8860b; background: #fff8e1; }
+
+  /* Modal */
+  .bib-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .bib-modal { background: var(--card); border-radius: 20px; width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.18); }
+  .bib-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.3rem .8rem; font-family: var(--font-title); font-style: italic; font-size: 1.1rem; font-weight: 700; border-bottom: 1px solid var(--border); }
+  .bib-modal-close { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--muted); }
+  .bib-modal-body { padding: 1rem 1.3rem; display: flex; flex-direction: column; gap: .75rem; }
+  .bib-modal-footer { display: flex; justify-content: flex-end; gap: .6rem; padding: .9rem 1.3rem; border-top: 1px solid var(--border); }
+  .bib-field { display: flex; flex-direction: column; gap: .25rem; }
+  .bib-label { font-size: .67rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+  .bib-input { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: .55rem .8rem; font-family: var(--font-body); font-size: .84rem; color: var(--text); outline: none; width: 100%; box-sizing: border-box; }
+  .bib-input:focus { border-color: var(--rosa); }
+  .bib-save-btn { background: var(--rosa); color: white; border: none; border-radius: 20px; padding: .5rem 1.3rem; font-size: .82rem; font-weight: 700; cursor: pointer; font-family: var(--font-body); }
+  .bib-cancel-btn { background: none; border: 1.5px solid var(--border); border-radius: 20px; padding: .5rem 1.3rem; font-size: .82rem; font-weight: 600; cursor: pointer; font-family: var(--font-body); color: var(--muted); }
+
+  /* Mood picker */
+  .bib-mood-picker { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .2rem; }
+  .bib-mood-opt { font-size: 1.4rem; cursor: pointer; padding: .2rem .3rem; border-radius: 8px; transition: background .15s; border: 2px solid transparent; }
+  .bib-mood-opt:hover { background: var(--surface); }
+  .bib-mood-opt.selected { border-color: var(--rosa); background: var(--rosa-soft); }
+</style>
+
+<script>
+(function(){
+  var PL_KEY  = 'yuki_biblioteca_playlists';
+  var DOP_KEY = 'yuki_biblioteca_dopamina';
+  var playlists = [], dopamina = [];
+  var editingPlId = null, editingDopId = null;
+  var activePlCat = 'todas', activeDopCat = 'todas';
+
+  function loadPl()  { try { playlists = JSON.parse(localStorage.getItem(PL_KEY))  || []; } catch(e){ playlists=[]; } }
+  function loadDop() { try { dopamina  = JSON.parse(localStorage.getItem(DOP_KEY)) || []; } catch(e){ dopamina=[]; } }
+  function savePl()  { localStorage.setItem(PL_KEY,  JSON.stringify(playlists));  if(window.cloudSave) window.cloudSave(PL_KEY,  playlists); }
+  function saveDop() { localStorage.setItem(DOP_KEY, JSON.stringify(dopamina));   if(window.cloudSave) window.cloudSave(DOP_KEY, dopamina); }
+
+  // ── Tabs
+  window.bibSwitchTab = function(tab, btn) {
+    document.querySelectorAll('.bib-tab').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('bibPanelPlaylists').style.display = tab === 'playlists' ? '' : 'none';
+    document.getElementById('bibPanelDopamina').style.display  = tab === 'dopamina'  ? '' : 'none';
+  };
+
+  // ── Mood picker
+  window.bibPickMood = function(el, mood) {
+    document.querySelectorAll('#bibPlMoodPicker .bib-mood-opt').forEach(function(o){ o.classList.remove('selected'); });
+    el.classList.add('selected');
+    document.getElementById('bibPlMood').value = mood;
+  };
+
+  // ── Render cats
+  function renderPlCats() {
+    var cats = ['todas'].concat([...new Set(playlists.map(function(p){ return p.cat; }).filter(Boolean))]);
+    var el = document.getElementById('bibPlaylistCats');
+    el.innerHTML = cats.map(function(c){
+      return '<span class="bib-cat-chip'+(c===activePlCat?' active':'')+'" onclick="bibFilterPl(\''+c+'\')">'+c+'</span>';
+    }).join('');
+  }
+  function renderDopCats() {
+    var cats = ['todas'].concat([...new Set(dopamina.map(function(d){ return d.cat; }).filter(Boolean))]);
+    var el = document.getElementById('bibDopCats');
+    el.innerHTML = cats.map(function(c){
+      return '<span class="bib-cat-chip'+(c===activeDopCat?' active':'')+'" onclick="bibFilterDop(\''+c+'\')">'+c+'</span>';
+    }).join('');
+  }
+
+  window.bibFilterPl  = function(cat){ activePlCat  = cat; renderPlaylists(); };
+  window.bibFilterDop = function(cat){ activeDopCat = cat; renderDopamina(); };
+
+  // ── Render playlists
+  function renderPlaylists() {
+    loadPl();
+    renderPlCats();
+    var grid  = document.getElementById('bibPlaylistGrid');
+    var empty = document.getElementById('bibPlaylistEmpty');
+    Array.from(grid.querySelectorAll('.bib-card')).forEach(function(el){ el.remove(); });
+    var filtered = activePlCat === 'todas' ? playlists : playlists.filter(function(p){ return p.cat === activePlCat; });
+    if (filtered.length === 0) { empty.style.display='flex'; return; }
+    empty.style.display = 'none';
+    filtered.forEach(function(p) {
+      var card = document.createElement('div');
+      card.className = 'bib-card';
+      card.innerHTML =
+        '<div class="bib-card-top">'+
+          (p.mood ? '<span class="bib-card-mood">'+p.mood+'</span>' : '')+
+          '<span class="bib-card-name">'+p.nombre+'</span>'+
+          '<div class="bib-card-btns">'+
+            '<button class="bib-card-btn" onclick="bibOpenPlaylistModal(\''+p.id+'\')">✏️</button>'+
+            '<button class="bib-card-btn" onclick="bibDeletePl(\''+p.id+'\')">🗑️</button>'+
+          '</div>'+
+        '</div>'+
+        (p.cat ? '<span class="bib-card-cat">'+p.cat+'</span>' : '')+
+        (p.notas ? '<div class="bib-card-notas">'+p.notas+'</div>' : '')+
+        (p.link ? '<a class="bib-card-link" href="'+p.link+'" target="_blank" rel="noopener">🎵 abrir playlist</a>' : '');
+      grid.appendChild(card);
+    });
+  }
+
+  // ── Render dopamina
+  function renderDopamina() {
+    loadDop();
+    renderDopCats();
+    var grid  = document.getElementById('bibDopGrid');
+    var empty = document.getElementById('bibDopEmpty');
+    Array.from(grid.querySelectorAll('.bib-card')).forEach(function(el){ el.remove(); });
+    var filtered = activeDopCat === 'todas' ? dopamina : dopamina.filter(function(d){ return d.cat === activeDopCat; });
+    if (filtered.length === 0) { empty.style.display='flex'; return; }
+    empty.style.display = 'none';
+    filtered.forEach(function(d) {
+      var card = document.createElement('div');
+      card.className = 'bib-card dopamina';
+      card.innerHTML =
+        '<div class="bib-card-top">'+
+          '<span class="bib-card-name">⚡ '+d.nombre+'</span>'+
+          '<div class="bib-card-btns">'+
+            '<button class="bib-card-btn" onclick="bibOpenDopModal(\''+d.id+'\')">✏️</button>'+
+            '<button class="bib-card-btn" onclick="bibDeleteDop(\''+d.id+'\')">🗑️</button>'+
+          '</div>'+
+        '</div>'+
+        (d.cat ? '<span class="bib-card-cat">'+d.cat+'</span>' : '')+
+        (d.notas ? '<div class="bib-card-notas">'+d.notas+'</div>' : '')+
+        (d.link ? '<a class="bib-card-link" href="'+d.link+'" target="_blank" rel="noopener">🔗 abrir</a>' : '');
+      grid.appendChild(card);
+    });
+  }
+
+  // ── Playlist modal
+  window.bibOpenPlaylistModal = function(id) {
+    loadPl();
+    editingPlId = id || null;
+    var p = id ? playlists.find(function(x){ return x.id===id; }) : null;
+    document.getElementById('bibPlaylistModalTitle').textContent = p ? 'Editar playlist' : 'Nueva playlist';
+    document.getElementById('bibPlNombre').value = p ? p.nombre : '';
+    document.getElementById('bibPlCat').value    = p ? (p.cat||'') : '';
+    document.getElementById('bibPlLink').value   = p ? (p.link||'') : '';
+    document.getElementById('bibPlNotas').value  = p ? (p.notas||'') : '';
+    document.getElementById('bibPlMood').value   = p ? (p.mood||'') : '';
+    document.querySelectorAll('#bibPlMoodPicker .bib-mood-opt').forEach(function(o){
+      o.classList.toggle('selected', o.textContent === (p ? p.mood : ''));
+    });
+    document.getElementById('bibPlaylistModalBackdrop').style.display = 'flex';
+  };
+  window.bibClosePlaylistModal = function(){ document.getElementById('bibPlaylistModalBackdrop').style.display='none'; };
+
+  window.bibSavePlaylist = function() {
+    var nombre = document.getElementById('bibPlNombre').value.trim();
+    if (!nombre) { alert('El nombre es obligatorio 🎵'); return; }
+    var p = {
+      id: editingPlId || ('pl_'+Date.now()),
+      nombre: nombre,
+      cat:   document.getElementById('bibPlCat').value.trim(),
+      link:  document.getElementById('bibPlLink').value.trim(),
+      notas: document.getElementById('bibPlNotas').value.trim(),
+      mood:  document.getElementById('bibPlMood').value,
+    };
+    if (editingPlId) {
+      var idx = playlists.findIndex(function(x){ return x.id===editingPlId; });
+      if (idx>=0) playlists[idx]=p;
+    } else { playlists.push(p); }
+    savePl(); bibClosePlaylistModal(); renderPlaylists();
+  };
+
+  window.bibDeletePl = function(id) {
+    if (!confirm('¿Eliminar esta playlist?')) return;
+    playlists = playlists.filter(function(p){ return p.id!==id; });
+    savePl(); renderPlaylists();
+  };
+
+  // ── Dopamina modal
+  window.bibOpenDopModal = function(id) {
+    loadDop();
+    editingDopId = id || null;
+    var d = id ? dopamina.find(function(x){ return x.id===id; }) : null;
+    document.getElementById('bibDopModalTitle').textContent = d ? 'Editar entrada' : 'Nueva entrada';
+    document.getElementById('bibDopNombre').value = d ? d.nombre : '';
+    document.getElementById('bibDopCat').value    = d ? (d.cat||'') : '';
+    document.getElementById('bibDopLink').value   = d ? (d.link||'') : '';
+    document.getElementById('bibDopNotas').value  = d ? (d.notas||'') : '';
+    document.getElementById('bibDopModalBackdrop').style.display = 'flex';
+  };
+  window.bibCloseDopModal = function(){ document.getElementById('bibDopModalBackdrop').style.display='none'; };
+
+  window.bibSaveDop = function() {
+    var nombre = document.getElementById('bibDopNombre').value.trim();
+    if (!nombre) { alert('El nombre es obligatorio ⚡'); return; }
+    var d = {
+      id: editingDopId || ('dop_'+Date.now()),
+      nombre: nombre,
+      cat:   document.getElementById('bibDopCat').value.trim(),
+      link:  document.getElementById('bibDopLink').value.trim(),
+      notas: document.getElementById('bibDopNotas').value.trim(),
+    };
+    if (editingDopId) {
+      var idx = dopamina.findIndex(function(x){ return x.id===editingDopId; });
+      if (idx>=0) dopamina[idx]=d;
+    } else { dopamina.push(d); }
+    saveDop(); bibCloseDopModal(); renderDopamina();
+  };
+
+  window.bibDeleteDop = function(id) {
+    if (!confirm('¿Eliminar esta entrada?')) return;
+    dopamina = dopamina.filter(function(d){ return d.id!==id; });
+    saveDop(); renderDopamina();
+  };
+
+  // Init
+  renderPlaylists();
+  renderDopamina();
+
+  if (window._watchCloud) {
+    window._watchCloud(PL_KEY,  function(val){ playlists = val||[]; renderPlaylists(); });
+    window._watchCloud(DOP_KEY, function(val){ dopamina  = val||[]; renderDopamina(); });
+  }
+})();
+</script>
+</div><!-- end page-biblioteca -->
+
 <div id="page-listas" class="page-section">
 <style>
   .listas-section { max-width:860px;margin:2rem auto 0;padding:0 1rem 4rem;animation:fadeUp .5s .1s ease both;opacity:0;animation-fill-mode:both; }
@@ -18357,6 +20677,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         card.appendChild(starsEl);
       }
+
+      // Click para editar (excepto botón eliminar, select de status y estrellas)
+      card.style.cursor = 'pointer';
+      card.onclick = (function(id){ return function(e){
+        if(e.target===delBtn || e.target===sel || e.target.classList.contains('wl-star')) return;
+        window.openWlModal(id);
+      };})(item.id);
 
       grid.appendChild(card);
     });
@@ -19041,7 +21368,10 @@ document.addEventListener('DOMContentLoaded', function() {
   window._buscarInit = function(){
     renderFilters();
     var inp = document.getElementById('buscarInput');
-    if(inp){ inp.focus(); }
+    if(inp){
+      inp.focus({ preventScroll: true });
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
   };
 })();
 </script>
@@ -19073,8 +21403,21 @@ document.addEventListener('DOMContentLoaded', function() {
     border: 2.5px solid var(--border); background: var(--surface);
     overflow: hidden; display: flex; align-items: center; justify-content: center;
     font-size: 2rem; flex-shrink: 0;
+    cursor: pointer; position: relative;
+    transition: border-color .2s;
   }
+  .config-avatar-big:hover { border-color: var(--rosa); }
   .config-avatar-big img { width:100%; height:100%; object-fit:cover; }
+  .config-avatar-overlay {
+    position: absolute; inset: 0;
+    background: rgba(244,167,192,.55);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    opacity: 0; transition: opacity .2s;
+    pointer-events: none;
+  }
+  .config-avatar-big:hover .config-avatar-overlay { opacity: 1; }
   .config-avatar-name {
     font-family: var(--font-title); font-size: 1.1rem;
     font-style: italic; color: var(--text);
@@ -19165,7 +21508,10 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="config-block">
     <div class="config-block-title">👤 Perfil</div>
     <div class="config-profile-preview">
-      <div class="config-avatar-big" id="configAvatarBig">🌸</div>
+      <div class="config-avatar-big" id="configAvatarBig" onclick="document.getElementById('configAvatarFileInput').click()" title="Cambiar foto de perfil">🌸
+        <div class="config-avatar-overlay">📷</div>
+      </div>
+      <input type="file" id="configAvatarFileInput" accept="image/*" style="display:none" onchange="configHandleAvatarUpload(this)">
       <div>
         <div class="config-avatar-name" id="configAvatarName">tú</div>
         <div class="config-avatar-email" id="configAvatarEmail"></div>
@@ -19174,10 +21520,6 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="config-field">
       <label class="config-label">Nombre que se muestra</label>
       <input class="config-input" id="configDisplayName" placeholder="¿Cómo te llamas?">
-    </div>
-    <div class="config-field">
-      <label class="config-label">Foto de perfil (URL de imagen)</label>
-      <input class="config-input" id="configAvatarUrl" placeholder="https://...">
     </div>
     <button class="config-save-btn" onclick="configSaveProfile()">Guardar cambios</button>
     <span class="config-save-ok" id="configProfileOk">✓ Guardado</span>
@@ -19264,7 +21606,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="config-block" id="configImgBlock" style="display:none">
     <div class="config-block-title">🖼️ Imágenes decorativas</div>
     <p style="font-size:.72rem;color:var(--muted);font-weight:600;margin-bottom:.7rem">Solo visibles en pantallas grandes (desktop)</p>
-    <button class="config-action-btn" id="imgManageBtn">
+    <button class="config-action-btn" id="imgManageBtn" onclick="openImgManager()">
       <span>🖼️</span>
       <div>
         <div>Gestionar imágenes</div>
@@ -19341,7 +21683,8 @@ document.addEventListener('DOMContentLoaded', function() {
     { id:'neutro',  label:'Neutro 🤍',vars:{ '--bg':'#fafafa','--surface':'#f0f0f0','--card':'#ffffff','--border':'#e0e0e0','--rosa':'#9e9e9e','--rosa-soft':'#f0f0f0','--text':'#2a2a2a','--muted':'#707070','--muted2':'#b0b0b0' }},
     { id:'noche',   label:'Noche 🌙', vars:{ '--bg':'#12121e','--surface':'#1a1a2e','--card':'#1e1e30','--border':'#2e2e48','--rosa':'#a78bfa','--rosa-soft':'#2a1f4a','--verde':'#c4b5fd','--verde-soft':'#2a1f4a','--pink-light':'#2a1f4a','--text':'#f0f0ff','--muted':'#a0a0c8','--muted2':'#606088','--manana-bg':'#1e1e30','--manana-border':'#3a2a18','--tarde-bg':'#1e1a2e','--tarde-border':'#3a1a2e','--noche-bg':'#1a1e2e','--noche-border':'#1a2040','--beige-soft':'#2a1f2e','--verde-soft':'#1a2a2a','--rosa-soft':'#2a1f4a' }},
     { id:'candy',   label:'Candy 🍬', vars:{ '--bg':'#fff0fb','--surface':'#fce4f8','--card':'#fff7fe','--border':'#f0c0e8','--rosa':'#e060c0','--rosa-soft':'#fce4f8','--text':'#5a0a4a','--muted':'#b040a0','--muted2':'#d890c8' }},
-    { id:'minimal', label:'Minimal 🤍', vars:{ '--bg':'#ffffff','--surface':'#f7f7f7','--card':'#ffffff','--border':'#e8e8e8','--rosa':'#007aff','--rosa-soft':'#f0f5ff','--verde':'#34c759','--verde-soft':'#f0fff4','--beige':'#007aff','--beige-soft':'#f0f5ff','--pink-light':'#f0f5ff','--text':'#000000','--muted':'#8e8e93','--muted2':'#c7c7cc','--manana-bg':'#fffbf0','--manana-border':'#ffe5a0','--tarde-bg':'#fff0f0','--tarde-border':'#ffc0c0','--noche-bg':'#f0f0ff','--noche-border':'#c0c0f0' }},
+    { id:'formal', label:'Formal 🤍', vars:{ '--bg':'#ffffff','--surface':'#f7f7f7','--card':'#ffffff','--border':'#e8e8e8','--rosa':'#007aff','--rosa-soft':'#f0f5ff','--verde':'#34c759','--verde-soft':'#f0fff4','--beige':'#007aff','--beige-soft':'#f0f5ff','--pink-light':'#f0f5ff','--text':'#000000','--muted':'#8e8e93','--muted2':'#c7c7cc','--manana-bg':'#fffbf0','--manana-border':'#ffe5a0','--tarde-bg':'#fff0f0','--tarde-border':'#ffc0c0','--noche-bg':'#f0f0ff','--noche-border':'#c0c0f0' }},
+    { id:'tierra', label:'Tierra 🪨', vars:{ '--bg':'#2e1f14','--surface':'#3d2a1a','--card':'#4a3322','--border':'#6b4a30','--rosa':'#c4845a','--rosa-soft':'#5a3520','--verde':'#a89060','--verde-soft':'#3a3020','--beige':'#c4845a','--beige-soft':'#5a3520','--pink-light':'#5a3520','--text':'#f2e0cc','--muted':'#c4a882','--muted2':'#8a6a50','--manana-bg':'#3d2e18','--manana-border':'#7a5a30','--tarde-bg':'#3d2418','--tarde-border':'#7a4030','--noche-bg':'#221a2e','--noche-border':'#4a3060' }},
   ];
 
   var currentTheme = localStorage.getItem('config_theme') || 'rosa';
@@ -19389,27 +21732,45 @@ document.addEventListener('DOMContentLoaded', function() {
     var customAvatar = localStorage.getItem('config_avatar_url');
 
     var nameInp = document.getElementById('configDisplayName');
-    var avatarInp = document.getElementById('configAvatarUrl');
     var bigAvatar = document.getElementById('configAvatarBig');
     var bigName = document.getElementById('configAvatarName');
     var bigEmail = document.getElementById('configAvatarEmail');
 
     if (nameInp) nameInp.value = customName || (user ? (user.displayName||'') : '');
-    if (avatarInp) avatarInp.value = customAvatar || (user ? (user.photoURL||'') : '');
     if (bigName) bigName.textContent = customName || (user ? (user.displayName ? user.displayName.split(' ')[0] : 'tú') : 'tú');
     if (bigEmail) bigEmail.textContent = user ? (user.email||'') : '';
     if (bigAvatar) {
       var src = customAvatar || (user ? user.photoURL : '');
-      if (src) bigAvatar.innerHTML = '<img src="'+src+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
-      else bigAvatar.textContent = '🐱';
+      if (src) bigAvatar.innerHTML = '<img src="'+src+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%"><div class="config-avatar-overlay">📷</div>';
+      else bigAvatar.innerHTML = '🌸<div class="config-avatar-overlay">📷</div>';
     }
   }
 
+  window.configHandleAvatarUpload = function(input) {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var base64 = e.target.result;
+      localStorage.setItem('config_avatar_url', base64);
+      if (window.cloudSave) window.cloudSave('config_avatar_url', base64);
+      // Update avatar preview
+      var bigAvatar = document.getElementById('configAvatarBig');
+      if (bigAvatar) bigAvatar.innerHTML = '<img src="'+base64+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%"><div class="config-avatar-overlay">📷</div>';
+      // Update drawer and header
+      var dai = document.getElementById('drawerAvatarImg');
+      var dap = document.getElementById('drawerAvatarPlaceholder');
+      var headerAvatar = document.getElementById('user-avatar');
+      if (dai) { dai.src = base64; dai.style.display = ''; if (dap) dap.style.display = 'none'; }
+      if (headerAvatar) headerAvatar.src = base64;
+    };
+    reader.readAsDataURL(file);
+  };
+
   window.configSaveProfile = function() {
     var nameVal = (document.getElementById('configDisplayName')||{}).value || '';
-    var avatarVal = (document.getElementById('configAvatarUrl')||{}).value || '';
+    var avatarVal = localStorage.getItem('config_avatar_url') || '';
     localStorage.setItem('config_display_name', nameVal.trim());
-    localStorage.setItem('config_avatar_url', avatarVal.trim());
 
     // Actualizar drawer y header
     var dn = document.getElementById('drawerProfileName');
@@ -19434,7 +21795,7 @@ document.addEventListener('DOMContentLoaded', function() {
       'rutina_asignaciones','rutina_completions','gratitud_data','sueno_data','mens_data',
       'ej_templates','ej_registros','belleza_templates','belleza_registros','dios_data',
       'finanzas_data','limpieza_data','braindump_notes','mood_data','metas_data',
-      'ql_lists','wl_items','wishlist_items','vb_items','config_display_name','config_avatar_url','config_theme'];
+      'ql_lists','wl_items','wishlist_items','vb_items','config_display_name','config_avatar_url','config_theme','yuki_mascotas','yuki_plantas','yuki_biblioteca_playlists','yuki_biblioteca_dopamina','yuki_diario'];
     var data = { exportDate: new Date().toISOString(), version: '1.0' };
     keys.forEach(function(k){
       try { var v=localStorage.getItem(k); if(v) data[k]=JSON.parse(v); } catch(e){ data[k]=localStorage.getItem(k); }
@@ -19450,7 +21811,7 @@ document.addEventListener('DOMContentLoaded', function() {
   window.showPage = function(pageId) {
     if (_origShowPage) _origShowPage(pageId);
     if (pageId === 'page-config') { setTimeout(function(){ configLoadProfile(); renderThemeGrid(); configLoadExperience(); var imgBlock = document.getElementById('configImgBlock'); if(imgBlock) imgBlock.style.display = window.innerWidth >= 900 ? '' : 'none'; }, 50); }
-    if (pageId === 'page-buscar') { setTimeout(function(){ if(window._buscarInit) window._buscarInit(); }, 50); }
+    if (pageId === 'page-buscar') { setTimeout(function(){ if(window._buscarInit) window._buscarInit(); }, 150); }
   };
 
   // Guardar referencia al usuario actual
@@ -19785,29 +22146,30 @@ function pdfOpenWindow(title, htmlContent) {
     button { display:none !important; }
   }
 
-  /* ── Tema Minimal: sin cursivas, títulos en negrita ── */
-  [data-theme="minimal"] .section-title,
-  [data-theme="minimal"] .section-title em {
-    font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-    font-style: normal;
-    font-weight: 700;
-    letter-spacing: -.02em;
+  /* ── Tema Formal: sin cursivas, títulos en negrita con la fuente de la app ── */
+  [data-theme="formal"] {
+    --font-title: var(--font-body);
   }
-  [data-theme="minimal"] .section-title em {
+  [data-theme="formal"] h1,
+  [data-theme="formal"] h2,
+  [data-theme="formal"] h3,
+  [data-theme="formal"] h4,
+  [data-theme="formal"] .section-title,
+  [data-theme="formal"] .section-title em,
+  [data-theme="formal"] .drawer-kittyplan,
+  [data-theme="formal"] .page-title,
+  [data-theme="formal"] .config-block-title {
+    font-style: normal;
+    font-family: var(--font-body);
+  }
+  [data-theme="formal"] .section-title,
+  [data-theme="formal"] .section-title em,
+  [data-theme="formal"] h1 {
     font-weight: 800;
+    letter-spacing: -.01em;
   }
-  [data-theme="minimal"] h1,
-  [data-theme="minimal"] h2,
-  [data-theme="minimal"] h3 {
-    font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-    font-style: normal;
-  }
-  [data-theme="minimal"] .drawer-kittyplan,
-  [data-theme="minimal"] .page-title,
-  [data-theme="minimal"] .config-block-title {
-    font-style: normal;
-    font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-  }
+  [data-theme="formal"] h2,
+  [data-theme="formal"] h3 { font-weight: 700; }
 </style>
 </head>
 <body>
