@@ -485,6 +485,17 @@ window.kittyConfirm = function(msg, onYes, onNo) {
     box-shadow: 0 0 0 3px var(--rosa-soft);
   }
 
+  /* Días pasados colapsables */
+  .day-header-collapsible { cursor: pointer; user-select: none; }
+  .day-header-collapsible:hover { background: var(--surface); }
+  .day-collapse-chevron {
+    margin-left: auto; font-size: .9rem; color: var(--muted2);
+    transition: transform .25s; display: inline-block;
+  }
+  .day-collapsed .day-collapse-chevron { transform: rotate(0deg); }
+  .day-block:not(.day-collapsed) .day-collapse-chevron { transform: rotate(90deg); }
+  .day-collapsed .day-slots-row { display: none; }
+
   .day-block-header {
     display: flex;
     align-items: center;
@@ -3534,9 +3545,8 @@ window.kittyConfirm = function(msg, onYes, onNo) {
 
   /* Daily check-in grid: 7 columns */
   .checkin-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    display: flex;
+    justify-content: center;
     margin-bottom: 1rem;
   }
 
@@ -3544,12 +3554,13 @@ window.kittyConfirm = function(msg, onYes, onNo) {
     background: var(--card);
     border: 1.5px solid var(--border);
     border-radius: var(--radius);
-    padding: .5rem .4rem .6rem;
+    padding: .8rem 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: .4rem;
+    gap: .5rem;
     transition: box-shadow .2s;
+    width: 100%;
   }
 
   .checkin-day.today-cell { box-shadow: 0 0 0 2px var(--rosa-soft); }
@@ -3594,9 +3605,11 @@ window.kittyConfirm = function(msg, onYes, onNo) {
   .needs-list {
     width: 100%;
     display: flex;
-    flex-direction: column;
-    gap: 3px;
-    margin-top: .2rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: .3rem;
+    justify-content: center;
   }
 
   .need-item {
@@ -4347,16 +4360,25 @@ window.kittyConfirm = function(msg, onYes, onNo) {
   .water-card .tracker-card-title { color: var(--rosa); }
 
   .water-days {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
   }
 
   .water-day-col {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .water-drops-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
   }
 
   .water-day-label {
@@ -4370,13 +4392,13 @@ window.kittyConfirm = function(msg, onYes, onNo) {
   .water-day-col.today-w .water-day-label { color: var(--rosa); }
 
   .drop-btn {
-    font-size: 1.15rem;
+    font-size: 1.6rem;
     background: none;
     border: none;
     cursor: pointer;
     line-height: 1;
     transition: transform .15s, filter .15s;
-    padding: 1px;
+    padding: 2px;
     filter: grayscale(1) opacity(.35);
   }
   .drop-btn.filled { filter: none; }
@@ -4419,16 +4441,19 @@ window.kittyConfirm = function(msg, onYes, onNo) {
   .food-card .tracker-card-title { color: var(--verde); }
 
   .food-days {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
   }
 
   .food-day-col {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
   }
 
   .food-day-label {
@@ -4441,13 +4466,20 @@ window.kittyConfirm = function(msg, onYes, onNo) {
   }
   .food-day-col.today-f .food-day-label { color: var(--verde); }
 
+  .meal-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
   .meal-dot {
-    width: 28px; height: 28px;
+    width: 44px; height: 44px;
     border-radius: 50%;
     border: 2px solid var(--border);
     background: var(--surface);
     display: flex; align-items: center; justify-content: center;
-    font-size: .75rem;
+    font-size: 1.2rem;
     cursor: pointer;
     transition: all .15s;
     position: relative;
@@ -4580,8 +4612,8 @@ window.kittyConfirm = function(msg, onYes, onNo) {
   }
 
   .logros-week-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 6px;
     margin-bottom: .8rem;
   }
@@ -4591,48 +4623,49 @@ window.kittyConfirm = function(msg, onYes, onNo) {
     border: 1.5px solid var(--border);
     border-top: 3px solid var(--rosa);
     border-radius: var(--radius);
-    padding: .5rem .45rem .55rem;
-    display: flex; flex-direction: column; gap: 4px;
-    min-height: 110px;
+    padding: .8rem 1rem;
+    display: flex; flex-direction: column; gap: 6px;
+    min-height: 80px;
+    width: 100%;
+    box-sizing: border-box;
   }
   .logro-day-col.today-l { background: var(--surface); box-shadow: 0 0 0 2px var(--rosa-soft); }
 
   .logro-dayname {
-    font-size: .6rem; font-weight: 700; letter-spacing: .1em;
+    font-size: .67rem; font-weight: 700; letter-spacing: .1em;
     text-transform: uppercase; color: var(--muted); margin-bottom: 2px;
-    text-align: center;
   }
   .logro-day-col.today-l .logro-dayname { color: var(--rosa); }
 
   .logro-item {
-    display: flex; align-items: flex-start; gap: 4px;
-    background: var(--rosa-soft); border-radius: 8px;
-    padding: .22rem .4rem; font-size: .63rem; font-weight: 600;
-    color: var(--text); line-height: 1.35;
+    display: flex; align-items: flex-start; gap: 6px;
+    background: var(--rosa-soft); border-radius: 10px;
+    padding: .4rem .7rem; font-size: .82rem; font-weight: 600;
+    color: var(--text); line-height: 1.4;
     animation: fadeUp .25s ease both;
   }
-  .logro-item-star { font-size: .7rem; flex-shrink: 0; margin-top: 1px; }
+  .logro-item-star { font-size: .9rem; flex-shrink: 0; margin-top: 1px; }
   .logro-item-text { flex:1; }
   .logro-item-del {
     background: none; border: none; color: var(--rosa); cursor: pointer;
-    font-size: .6rem; padding: 0; opacity: .5; flex-shrink:0;
+    font-size: .75rem; padding: 0; opacity: .5; flex-shrink:0;
   }
   .logro-item-del:hover { opacity: 1; }
 
   .logro-add-btn {
-    display: flex; align-items: center; gap: 3px;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
     background: none; border: 1.5px dashed var(--muted2);
-    color: var(--muted2); border-radius: 8px; padding: .2rem .35rem;
-    font-size: .6rem; font-weight: 700; cursor: pointer; margin-top: auto;
-    transition: border-color .2s, color .2s;
+    color: var(--muted2); border-radius: 10px; padding: .4rem .7rem;
+    font-size: .78rem; font-weight: 700; cursor: pointer; margin-top: 4px;
+    transition: border-color .2s, color .2s; width: 100%;
   }
   .logro-add-btn:hover { border-color: var(--rosa); color: var(--rosa); }
 
   .logro-edit-input {
-    font-family: var(--font-body); font-size: .63rem; font-weight: 600;
-    background: var(--card); border: 1.5px solid var(--rosa); border-radius: 8px;
-    padding: .2rem .4rem; outline: none; width: 100%; color: var(--text);
-    margin-top: auto;
+    font-family: var(--font-body); font-size: .82rem; font-weight: 600;
+    background: var(--card); border: 1.5px solid var(--rosa); border-radius: 10px;
+    padding: .4rem .7rem; outline: none; width: 100%; color: var(--text);
+    box-sizing: border-box;
   }
 
   /* Fortalezas box */
@@ -9896,50 +9929,28 @@ document.addEventListener('DOMContentLoaded', function() {
       <span class="section-sub">🌸 personal</span>
       <h1 class="section-title"><em>Mi</em> Diario 📖</h1>
     </div>
-    <button class="diario-new-btn" id="diarioNewBtn" onclick="diarioOpenEntry()">+ nueva entrada</button>
   </div>
 
-  <!-- Calendario -->
-  <div class="diario-cal-wrap">
-    <div class="diario-cal-nav">
-      <button class="diario-cal-nav-btn" onclick="diarioCalPrev()">‹</button>
-      <span class="diario-cal-month" id="diarioCalMonth"></span>
-      <button class="diario-cal-nav-btn" onclick="diarioCalNext()">›</button>
-    </div>
-    <div class="diario-cal-grid" id="diarioCalGrid"></div>
+  <!-- Pestañas -->
+  <div class="diario-tabs">
+    <button class="diario-tab active" id="tabEntradas" onclick="diarioShowTab('entradas')">📋 Entradas</button>
+    <button class="diario-tab" id="tabCalendario" onclick="diarioShowTab('calendario')">📅 Calendario</button>
   </div>
 
-  <!-- Entrada del día seleccionado -->
-  <div class="diario-entry-view" id="diarioEntryView" style="display:none">
-    <div class="diario-entry-view-header">
-      <div>
-        <div class="diario-entry-view-date" id="diarioEntryViewDate"></div>
-        <div class="diario-entry-view-title" id="diarioEntryViewTitle"></div>
-      </div>
-      <div style="display:flex;gap:.4rem">
-        <button class="diario-entry-view-btn" onclick="diarioEditEntry()" title="Editar">✏️</button>
-        <button class="diario-entry-view-btn" onclick="diarioDeleteEntry()" title="Eliminar">🗑️</button>
-        <button class="diario-entry-view-btn" onclick="diarioCloseView()" title="Cerrar">✕</button>
+  <!-- TAB: Entradas -->
+  <div id="diarioTabEntradas">
+
+    <!-- Área de escritura rápida -->
+    <div class="diario-quick-wrap" id="diarioQuickWrap">
+      <textarea class="diario-quick-textarea" id="diarioQuickTexto" placeholder="¿Qué pasó hoy? Escribe aquí… sin filtros, sin límites 🌸" oninput="diarioQuickTyping()"></textarea>
+      <div class="diario-quick-actions" id="diarioQuickActions" style="display:none">
+        <button class="diario-quick-save-btn" onclick="diarioQuickContinue()">Guardar ✨</button>
       </div>
     </div>
-    <div class="diario-entry-view-tags" id="diarioEntryViewTags"></div>
-    <div class="diario-entry-view-photo" id="diarioEntryViewPhoto"></div>
-    <div class="diario-entry-view-text" id="diarioEntryViewText"></div>
-  </div>
 
-  <!-- Lista de entradas recientes -->
-  <div id="diarioList"></div>
-
-</section>
-
-<!-- Modal editor -->
-<div class="diario-modal-backdrop" id="diarioModalBackdrop" style="display:none" onclick="if(event.target===this)diarioCloseModal()">
-  <div class="diario-modal">
-    <div class="diario-modal-header">
-      <span id="diarioModalDateLabel"></span>
-      <button onclick="diarioCloseModal()" class="diario-modal-close">✕</button>
-    </div>
-    <div class="diario-modal-body">
+    <!-- Panel de opciones extra (aparece tras presionar Guardar) -->
+    <div class="diario-extra-panel" id="diarioExtraPanel" style="display:none">
+      <div class="diario-extra-title">Añade los detalles que quieras 🌸</div>
 
       <div class="diario-field">
         <label class="diario-label">Título <span style="font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
@@ -9986,28 +9997,102 @@ document.addEventListener('DOMContentLoaded', function() {
         <input type="hidden" id="diarioPhotoData">
       </div>
 
-      <div class="diario-field">
-        <label class="diario-label">¿Qué pasó hoy? ✍️</label>
-        <textarea class="diario-textarea" id="diarioTexto" placeholder="Escribe todo lo que quieras… sin límite, sin filtros 🌸"></textarea>
+      <div class="diario-extra-btns">
+        <button class="diario-cancel-btn" onclick="diarioQuickCancel()">Cancelar</button>
+        <button class="diario-save-btn" onclick="diarioSave()">Guardar entrada</button>
       </div>
-
     </div>
-    <div class="diario-modal-footer">
-      <button class="diario-cancel-btn" onclick="diarioCloseModal()">Cancelar</button>
-      <button class="diario-save-btn" onclick="diarioSave()">Guardar entrada</button>
+
+    <div class="diario-entry-view" id="diarioEntryView" style="display:none">
+      <div class="diario-entry-view-header">
+        <div>
+          <div class="diario-entry-view-date" id="diarioEntryViewDate"></div>
+          <div class="diario-entry-view-title" id="diarioEntryViewTitle"></div>
+        </div>
+        <div style="display:flex;gap:.4rem">
+          <button class="diario-entry-view-btn" onclick="diarioEditEntry()" title="Editar">✏️</button>
+          <button class="diario-entry-view-btn" onclick="diarioDeleteEntry()" title="Eliminar">🗑️</button>
+          <button class="diario-entry-view-btn" onclick="diarioCloseView()" title="Cerrar">✕</button>
+        </div>
+      </div>
+      <div class="diario-entry-view-tags" id="diarioEntryViewTags"></div>
+      <div class="diario-entry-view-photo" id="diarioEntryViewPhoto"></div>
+      <div class="diario-entry-view-text" id="diarioEntryViewText"></div>
+    </div>
+    <div id="diarioList"></div>
+  </div>
+
+  <!-- TAB: Calendario -->
+  <div id="diarioTabCalendario" style="display:none">
+    <div class="diario-cal-wrap">
+      <div class="diario-cal-nav">
+        <button class="diario-cal-nav-btn" onclick="diarioCalPrev()">‹</button>
+        <span class="diario-cal-month" id="diarioCalMonth"></span>
+        <button class="diario-cal-nav-btn" onclick="diarioCalNext()">›</button>
+      </div>
+      <div class="diario-cal-grid" id="diarioCalGrid"></div>
     </div>
   </div>
-</div>
+
+</section>
+
 
 <style>
   .diario-section { max-width: 780px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
-  .diario-page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; }
-  .diario-new-btn {
-    background: var(--rosa); color: white; border: none; border-radius: 20px;
-    padding: .45rem 1.1rem; font-size: .78rem; font-weight: 700; cursor: pointer;
-    font-family: var(--font-body); transition: opacity .2s; white-space: nowrap;
+  .diario-page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1rem; }
+
+  /* Quick write area */
+  .diario-quick-wrap {
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: 16px; padding: 1rem; margin-bottom: 1.2rem;
+    transition: border-color .2s;
   }
-  .diario-new-btn:hover { opacity: .85; }
+  .diario-quick-wrap:focus-within { border-color: var(--rosa); }
+  .diario-quick-textarea {
+    width: 100%; min-height: 140px; resize: none; border: none; outline: none;
+    background: transparent; font-family: var(--font-body); font-size: .92rem;
+    color: var(--text); line-height: 1.7; box-sizing: border-box;
+  }
+  .diario-quick-actions {
+    display: flex; justify-content: flex-end; margin-top: .6rem;
+    padding-top: .6rem; border-top: 1px solid var(--border);
+  }
+  .diario-quick-save-btn {
+    background: var(--rosa); color: white; border: none; border-radius: 20px;
+    padding: .45rem 1.2rem; font-size: .82rem; font-weight: 700;
+    cursor: pointer; font-family: var(--font-body); transition: opacity .2s;
+  }
+  .diario-quick-save-btn:hover { opacity: .85; }
+
+  /* Extra options panel */
+  .diario-extra-panel {
+    background: var(--card); border: 1.5px solid var(--rosa-soft);
+    border-radius: 16px; padding: 1.1rem 1.2rem; margin-bottom: 1.2rem;
+    display: flex; flex-direction: column; gap: .8rem;
+    animation: fadeUp .25s ease both;
+  }
+  .diario-extra-title {
+    font-size: .78rem; font-weight: 800; color: var(--rosa);
+    letter-spacing: .04em; margin-bottom: .2rem;
+  }
+  .diario-extra-btns {
+    display: flex; justify-content: flex-end; gap: .6rem;
+    padding-top: .6rem; border-top: 1px solid var(--border);
+  }
+
+  .diario-tabs {
+    display: flex; gap: .5rem; margin-bottom: 1.2rem;
+  }
+  .diario-tab {
+    flex: 1; padding: .5rem .8rem; border: 1.5px solid var(--border);
+    border-radius: 20px; background: var(--surface);
+    font-family: var(--font-body); font-size: .8rem; font-weight: 700;
+    color: var(--muted); cursor: pointer; transition: all .2s;
+  }
+  .diario-tab.active {
+    background: var(--rosa); color: white; border-color: var(--rosa);
+  }
+  .diario-tab:not(.active):hover { border-color: var(--rosa); color: var(--rosa); }
 
   /* Calendario */
   .diario-cal-wrap { background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 1rem; margin-bottom: 1.5rem; }
@@ -10070,7 +10155,7 @@ document.addEventListener('DOMContentLoaded', function() {
   .diario-card-mood { font-size: 1.1rem; }
   .diario-card-date { font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
   .diario-card-title { font-size: .9rem; font-weight: 800; color: var(--text); font-family: var(--font-title); font-style: italic; }
-  .diario-card-preview { font-size: .78rem; color: var(--muted); line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-top: .25rem; }
+  .diario-card-preview { font-size: .78rem; color: var(--muted); line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-overflow: ellipsis; max-height: 2.4em; margin-top: .25rem; white-space: pre-wrap; }
   .diario-card-tags { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .5rem; }
   .diario-card-tag { font-size: .62rem; font-weight: 700; padding: .15rem .5rem; border-radius: 20px; background: var(--surface); border: 1.5px solid var(--border); color: var(--muted); }
 
@@ -10186,15 +10271,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  function diarioSelectDate(dk) {
+  window.diarioSelectDate = function diarioSelectDate(dk) {
     selectedDate = dk;
     renderCal();
+    // Cambiar a pestaña de entradas
+    if (window.diarioShowTab) window.diarioShowTab('entradas');
     var entry = entries.find(function(e){ return e.fecha === dk; });
     if (entry) {
       showEntryView(entry);
     } else {
       diarioCloseView();
-      // Si es hoy o pasado, ofrecer crear
       var d = new Date(dk.replace(/-/g,'/')); 
       var hoy = new Date(); hoy.setHours(0,0,0,0);
       if (d <= hoy) diarioOpenEntry(dk);
@@ -10240,8 +10326,38 @@ document.addEventListener('DOMContentLoaded', function() {
   window.diarioCalPrev = function() { calMonth--; if(calMonth<0){ calMonth=11; calYear--; } renderCal(); };
   window.diarioCalNext = function() { calMonth++; if(calMonth>11){ calMonth=0; calYear++; } renderCal(); };
 
-  // ── Modal
+  // ── Quick write flow
   var currentTags = [];
+
+  window.diarioQuickTyping = function() {
+    var txt = document.getElementById('diarioQuickTexto').value.trim();
+    document.getElementById('diarioQuickActions').style.display = txt ? 'flex' : 'none';
+  };
+
+  window.diarioQuickContinue = function() {
+    // Mostrar panel de opciones extra
+    document.getElementById('diarioExtraPanel').style.display = '';
+    document.getElementById('diarioQuickWrap').style.display = 'none';
+    // Resetear campos extra
+    document.getElementById('diarioTitulo').value = '';
+    document.getElementById('diarioMood').value = '';
+    document.querySelectorAll('.diario-mood-opt').forEach(function(o){ o.classList.remove('selected'); });
+    currentTags = []; renderTagChips();
+    document.getElementById('diarioPhotoData').value = '';
+    document.getElementById('diarioPhotoImg').style.display='none';
+    document.getElementById('diarioPhotoPlaceholder').style.display='';
+    document.getElementById('diarioPhotoRemove').style.display='none';
+    editingId = null;
+    selectedDate = todayKey();
+  };
+
+  window.diarioQuickCancel = function() {
+    document.getElementById('diarioExtraPanel').style.display = 'none';
+    document.getElementById('diarioQuickWrap').style.display = '';
+    document.getElementById('diarioQuickTexto').value = '';
+    document.getElementById('diarioQuickActions').style.display = 'none';
+    currentTags = [];
+  };
 
   window.diarioOpenEntry = function(fecha) {
     load();
@@ -10250,37 +10366,43 @@ document.addEventListener('DOMContentLoaded', function() {
     editingId = existing ? existing.id : null;
     selectedDate = dk;
 
-    document.getElementById('diarioModalDateLabel').textContent = fmtDate(dk);
+    // Populate quick textarea with existing text
+    document.getElementById('diarioQuickTexto').value = existing ? (existing.texto||'') : '';
+    document.getElementById('diarioQuickActions').style.display = existing ? 'flex' : 'none';
+
+    // Populate extra fields
     document.getElementById('diarioTitulo').value = existing ? (existing.titulo||'') : '';
     document.getElementById('diarioMood').value = existing ? (existing.mood||'') : '';
-    document.getElementById('diarioTexto').value = existing ? (existing.texto||'') : '';
-    document.getElementById('diarioPhotoData').value = existing ? (existing.foto||'') : '';
-
-    // Mood
     document.querySelectorAll('.diario-mood-opt').forEach(function(o){
       o.classList.toggle('selected', o.textContent === (existing ? existing.mood : ''));
     });
-
-    // Tags
     currentTags = existing ? (existing.tags||[]).slice() : [];
     renderTagChips();
-
-    // Foto
     var img = document.getElementById('diarioPhotoImg');
     var ph = document.getElementById('diarioPhotoPlaceholder');
     var rmv = document.getElementById('diarioPhotoRemove');
     if (existing && existing.foto) {
       img.src = existing.foto; img.style.display=''; ph.style.display='none'; rmv.style.display='';
+      document.getElementById('diarioPhotoData').value = existing.foto;
     } else {
       img.style.display='none'; ph.style.display=''; rmv.style.display='none';
+      document.getElementById('diarioPhotoData').value = '';
     }
 
-    document.getElementById('diarioModalBackdrop').style.display='flex';
-    setTimeout(function(){ document.getElementById('diarioTexto').focus(); }, 200);
+    // Show extra panel directly when editing
+    if (existing) {
+      document.getElementById('diarioExtraPanel').style.display = '';
+      document.getElementById('diarioQuickWrap').style.display = 'none';
+    } else {
+      document.getElementById('diarioExtraPanel').style.display = 'none';
+      document.getElementById('diarioQuickWrap').style.display = '';
+      setTimeout(function(){ document.getElementById('diarioQuickTexto').focus(); }, 100);
+    }
   };
 
   window.diarioCloseModal = function() {
-    document.getElementById('diarioModalBackdrop').style.display='none';
+    // compatibility shim — reset to quick write
+    window.diarioQuickCancel();
   };
 
   window.diarioEditEntry = function() {
@@ -10343,7 +10465,7 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
   window.diarioSave = function() {
-    var texto = document.getElementById('diarioTexto').value.trim();
+    var texto = document.getElementById('diarioQuickTexto').value.trim();
     var titulo = document.getElementById('diarioTitulo').value.trim();
     if (!texto && !titulo) { alert('Escribe algo antes de guardar 🌸'); return; }
 
@@ -10366,13 +10488,20 @@ document.addEventListener('DOMContentLoaded', function() {
       var idx = entries.findIndex(function(e){ return e.id===editingId; });
       if (idx>=0) entries[idx] = entry; else entries.push(entry);
     } else {
-      // Reemplazar si ya existe para esa fecha
       var existIdx = entries.findIndex(function(e){ return e.fecha===entry.fecha; });
       if (existIdx>=0) entries[existIdx] = entry; else entries.push(entry);
     }
 
     entries.sort(function(a,b){ return b.fecha.localeCompare(a.fecha); });
-    save(); diarioCloseModal(); renderCal(); renderList();
+    save(); renderCal(); renderList();
+
+    // Volver al estado inicial
+    document.getElementById('diarioExtraPanel').style.display = 'none';
+    document.getElementById('diarioQuickWrap').style.display = '';
+    document.getElementById('diarioQuickTexto').value = '';
+    document.getElementById('diarioQuickActions').style.display = 'none';
+    currentTags = []; editingId = null;
+
     showEntryView(entry);
   };
 
@@ -10402,6 +10531,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Init
   load(); renderCal(); renderList();
+
+  window.diarioShowTab = function(tab) {
+    var tabEntradas = document.getElementById('diarioTabEntradas');
+    var tabCal = document.getElementById('diarioTabCalendario');
+    var btnEntradas = document.getElementById('tabEntradas');
+    var btnCal = document.getElementById('tabCalendario');
+    if (tab === 'entradas') {
+      tabEntradas.style.display = '';
+      tabCal.style.display = 'none';
+      btnEntradas.classList.add('active');
+      btnCal.classList.remove('active');
+    } else {
+      tabEntradas.style.display = 'none';
+      tabCal.style.display = '';
+      btnEntradas.classList.remove('active');
+      btnCal.classList.add('active');
+      renderCal();
+    }
+  };
 
   if (window._watchCloud) window._watchCloud(KEY, function(val){
     entries = val||[]; renderCal(); renderList();
@@ -10824,21 +10972,32 @@ function render() {
   container.innerHTML = '';
 
   // Layout VERTICAL: cada día es un bloque
+  let todayBlock = null;
+
   dates.forEach((date) => {
     const isToday = isTodayDate(date);
+    const isPast  = date < new Date(new Date().setHours(0,0,0,0));
     const jsDay = date.getDay();
     const dayIdx = jsDay === 0 ? 6 : jsDay - 1;
 
     // Cabecera del día
     const dayBlock = document.createElement('div');
-    dayBlock.className = 'day-block' + (isToday ? ' today-block' : '');
+    dayBlock.className = 'day-block' + (isToday ? ' today-block' : '') + (isPast ? ' day-collapsed' : '');
 
     const dayHeader = document.createElement('div');
-    dayHeader.className = 'day-block-header';
+    dayHeader.className = 'day-block-header' + (isPast ? ' day-header-collapsible' : '');
     dayHeader.innerHTML =
       '<span class="day-block-name">' + date.toLocaleDateString('es-MX', {weekday:'short'}).replace('.','').toUpperCase() + '</span>' +
       '<span class="day-block-num">' + date.toLocaleDateString('es-MX', {day:'numeric', month:'short'}) + '</span>' +
-      (isToday ? '<span class="day-block-today-badge">hoy</span>' : '');
+      (isToday ? '<span class="day-block-today-badge">hoy</span>' : '') +
+      (isPast ? '<span class="day-collapse-chevron">›</span>' : '');
+
+    if (isPast) {
+      dayHeader.addEventListener('click', function() {
+        dayBlock.classList.toggle('day-collapsed');
+      });
+    }
+
     dayBlock.appendChild(dayHeader);
 
     // Franjas del día (mañana, tarde, noche) en fila
@@ -10866,9 +11025,18 @@ function render() {
 
     dayBlock.appendChild(slotsRow);
     container.appendChild(dayBlock);
+
+    if (isToday) todayBlock = dayBlock;
   });
 
   updateProgress();
+
+  // Auto-scroll a hoy
+  if (todayBlock) {
+    setTimeout(function() {
+      todayBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+  }
 }
 
 // ── Render a single cell
@@ -11431,68 +11599,62 @@ function saveCheckin() {
 }
 
 function renderCheckin() {
-  const dates = getWeekDates(weekOffset);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dk = dateKey(today);
   const grid  = document.getElementById('checkinGrid');
   if (!grid) return;
   grid.innerHTML = '';
 
-  dates.forEach((d, dayIdx) => {
-    const isToday = isTodayDate(d);
-    const cell = document.createElement('div');
-    cell.className = 'checkin-day' + (isToday ? ' today-cell' : '');
+  const cell = document.createElement('div');
+  cell.className = 'checkin-day today-cell';
 
-    const selectedMood = checkinState[checkinKey(dayIdx)] || null;
+  const selectedMood = checkinState['ci_' + dk] || null;
 
-    // Day name - derivado de la fecha real, no del índice
-    const jsDay = d.getDay();
-    const realDayIdx = jsDay === 0 ? 6 : jsDay - 1;
-    cell.innerHTML = `<div class="checkin-dayname">${DAYS[realDayIdx]}</div>`;
+  const jsDay = today.getDay();
+  const realDayIdx = jsDay === 0 ? 6 : jsDay - 1;
+  cell.innerHTML = `<div class="checkin-dayname">${DAYS[realDayIdx]}</div>`;
 
-    // Mood buttons
-    const moodRow = document.createElement('div');
-    moodRow.className = 'mood-row';
-    MOODS.forEach(m => {
-      const btn = document.createElement('button');
-      btn.className = 'mood-btn' + (selectedMood === m.emoji ? ' selected-mood' : '');
-      btn.textContent = m.emoji;
-      btn.title = m.label;
-      btn.onclick = () => {
-        checkinState[checkinKey(dayIdx)] = (selectedMood === m.emoji) ? null : m.emoji;
-        saveCheckin();
-        renderCheckin();
-      };
-      moodRow.appendChild(btn);
-    });
-    cell.appendChild(moodRow);
-
-    // Selected label
-    if (selectedMood) {
-      const found = MOODS.find(m => m.emoji === selectedMood);
-      const lbl = document.createElement('div');
-      lbl.style.cssText = 'font-size:.6rem;font-weight:700;color:var(--rosa);text-align:center;margin-top:2px;';
-      lbl.textContent = found ? found.label : '';
-      cell.appendChild(lbl);
-    }
-
-    // Needs list
-    const needsDiv = document.createElement('div');
-    needsDiv.className = 'needs-list';
-    NEEDS.forEach(n => {
-      const nk = needKey(dayIdx, n.id);
-      const on = !!needsState[nk];
-      const item = document.createElement('div');
-      item.className = 'need-item' + (on ? ' need-on' : '');
-      item.innerHTML = `<div class="need-dot"></div><span>${n.icon} ${n.label}</span>`;
-      item.onclick = () => {
-        needsState[nk] = !needsState[nk];
-        saveCheckin();
-        renderCheckin();
-      };
-      needsDiv.appendChild(item);
-    });
-    cell.appendChild(needsDiv);
-    grid.appendChild(cell);
+  const moodRow = document.createElement('div');
+  moodRow.className = 'mood-row';
+  MOODS.forEach(m => {
+    const btn = document.createElement('button');
+    btn.className = 'mood-btn' + (selectedMood === m.emoji ? ' selected-mood' : '');
+    btn.textContent = m.emoji;
+    btn.title = m.label;
+    btn.onclick = () => {
+      checkinState['ci_' + dk] = (selectedMood === m.emoji) ? null : m.emoji;
+      saveCheckin();
+      renderCheckin();
+    };
+    moodRow.appendChild(btn);
   });
+  cell.appendChild(moodRow);
+
+  if (selectedMood) {
+    const found = MOODS.find(m => m.emoji === selectedMood);
+    const lbl = document.createElement('div');
+    lbl.style.cssText = 'font-size:.6rem;font-weight:700;color:var(--rosa);text-align:center;margin-top:2px;';
+    lbl.textContent = found ? found.label : '';
+    cell.appendChild(lbl);
+  }
+
+  const needsDiv = document.createElement('div');
+  needsDiv.className = 'needs-list';
+  NEEDS.forEach(n => {
+    const nk = 'nd_' + dk + '_' + n.id;
+    const on = !!needsState[nk];
+    const item = document.createElement('div');
+    item.className = 'need-item' + (on ? ' need-on' : '');
+    item.innerHTML = `<div class="need-dot"></div><span>${n.icon} ${n.label}</span>`;
+    item.onclick = () => {
+      needsState[nk] = !needsState[nk];
+      saveCheckin();
+      renderCheckin();
+    };
+    needsDiv.appendChild(item);
+  });
+  cell.appendChild(needsDiv);
+  grid.appendChild(cell);
 
   renderCalmTools();
 }
@@ -12284,58 +12446,64 @@ function changeGoal(delta) {
 }
 
 function renderTracker() {
-  const dates = getWeekDates(weekOffset);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayDk = dateKey(today);
   const _gl = document.getElementById('goalLabel'); if (_gl) _gl.textContent = waterGoal + ' vasos';
 
-  // -- WATER
+  // -- WATER (solo hoy)
   const wGrid = document.getElementById('waterGrid');
   if (!wGrid) return;
   wGrid.innerHTML = '';
-  dates.forEach((d, dayIdx) => {
-    const isToday = isTodayDate(d);
-    const count   = waterState[wKey(dayIdx)] || 0;
+  {
+    const d = today;
+    const count = waterState['w_' + todayDk] || 0;
     const col = document.createElement('div');
-    col.className = 'water-day-col' + (isToday ? ' today-w' : '');
+    col.className = 'water-day-col today-w';
     const wJsDay = d.getDay(); const wRealIdx = wJsDay === 0 ? 6 : wJsDay - 1;
     col.innerHTML = `<div class="water-day-label">${DAYS[wRealIdx]}</div>`;
 
-    // Drop buttons up to goal
+    const dropsRow = document.createElement('div');
+    dropsRow.className = 'water-drops-row';
+
     for (let i = 1; i <= waterGoal; i++) {
       const btn = document.createElement('button');
       btn.className = 'drop-btn' + (i <= count ? ' filled' : '');
       btn.textContent = '💧';
       btn.title = `${i} vaso${i>1?'s':''}`;
-      const captured = { dayIdx, i };
       btn.onclick = () => {
-        const cur = waterState[wKey(captured.dayIdx)] || 0;
-        waterState[wKey(captured.dayIdx)] = (cur === captured.i) ? captured.i - 1 : captured.i;
+        const cur = waterState['w_' + todayDk] || 0;
+        waterState['w_' + todayDk] = (cur === i) ? i - 1 : i;
         saveTracker();
         renderTracker();
       };
-      col.appendChild(btn);
+      dropsRow.appendChild(btn);
     }
+    col.appendChild(dropsRow);
 
     const countLbl = document.createElement('div');
     countLbl.className = 'water-count';
     countLbl.textContent = `${count}/${waterGoal}`;
     col.appendChild(countLbl);
     wGrid.appendChild(col);
-  });
+  }
 
-  // -- FOOD
+  // -- FOOD (solo hoy)
   const fGrid = document.getElementById('foodGrid');
   if (!fGrid) return;
   fGrid.innerHTML = '';
-  dates.forEach((d, dayIdx) => {
-    const isToday = isTodayDate(d);
+  {
+    const d = today;
     const col = document.createElement('div');
-    col.className = 'food-day-col' + (isToday ? ' today-f' : '');
+    col.className = 'food-day-col today-f';
     const fJsDay = d.getDay(); const fRealIdx = fJsDay === 0 ? 6 : fJsDay - 1;
     col.innerHTML = `<div class="food-day-label">${DAYS[fRealIdx]}</div>`;
 
     MEALS.forEach(meal => {
-      const key   = fKey(dayIdx, meal.id);
+      const key = 'f_' + todayDk + '_' + meal.id;
       const eaten = !!foodState[key];
+
+      const mealItem = document.createElement('div');
+      mealItem.className = 'meal-item';
 
       const dot = document.createElement('div');
       dot.className = 'meal-dot' + (eaten ? ' eaten' : '');
@@ -12351,12 +12519,13 @@ function renderTracker() {
       lbl.className = 'meal-dot-label';
       lbl.textContent = meal.label;
 
-      col.appendChild(dot);
-      col.appendChild(lbl);
+      mealItem.appendChild(dot);
+      mealItem.appendChild(lbl);
+      col.appendChild(mealItem);
     });
 
     fGrid.appendChild(col);
-  });
+  }
 }
 
 // Patch nav buttons for tracker too
@@ -15086,12 +15255,12 @@ function renderGratitud() {
   const grid = document.getElementById('gratitudGrid');
   if (!grid) return;
   grid.innerHTML = '';
-  const dates = getWeekDates(weekOffset);
+  const today = new Date(); today.setHours(0,0,0,0);
   const DIAS_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 
-  dates.forEach(date => {
+  [today].forEach(date => {
     const dk = dateKey(date);
-    const isToday = isTodayDate(date);
+    const isToday = true;
     if (!gratitudData[dk]) gratitudData[dk] = ['','',''];
 
     const card = document.createElement('div');
@@ -16384,42 +16553,21 @@ function cambioKey(dayIdx, cardId) {
   const dateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   return `cb_${dateStr}_${cardId}`;
 }
-
-function loadCambio() {
-  cambioState  = window._cambioState  || JSON.parse(localStorage.getItem('cambio_state')  || '{}');
-  cambioCustom = window._cambioCustom || JSON.parse(localStorage.getItem('cambio_custom') || '[]');
-}
-function saveCambio() {
-  try { localStorage.setItem('cambio_state',  JSON.stringify(cambioState));  } catch(e){}
-  try { localStorage.setItem('cambio_custom', JSON.stringify(cambioCustom)); } catch(e){}
-  if (window.cloudSave) {
-    window.cloudSave('cambio_state',  cambioState);
-    window.cloudSave('cambio_custom', cambioCustom);
-  }
+function cambioKeyToday(cardId) {
+  const d = new Date();
+  const dateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  return `cb_${dateStr}_${cardId}`;
 }
 
 function renderCambio() {
-  // Day selector
-  const dates = getWeekDates(weekOffset);
   const sel = document.getElementById('cambioDaySelector');
-  if (!sel) return;
-  sel.innerHTML = '';
-  dates.forEach((d, i) => {
-    const isToday = isTodayDate(d);
-    const btn = document.createElement('button');
-    btn.className = 'tl-day-btn' + (i === cambioDayIdx ? ' active' : '') + (isToday ? ' today-tl' : '');
-    const cJsDay = d.getDay(); const cRealIdx = cJsDay === 0 ? 6 : cJsDay - 1;
-    btn.textContent = DAYS[cRealIdx] + ' ' + d.getDate();
-    btn.onclick = () => { cambioDayIdx = i; renderCambio(); };
-    sel.appendChild(btn);
-  });
+  if (sel) sel.innerHTML = '';
 
-  // Cards for selected day
   const grid = document.getElementById('cambioGrid');
   if (!grid) return;
   grid.innerHTML = '';
   CAMBIO_CARDS.forEach(c => {
-    const key = cambioKey(cambioDayIdx, c.id);
+    const key = cambioKeyToday(c.id);
     const on = !!cambioState[key];
     const card = document.createElement('div');
     card.className = `cambio-card ${on ? (c.type === 'alerta' ? 'alerta-on' : 'planb-on') : ''}`;
@@ -16433,6 +16581,19 @@ function renderCambio() {
   });
   renderCambioCustom();
 }
+function loadCambio() {
+  cambioState  = window._cambioState  || JSON.parse(localStorage.getItem('cambio_state')  || '{}');
+  cambioCustom = window._cambioCustom || JSON.parse(localStorage.getItem('cambio_custom') || '[]');
+}
+function saveCambio() {
+  try { localStorage.setItem('cambio_state',  JSON.stringify(cambioState));  } catch(e){}
+  try { localStorage.setItem('cambio_custom', JSON.stringify(cambioCustom)); } catch(e){}
+  if (window.cloudSave) {
+    window.cloudSave('cambio_state',  cambioState);
+    window.cloudSave('cambio_custom', cambioCustom);
+  }
+}
+
 
 function renderCambioCustom() {
   const list = document.getElementById('cambioList');
@@ -16478,39 +16639,37 @@ function saveLogros() {
   }
 }
 function logroKey(dayIdx) { return `lg_${weekOffset}_${dayIdx}`; }
+function logroKeyByDate(d) { return `lg_${dateKey(d)}`; }
 
 function renderLogros() {
-  const dates = getWeekDates(weekOffset);
+  const today = new Date(); today.setHours(0,0,0,0);
   const grid  = document.getElementById('logrosGrid');
   if (!grid) return;
   grid.innerHTML = '';
 
-  dates.forEach((d, dayIdx) => {
-    const isToday = isTodayDate(d);
-    const key     = logroKey(dayIdx);
-    const items   = logrosData[key] || [];
+  const key   = logroKeyByDate(today);
+  const items = logrosData[key] || [];
 
-    const col = document.createElement('div');
-    col.className = 'logro-day-col' + (isToday ? ' today-l' : '');
-    const lJsDay = d.getDay(); const lRealIdx = lJsDay === 0 ? 6 : lJsDay - 1;
-    col.innerHTML = `<div class="logro-dayname">${DAYS[lRealIdx]}</div>`;
+  const col = document.createElement('div');
+  col.className = 'logro-day-col today-l';
+  const lJsDay = today.getDay(); const lRealIdx = lJsDay === 0 ? 6 : lJsDay - 1;
+  col.innerHTML = `<div class="logro-dayname">${DAYS[lRealIdx]} ${today.getDate()}</div>`;
 
-    items.forEach((text, i) => {
-      const item = document.createElement('div');
-      item.className = 'logro-item';
-      item.innerHTML = `<span class="logro-item-star">⭐</span>
-        <span class="logro-item-text">${text}</span>
-        <button class="logro-item-del" onclick="removeLogro(${dayIdx},${i})">✕</button>`;
-      col.appendChild(item);
-    });
-
-    const addBtn = document.createElement('button');
-    addBtn.className = 'logro-add-btn';
-    addBtn.innerHTML = '＋ logro';
-    addBtn.onclick = () => startLogroInput(col, addBtn, key);
-    col.appendChild(addBtn);
-    grid.appendChild(col);
+  items.forEach((text, i) => {
+    const item = document.createElement('div');
+    item.className = 'logro-item';
+    item.innerHTML = `<span class="logro-item-star">⭐</span>
+      <span class="logro-item-text">${text}</span>
+      <button class="logro-item-del" onclick="removeLogroToday(${i})">✕</button>`;
+    col.appendChild(item);
   });
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'logro-add-btn';
+  addBtn.innerHTML = '＋ logro';
+  addBtn.onclick = () => startLogroInput(col, addBtn, key);
+  col.appendChild(addBtn);
+  grid.appendChild(col);
 
   renderFortalezas();
 }
@@ -16533,6 +16692,12 @@ function startLogroInput(col, addBtn, key) {
   };
   input.onkeydown = e => { if(e.key==='Enter') commit(); if(e.key==='Escape') renderLogros(); };
   input.onblur = commit;
+}
+
+function removeLogroToday(i) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const key = logroKeyByDate(today);
+  if (logrosData[key]) { logrosData[key].splice(i,1); saveLogros(); renderLogros(); }
 }
 
 function removeLogro(dayIdx, i) {
@@ -16678,39 +16843,29 @@ const TL_SLOTS = [
 ];
 
 function renderTimeline() {
-  const dates = getWeekDates(weekOffset);
+  const today = new Date(); today.setHours(0,0,0,0);
 
-  // Day selector
+  // Ocultar selector de días (ya no se necesita)
   const sel = document.getElementById('tlDaySelector');
-  if (!sel) return;
-  sel.innerHTML = '';
-  dates.forEach((d, i) => {
-    const isToday = isTodayDate(d);
-    const btn = document.createElement('button');
-    btn.className = 'tl-day-btn' + (i === tlDayIdx ? ' active' : '') + (isToday ? ' today-tl' : '');
-    const tJsDay = d.getDay(); const tRealIdx = tJsDay === 0 ? 6 : tJsDay - 1;
-    btn.textContent = DAYS[tRealIdx] + ' ' + d.getDate();
-    btn.onclick = () => { tlDayIdx = i; renderTimeline(); };
-    sel.appendChild(btn);
-  });
+  if (sel) sel.innerHTML = '';
 
   // Track
   const track = document.getElementById('tlTrack');
   if (!track) return;
   track.innerHTML = '';
 
-  const isToday = isTodayDate(dates[tlDayIdx]);
+  const isToday = true;
   const nowHour = new Date().getHours();
+  const date = today;
 
   let totalTasks = 0, doneTasks = 0;
 
   TL_SLOTS.forEach(slot => {
-    const date = dates[tlDayIdx];
     const allTasks = recurringTasks.filter(t => t.slotId === slot.id && taskVisibleOnDate(t, date));
 
-    const slotHour = slot.id === 'm' ? 8 : slot.id === 't' ? 14 : 20; // day starts 5AM
-    const isCurrent = isToday && Math.abs(nowHour - slotHour) < 4;
-    const isPast    = isToday && nowHour > slotHour + 3;
+    const slotHour = slot.id === 'm' ? 8 : slot.id === 't' ? 14 : 20;
+    const isCurrent = Math.abs(nowHour - slotHour) < 4;
+    const isPast    = nowHour > slotHour + 3;
 
     const slotDone = allTasks.length > 0 && allTasks.every(t => !!completions[completionKey(t.id, date)]);
 
@@ -16725,7 +16880,6 @@ function renderTimeline() {
         <span class="tl-slot-name">${slot.name}</span>
       </div>`;
 
-    // Mini task chips
     const chipsRow = document.createElement('div');
     chipsRow.className = 'tl-tasks-mini';
     allTasks.forEach(task => {
@@ -16746,7 +16900,6 @@ function renderTimeline() {
     track.appendChild(el);
   });
 
-  // Day progress
   const pct = totalTasks > 0 ? Math.round((doneTasks/totalTasks)*100) : 0;
   const _tpf = document.getElementById('tlProgFill'); if (_tpf) _tpf.style.width = pct + '%';
   const stars = pct >= 80 ? '🌟🌟🌟' : pct >= 50 ? '⭐⭐' : pct > 0 ? '⭐' : '';
@@ -16755,10 +16908,10 @@ function renderTimeline() {
 
 // Patch nav for new sections
 document.getElementById('prevWeek').addEventListener('click', () => {
-  loadCuida(); renderCuida(); renderLogros(); renderTimeline(); renderCambio();
+  loadCuida(); renderCuida(); renderLogros(); renderCambio();
 });
 document.getElementById('nextWeek').addEventListener('click', () => {
-  loadCuida(); renderCuida(); renderLogros(); renderTimeline(); renderCambio();
+  loadCuida(); renderCuida(); renderLogros(); renderCambio();
 });
 
 loadCambio();   renderCambio();
@@ -18265,74 +18418,19 @@ document.addEventListener('DOMContentLoaded', function() {
     transition: all .18s;
   }
   .pom-mode-btn.active { background: var(--rosa); border-color: var(--rosa); color: #fff; }
-  .pomodoro-display { display: none; }
+  .pomodoro-display {
+    font-family: var(--font-title);
+    font-size: 3.2rem;
+    font-weight: 800;
+    text-align: center;
+    color: var(--text);
+    letter-spacing: .04em;
+    margin: .6rem 0 .8rem;
+  }
+  .pomodoro-display.running { color: var(--rosa); }
+  .pomodoro-display.break   { color: var(--verde); }
 
   /* ── Liquid timer ── */
-  .pom-liquid-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: .5rem;
-    margin: .6rem 0 1rem;
-  }
-  .pom-bottle {
-    position: relative;
-    width: 72px;
-    height: 120px;
-  }
-  .pom-bottle-svg {
-    width: 100%; height: 100%;
-    position: absolute; top: 0; left: 0;
-    pointer-events: none;
-  }
-  .pom-liquid {
-    position: absolute;
-    bottom: 6px;
-    left: 7px;
-    right: 7px;
-    border-radius: 0 0 12px 12px;
-    overflow: hidden;
-    transition: height .9s ease;
-  }
-  .pom-liquid-inner {
-    position: absolute;
-    inset: 0;
-    background: var(--rosa);
-    opacity: .8;
-  }
-  .pom-wave {
-    position: absolute;
-    top: -10px; left: -40%;
-    width: 180%; height: 22px;
-    background: var(--rosa);
-    opacity: .85;
-    border-radius: 40%;
-    animation: waveAnim 2.4s ease-in-out infinite;
-  }
-  .pom-wave2 {
-    position: absolute;
-    top: -5px; left: -40%;
-    width: 180%; height: 16px;
-    background: var(--beige-soft);
-    opacity: .7;
-    border-radius: 40%;
-    animation: waveAnim 3.2s ease-in-out infinite reverse;
-  }
-  @keyframes waveAnim {
-    0%,100% { transform: translateX(0) scaleY(1); }
-    50%      { transform: translateX(12%) scaleY(1.2); }
-  }
-  .pom-bottle.mode-short .pom-liquid-inner,
-  .pom-bottle.mode-short .pom-wave { background: var(--verde); }
-  .pom-bottle.mode-long .pom-liquid-inner,
-  .pom-bottle.mode-long .pom-wave { background: #b39ddb; }
-  .pom-liquid-label {
-    font-family: var(--font-title);
-    font-style: italic;
-    font-size: .88rem;
-    color: var(--muted);
-    font-weight: 700;
-  }
   .pomodoro-btns {
     display: flex;
     gap: .6rem;
@@ -18452,27 +18550,6 @@ document.addEventListener('DOMContentLoaded', function() {
       <div id="pomCat" class="pom-cat-wrap"></div>
     </div>
     <div class="pomodoro-display" id="pomDisplay">25:00</div>
-    <div class="pom-liquid-wrap" id="pomLiquidWrap">
-      <div class="pom-bottle mode-work" id="pomBottle">
-        <!-- Vaso SVG outline -->
-        <svg class="pom-bottle-svg" viewBox="0 0 72 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Cuerpo del vaso -->
-          <path d="M12 10 L8 108 Q8 114 14 114 L58 114 Q64 114 64 108 L60 10 Z"
-            fill="none" stroke="var(--border)" stroke-width="2.5" stroke-linejoin="round"/>
-          <!-- Borde superior -->
-          <line x1="10" y1="10" x2="62" y2="10" stroke="var(--border)" stroke-width="2.5" stroke-linecap="round"/>
-          <!-- Brillo lateral -->
-          <path d="M18 20 L15 100" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
-        </svg>
-        <!-- Líquido -->
-        <div class="pom-liquid" id="pomLiquid" style="height:100px">
-          <div class="pom-wave"></div>
-          <div class="pom-wave2"></div>
-          <div class="pom-liquid-inner"></div>
-        </div>
-      </div>
-      <div class="pom-liquid-label" id="pomLiquidLabel">listo para empezar ✦</div>
-    </div>
     <div class="pomodoro-btns">
       <button class="pom-btn primary" id="pomStartBtn" onclick="pomToggle()">▶ Iniciar</button>
       <button class="pom-btn" onclick="pomReset()">↺ Reset</button>
@@ -18541,35 +18618,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  function pomUpdateLiquid() {
-    var liquid = document.getElementById('pomLiquid');
-    var bottle = document.getElementById('pomBottle');
-    var label  = document.getElementById('pomLiquidLabel');
-    if (!liquid) return;
-    var total = POM_MODES[pomMode];
-    var pct   = pomTimeLeft / total; // 1 = full, 0 = empty
-    var maxH  = 100; // px max liquid height inside bottle
-    var h     = Math.max(0, Math.round(pct * maxH));
-    liquid.style.height = h + 'px';
-    // Color del vaso según modo
-    if (bottle) {
-      bottle.className = 'pom-bottle mode-' + pomMode;
-    }
-    // Label descriptivo
-    if (label) {
-      if (!pomRunning && pomTimeLeft === total) {
-        label.textContent = 'listo para empezar ✦';
-      } else if (!pomRunning && pomTimeLeft < total && pomTimeLeft > 0) {
-        label.textContent = 'en pausa…';
-      } else if (pomTimeLeft <= 0) {
-        label.textContent = '¡completado! 🌸';
-      } else {
-        var minsLeft = Math.ceil(pomTimeLeft / 60);
-        label.textContent = minsLeft + (minsLeft === 1 ? ' min restante' : ' mins restantes');
-      }
-    }
-  }
-
   function pomUpdateDisplay() {
     var disp = document.getElementById('pomDisplay');
     var btn = document.getElementById('pomStartBtn');
@@ -18578,7 +18626,6 @@ document.addEventListener('DOMContentLoaded', function() {
     disp.className = 'pomodoro-display' + (pomRunning ? (pomMode==='work' ? ' running' : ' break') : '');
     if (btn) btn.textContent = pomRunning ? '⏸ Pausar' : '▶ Iniciar';
     pomUpdateGif();
-    pomUpdateLiquid();
   }
 
   function pomUpdateSessions() {
