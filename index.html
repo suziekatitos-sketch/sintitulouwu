@@ -155,7 +155,11 @@ window.kittyConfirm = function(msg, onYes, onNo) {
           'univ_links','univ_proyectos','spark_pins','spark_historial','spark_total_minutes',
           'trans_data','custom_notifs','eventos_prep','recuper_registros',
           'notas_intereses_data','notas_intereses_cats',
-          'yuki_mascotas','yuki_plantas','yuki_biblioteca_playlists','yuki_biblioteca_dopamina','yuki_diario'];
+          'yuki_mascotas','yuki_plantas','yuki_biblioteca_playlists','yuki_biblioteca_dopamina','yuki_diario',
+          'yuki_decisions','yuki_rutina_horarios',
+          'yuki_xp','yuki_xp_streak','yuki_xp_last_date',
+          'yuki_sakura','yuki_tienda_recompensas','yuki_compras_historial','yuki_study_minutes',
+          'yuki_citas','yuki_citas_dias','yuki_citas_last','yuki_citas_idx'];
         mirrorKeys.forEach(function(k) {
           if (raw[k] !== undefined) {
             try { localStorage.setItem(k, raw[k]); } catch(e) {}
@@ -3185,7 +3189,7 @@ window.kittyConfirm = function(msg, onYes, onNo) {
     opacity: 0;
   }
   .rec-sugerencia-card {
-    background: linear-gradient(135deg, #fce4ec, #f3e5f5);
+    background: linear-gradient(135deg, var(--rosa-soft), var(--pink-light, var(--rosa-soft)));
     border: 1.5px solid var(--border);
     border-radius: 20px;
     padding: 1.1rem 1.3rem;
@@ -3219,7 +3223,7 @@ window.kittyConfirm = function(msg, onYes, onNo) {
   .rec-sug-label {
     font-size: .62rem;
     font-weight: 800;
-    color: #c084fc;
+    color: var(--rosa);
     text-transform: uppercase;
     letter-spacing: .08em;
     display: block;
@@ -4323,6 +4327,13 @@ window.kittyConfirm = function(msg, onYes, onNo) {
   /* ══════════════════════════════════════════
      SECCIÓN 6 · AGUA & COMIDAS
   ══════════════════════════════════════════ */
+  /* Salud tabs */
+  .salud-tabs-header { max-width:780px; margin:0 auto; padding:1.2rem 1rem .2rem; }
+  .salud-tabs { display:flex; gap:.5rem; max-width:780px; margin:0 auto 1.2rem; padding:0 1rem; }
+  .salud-tab { flex:1; padding:.5rem .8rem; border:1.5px solid var(--border); border-radius:20px; background:var(--surface); font-family:var(--font-body); font-size:.78rem; font-weight:700; color:var(--muted); cursor:pointer; transition:all .2s; }
+  .salud-tab.active { background:var(--rosa); color:white; border-color:var(--rosa); }
+  .salud-tab:not(.active):hover { border-color:var(--rosa); color:var(--rosa); }
+
   .tracker-section {
     max-width: 900px;
     margin: 2rem auto 0;
@@ -4474,26 +4485,37 @@ window.kittyConfirm = function(msg, onYes, onNo) {
   }
 
   .meal-dot {
-    width: 44px; height: 44px;
-    border-radius: 50%;
+    width: 52px; height: 52px;
+    border-radius: 14px;
     border: 2px solid var(--border);
     background: var(--surface);
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     cursor: pointer;
-    transition: all .15s;
+    transition: all .18s;
     position: relative;
   }
-
   .meal-dot.eaten {
     background: var(--verde-soft);
     border-color: var(--verde);
+    box-shadow: 0 0 0 3px rgba(143,192,126,.18);
   }
-
-  .meal-dot:hover { transform: scale(1.1); }
+  .meal-dot.eaten::after {
+    content: '✓';
+    position: absolute;
+    bottom: -3px; right: -3px;
+    background: var(--verde);
+    color: white;
+    font-size: .55rem;
+    font-weight: 900;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .meal-dot:active { transform: scale(.94); }
 
   .meal-dot-label {
-    font-size: .52rem;
+    font-size: .58rem;
     font-weight: 700;
     color: var(--muted);
     text-align: center;
@@ -4501,19 +4523,27 @@ window.kittyConfirm = function(msg, onYes, onNo) {
   }
   .food-day-col.today-f .meal-dot-label { color: var(--verde); }
 
-  .food-legend {
-    display: flex;
-    gap: .6rem;
-    margin-top: .7rem;
-    padding-top: .6rem;
-    border-top: 1.5px solid var(--border);
-    flex-wrap: wrap;
-  }
-
-  .food-legend-item {
-    display: flex; align-items: center; gap: 3px;
-    font-size: .62rem; font-weight: 600; color: var(--muted);
-  }
+  /* ── Food modal ── */
+  .food-modal-backdrop { position:fixed; inset:0; background:rgba(180,220,180,.22); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); z-index:9000; align-items:center; justify-content:center; padding:1rem; }
+  .food-modal { background:var(--card); border-radius:20px; width:100%; max-width:480px; max-height:88vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.18); z-index:9001; margin:auto; }
+  .food-modal-header { display:flex; justify-content:space-between; align-items:center; padding:1.1rem 1.3rem .8rem; font-family:var(--font-title); font-style:italic; font-size:1.1rem; font-weight:700; border-bottom:1px solid var(--border); }
+  .food-modal-body { padding:1rem 1.3rem; display:flex; flex-direction:column; gap:.9rem; }
+  .food-modal-field { display:flex; flex-direction:column; gap:.35rem; }
+  .food-modal-label { font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  .food-modal-input { border:1.5px solid var(--border); border-radius:10px; padding:.5rem .7rem; font-family:var(--font-body); font-size:.88rem; color:var(--text); background:var(--surface); outline:none; width:100%; box-sizing:border-box; }
+  .food-modal-input:focus { border-color:var(--verde); }
+  .food-quality-row { display:flex; gap:.5rem; }
+  .food-quality-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:.2rem; padding:.5rem .3rem; border:1.5px solid var(--border); border-radius:12px; background:var(--surface); cursor:pointer; font-size:1.2rem; transition:all .15s; }
+  .food-quality-btn span { font-size:.6rem; font-weight:700; color:var(--muted); font-family:var(--font-body); }
+  .food-quality-btn.active { border-color:var(--verde); background:var(--verde-soft); }
+  .food-quality-btn.active span { color:var(--verde); }
+  .food-modal-footer { display:flex; justify-content:flex-end; gap:.6rem; padding:.9rem 1.3rem; border-top:1px solid var(--border); }
+  .food-modal-cancel { background:var(--surface); border:1.5px solid var(--border); border-radius:20px; padding:.45rem 1.1rem; font-size:.8rem; font-weight:700; cursor:pointer; font-family:var(--font-body); color:var(--muted); }
+  .food-modal-save { background:var(--verde); border:none; border-radius:20px; padding:.45rem 1.2rem; font-size:.8rem; font-weight:700; cursor:pointer; font-family:var(--font-body); color:white; }
+  .food-view-row { display:flex; flex-direction:column; gap:.25rem; padding:.6rem 0; border-bottom:1px solid var(--border); }
+  .food-view-row:last-child { border-bottom:none; }
+  .food-view-value { font-size:.9rem; color:var(--text); font-family:var(--font-body); line-height:1.5; }
+  .food-view-empty { padding:1.2rem 0; text-align:center; color:var(--muted); font-size:.85rem; font-family:var(--font-body); }
 
   /* ══════════════════════════════════════════
      SECCIÓN 7 · ALERTAS DE CAMBIO / PLAN B
@@ -5552,6 +5582,9 @@ function todayKey() { return dateKey(new Date()); }
   <!-- Widgets de resumen -->
   <div class="widgets-row" id="widgetsRow"></div>
 
+  <!-- Cita del momento -->
+  <div id="citaWidgetHome" style="background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:1rem 1.2rem;margin-bottom:1.5rem;display:none"></div>
+
   <!-- Vision Board -->
   <div class="vb-section">
     <span class="section-sub">✨ inspiración</span>
@@ -5730,6 +5763,26 @@ function todayKey() { return dateKey(new Date()); }
         'page-finanzas', accent
       ));
     })();
+
+    // ── XP Widget
+    (function(){
+      var xp = parseInt(localStorage.getItem('yuki_xp') || '0');
+      var RANKS = window.YUKI_RANKS || [];
+      var rank = RANKS[0] || { icon:'🌑', label:'Polvo Cósmico', next:500 };
+      for (var i = RANKS.length-1; i >= 0; i--) {
+        if (xp >= RANKS[i].min) { rank = RANKS[i]; break; }
+      }
+      var nextRank = RANKS[RANKS.indexOf(rank)+1];
+      var pct = nextRank ? Math.round((xp - rank.min) / (nextRank.min - rank.min) * 100) : 100;
+      row.appendChild(makeWidget(
+        rank.icon,
+        'Rango espacial',
+        rank.label,
+        xp.toLocaleString('es-MX') + ' EXP' + (nextRank ? ' · faltan ' + (nextRank.min - xp).toLocaleString('es-MX') : ' · ¡Máximo!'),
+        pct,
+        'page-logros', '#a78bfa'
+      ));
+    })();
   };
 
   // Render on load and refresh when returning to inicio
@@ -5739,7 +5792,7 @@ function todayKey() { return dateKey(new Date()); }
   var _origShow = window.showPage;
   window.showPage = function(pageId) {
     if (_origShow) _origShow(pageId);
-    if (pageId === 'page-inicio') setTimeout(window.renderWidgets, 350);
+    if (pageId === 'page-inicio') { setTimeout(window.renderWidgets, 350); setTimeout(function(){ if(window._renderCitaWidget) window._renderCitaWidget(); }, 400); }
     if (pageId === 'page-calma') setTimeout(function(){
       eventoRender();
       recuperInit();
@@ -6062,6 +6115,504 @@ function todayKey() { return dateKey(new Date()); }
 </script>
 </div><!-- end page-inicio -->
 
+<!-- ══════════════════════════════════════════
+     PÁGINA · LOGROS 🚀
+══════════════════════════════════════════ -->
+<div id="page-logros" class="page-section">
+<style>
+  .logros-page-section { max-width:780px; margin:0 auto; padding:1.5rem 1rem 4rem; }
+  .logros-page-header { margin-bottom:1.5rem; }
+
+  /* Tarjeta de rango */
+  .xp-rank-card {
+    background: linear-gradient(135deg, var(--surface), var(--card));
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 1.4rem;
+    margin-bottom: 1.2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .xp-rank-icon { font-size: 3.5rem; line-height:1; margin-bottom: .4rem; }
+  .xp-rank-name { font-family:var(--font-title); font-size:1.4rem; font-weight:800; color:var(--text); font-style:italic; margin-bottom:.2rem; }
+  .xp-rank-xp { font-size:.82rem; font-weight:700; color:var(--muted); margin-bottom:.8rem; }
+  .xp-bar-wrap { background:var(--surface); border-radius:20px; height:10px; overflow:hidden; margin-bottom:.4rem; }
+  .xp-bar-fill { height:100%; border-radius:20px; background:linear-gradient(90deg,#a78bfa,#60a5fa); transition:width .8s ease; }
+  .xp-bar-labels { display:flex; justify-content:space-between; font-size:.65rem; font-weight:700; color:var(--muted2); }
+  .xp-next-rank { font-size:.75rem; color:var(--muted); margin-top:.5rem; font-weight:600; }
+
+  /* Estrellas decorativas */
+  .xp-stars { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+  .xp-star { position:absolute; font-size:.7rem; opacity:.3; animation: twinkle 3s ease-in-out infinite; }
+  @keyframes twinkle { 0%,100%{opacity:.15} 50%{opacity:.5} }
+
+  /* Racha */
+  .xp-streak-card { background:var(--card); border:1.5px solid var(--border); border-radius:14px; padding:.9rem 1.1rem; margin-bottom:1.2rem; display:flex; align-items:center; gap:.8rem; }
+  .xp-streak-fire { font-size:2rem; }
+  .xp-streak-num { font-size:1.8rem; font-weight:900; color:var(--rosa); font-family:var(--font-title); }
+  .xp-streak-label { font-size:.75rem; color:var(--muted); font-weight:600; }
+
+  /* Fuentes de EXP */
+  .xp-sources-title { font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.6rem; }
+  .xp-sources-grid { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; margin-bottom:1.4rem; }
+  .xp-source-card { background:var(--card); border:1.5px solid var(--border); border-radius:12px; padding:.7rem .9rem; }
+  .xp-source-icon { font-size:1.2rem; margin-bottom:.2rem; }
+  .xp-source-label { font-size:.72rem; font-weight:700; color:var(--text); }
+  .xp-source-val { font-size:.65rem; color:var(--muted); }
+
+  /* Todos los rangos */
+  .xp-ranks-title { font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.6rem; }
+  .xp-ranks-list { display:flex; flex-direction:column; gap:.45rem; }
+  .xp-rank-row { display:flex; align-items:center; gap:.7rem; padding:.6rem .8rem; border-radius:10px; background:var(--card); border:1.5px solid var(--border); opacity:.5; }
+  .xp-rank-row.achieved { opacity:1; border-color:var(--rosa-soft); }
+  .xp-rank-row.current { border-color:#a78bfa; background:var(--surface); }
+  .xp-rank-row-icon { font-size:1.3rem; width:28px; text-align:center; }
+  .xp-rank-row-info { flex:1; }
+  .xp-rank-row-name { font-size:.82rem; font-weight:700; color:var(--text); }
+  .xp-rank-row-req { font-size:.65rem; color:var(--muted); }
+  .xp-rank-row-badge { font-size:.6rem; font-weight:800; color:#a78bfa; background:rgba(167,139,250,.15); border-radius:20px; padding:.1rem .5rem; }
+
+  /* Flores de Sakura */
+  .sakura-balance-card { background:linear-gradient(135deg,var(--rosa-soft),var(--surface)); border:1.5px solid var(--rosa-soft); border-radius:14px; padding:.9rem 1.1rem; margin-bottom:1.2rem; display:flex; align-items:center; gap:.8rem; }
+  .sakura-balance-icon { font-size:2rem; }
+  .sakura-balance-num { font-size:1.8rem; font-weight:900; color:var(--rosa); font-family:var(--font-title); }
+  .sakura-balance-label { font-size:.75rem; color:var(--muted); font-weight:600; }
+  .sakura-earn-info { font-size:.68rem; color:var(--muted2); margin-top:.15rem; }
+
+  /* Tienda */
+  .tienda-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:.8rem; margin-top:1.4rem; }
+  .tienda-title { font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  .tienda-add-btn { background:var(--rosa); color:white; border:none; border-radius:20px; padding:.4rem 1rem; font-size:.75rem; font-weight:700; cursor:pointer; font-family:var(--font-body); }
+  .tienda-grid { display:flex; flex-direction:column; gap:.6rem; margin-bottom:1.4rem; }
+  .tienda-card { background:var(--card); border:1.5px solid var(--border); border-radius:14px; padding:.85rem 1rem; display:flex; align-items:center; gap:.8rem; }
+  .tienda-card-info { flex:1; }
+  .tienda-card-nombre { font-size:.88rem; font-weight:700; color:var(--text); }
+  .tienda-card-precio { font-size:.75rem; color:var(--rosa); font-weight:800; margin-top:.1rem; }
+  .tienda-card-comprar { background:var(--rosa); color:white; border:none; border-radius:20px; padding:.4rem .9rem; font-size:.75rem; font-weight:700; cursor:pointer; font-family:var(--font-body); white-space:nowrap; flex-shrink:0; }
+  .tienda-card-comprar:disabled { background:var(--muted2); cursor:not-allowed; }
+  .tienda-empty { text-align:center; color:var(--muted); font-size:.82rem; padding:1.5rem; font-style:italic; }
+
+  /* Historial de compras */
+  .compras-title { font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.6rem; margin-top:1.2rem; }
+  .compra-item { display:flex; align-items:center; gap:.6rem; padding:.5rem 0; border-bottom:1px solid var(--border); font-size:.78rem; }
+  .compra-item:last-child { border-bottom:none; }
+  .compra-item-nombre { flex:1; color:var(--text); font-weight:600; }
+  .compra-item-fecha { color:var(--muted2); font-size:.68rem; }
+  .compra-item-precio { color:var(--rosa); font-weight:800; }
+</style>
+<section class="logros-page-section">
+  <div class="logros-page-header">
+    <span class="section-sub">🚀 gamificación</span>
+    <h1 class="section-title"><em>Mis</em> Logros</h1>
+  </div>
+  <div id="xpRankCard"></div>
+  <div id="xpStreakCard"></div>
+
+  <!-- Flores de Sakura -->
+  <div id="sakuraBalanceCard"></div>
+
+  <!-- Tienda -->
+  <div class="tienda-header">
+    <div class="tienda-title">🌸 Tienda de recompensas</div>
+    <button class="tienda-add-btn" onclick="tiendaOpenAdd()">+ agregar</button>
+  </div>
+  <div class="tienda-grid" id="tiendaGrid"></div>
+
+  <!-- Historial -->
+  <div class="compras-title" id="comprasTitle" style="display:none">🛍️ Mis compras</div>
+  <div id="comprasHistorial"></div>
+
+  <div class="xp-sources-title" style="margin-top:1.4rem">⚡ Cómo ganar EXP y 🌸</div>
+  <div class="xp-sources-grid">
+    <div class="xp-source-card"><div class="xp-source-icon">✅</div><div class="xp-source-label">Tarea completada</div><div class="xp-source-val">+5 EXP · +1 🌸</div></div>
+    <div class="xp-source-card"><div class="xp-source-icon">🌱</div><div class="xp-source-label">Hábito completado</div><div class="xp-source-val">+8 EXP · +2 🌸</div></div>
+    <div class="xp-source-card"><div class="xp-source-icon">🔥</div><div class="xp-source-label">Racha diaria</div><div class="xp-source-val">+15 EXP · +3 🌸</div></div>
+    <div class="xp-source-card"><div class="xp-source-icon">💪</div><div class="xp-source-label">Rutina ejercicio completa</div><div class="xp-source-val">+20 EXP · +5 🌸</div></div>
+    <div class="xp-source-card"><div class="xp-source-icon">😴</div><div class="xp-source-label">Sueño completo</div><div class="xp-source-val">+20 EXP · +5 🌸</div></div>
+    <div class="xp-source-card"><div class="xp-source-icon">⭐</div><div class="xp-source-label">Calidad del sueño</div><div class="xp-source-val">+8 EXP · +2 🌸</div></div>
+    <div class="xp-source-card"><div class="xp-source-icon">⏰</div><div class="xp-source-label">Cumplir horario (±15 min)</div><div class="xp-source-val">+10 EXP · +3 🌸</div></div>
+    <div class="xp-source-card"><div class="xp-source-icon">📚</div><div class="xp-source-label">Cada 3h de estudio</div><div class="xp-source-val">+10 🌸</div></div>
+  </div>
+  <div class="xp-ranks-title">🌌 Todos los rangos</div>
+  <div class="xp-ranks-list" id="xpRanksList"></div>
+</section>
+</div><!-- end page-logros -->
+
+<!-- Modal agregar recompensa -->
+<div id="tiendaModalBackdrop" style="display:none;position:fixed;inset:0;background:rgba(244,167,192,.22);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:9000;align-items:center;justify-content:center;padding:1rem" onclick="if(event.target===this)tiendaCloseAdd()">
+  <div style="background:var(--card);border-radius:20px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;z-index:9001;margin:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:1.1rem 1.3rem .8rem;font-family:var(--font-title);font-style:italic;font-size:1.05rem;font-weight:700;border-bottom:1px solid var(--border)">
+      <span>Nueva recompensa</span>
+      <button onclick="tiendaCloseAdd()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted)">✕</button>
+    </div>
+    <div style="padding:1rem 1.3rem;display:flex;flex-direction:column;gap:.85rem">
+      <div style="background:var(--rosa-soft);border-radius:10px;padding:.7rem .9rem;font-size:.78rem;color:var(--text);font-weight:600">
+        ⚠️ Una vez confirmada, esta recompensa <strong>no se puede editar ni eliminar</strong>. ¡Piénsalo bien!
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.3rem">
+        <label style="font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Nombre de la recompensa</label>
+        <input id="tiendaNombre" style="border:1.5px solid var(--border);border-radius:10px;padding:.5rem .7rem;font-family:var(--font-body);font-size:.88rem;color:var(--text);background:var(--surface);outline:none;width:100%;box-sizing:border-box" placeholder="Ej: Ver una película, Pedir sushi...">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.3rem">
+        <label style="font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Precio en 🌸 flores de Sakura</label>
+        <input id="tiendaPrecio" type="number" min="1" style="border:1.5px solid var(--border);border-radius:10px;padding:.5rem .7rem;font-family:var(--font-body);font-size:.88rem;color:var(--text);background:var(--surface);outline:none;width:100%;box-sizing:border-box" placeholder="Ej: 50">
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:.6rem;padding:.9rem 1.3rem;border-top:1px solid var(--border)">
+      <button onclick="tiendaCloseAdd()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:.45rem 1.1rem;font-size:.8rem;font-weight:700;cursor:pointer;font-family:var(--font-body);color:var(--muted)">Cancelar</button>
+      <button onclick="tiendaConfirmarAdd()" style="background:var(--rosa);border:none;border-radius:20px;padding:.45rem 1.2rem;font-size:.8rem;font-weight:700;cursor:pointer;font-family:var(--font-body);color:white">Confirmar y agregar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var XP_KEY     = 'yuki_xp';
+  var STREAK_KEY = 'yuki_xp_streak';
+  var LAST_KEY   = 'yuki_xp_last_date';
+
+  var RANKS = [
+    { icon:'🌑', label:'Polvo Cósmico',        min:0 },
+    { icon:'⭐', label:'Estrella Naciente',     min:500 },
+    { icon:'🌟', label:'Enana Amarilla',        min:2000 },
+    { icon:'💫', label:'Gigante Brillante',     min:6000 },
+    { icon:'🌠', label:'Supernova',             min:15000 },
+    { icon:'🪐', label:'Nebulosa',              min:35000 },
+    { icon:'🌌', label:'Galaxia',               min:80000 },
+    { icon:'🚀', label:'Viajera Interestelar',  min:200000 },
+  ];
+  window.YUKI_RANKS = RANKS;
+
+  function getXP()     { return parseInt(localStorage.getItem(XP_KEY) || '0'); }
+  function getStreak() { return parseInt(localStorage.getItem(STREAK_KEY) || '0'); }
+  function saveXP(v)   { localStorage.setItem(XP_KEY, v); if(window.cloudSave) window.cloudSave(XP_KEY, v); }
+  function saveStreak(v){ localStorage.setItem(STREAK_KEY, v); if(window.cloudSave) window.cloudSave(STREAK_KEY, v); }
+
+  function todayStr() {
+    var d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+
+  function getCurrentRank(xp) {
+    var rank = RANKS[0];
+    for (var i = RANKS.length-1; i >= 0; i--) { if (xp >= RANKS[i].min) { rank = RANKS[i]; break; } }
+    return rank;
+  }
+
+  // ── Ganar EXP
+  window.yukiAddXP = function(amount, reason) {
+    var xp = getXP() + amount;
+    saveXP(xp);
+    if (window.renderWidgets) window.renderWidgets();
+    renderLogrosPage();
+  };
+
+  // ── Racha diaria: llamar una vez al día cuando se completa algo
+  window.yukiCheckStreak = function() {
+    var today = todayStr();
+    var last  = localStorage.getItem(LAST_KEY) || '';
+    if (last === today) return; // ya se contó hoy
+    var streak = getStreak();
+    // ¿Fue ayer?
+    var yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+    var yStr = yesterday.getFullYear()+'-'+String(yesterday.getMonth()+1).padStart(2,'0')+'-'+String(yesterday.getDate()).padStart(2,'0');
+    if (last === yStr) {
+      streak++;
+    } else if (last !== today) {
+      streak = 1; // racha rota
+    }
+    saveStreak(streak);
+    localStorage.setItem(LAST_KEY, today);
+    if(window.cloudSave) window.cloudSave(LAST_KEY, today);
+    if(window.cloudSave) window.cloudSave(STREAK_KEY, streak);
+    // EXP por racha
+    window.yukiAddXP(15 * streak, 'Racha día '+streak);
+  };
+
+  function renderLogrosPage() {
+    var xp     = getXP();
+    var streak = getStreak();
+    var rank   = getCurrentRank(xp);
+    var rankIdx = RANKS.indexOf(rank);
+    var nextRank = RANKS[rankIdx+1] || null;
+    var pct = nextRank ? Math.min(100, Math.round((xp-rank.min)/(nextRank.min-rank.min)*100)) : 100;
+
+    // Tarjeta de rango
+    var rankCard = document.getElementById('xpRankCard');
+    if (rankCard) {
+      var stars = '';
+      for (var i=0;i<12;i++) {
+        var top=Math.random()*100, left=Math.random()*100, delay=Math.random()*3;
+        stars += '<div class="xp-star" style="top:'+top+'%;left:'+left+'%;animation-delay:'+delay+'s">✦</div>';
+      }
+      rankCard.innerHTML =
+        '<div class="xp-rank-card">' +
+          '<div class="xp-stars">'+stars+'</div>' +
+          '<div class="xp-rank-icon">'+rank.icon+'</div>' +
+          '<div class="xp-rank-name">'+rank.label+'</div>' +
+          '<div class="xp-rank-xp">'+xp.toLocaleString('es-MX')+' EXP totales</div>' +
+          '<div class="xp-bar-wrap"><div class="xp-bar-fill" style="width:'+pct+'%"></div></div>' +
+          '<div class="xp-bar-labels"><span>'+(rank.min).toLocaleString('es-MX')+'</span><span>'+(nextRank?nextRank.min.toLocaleString('es-MX'):'∞')+'</span></div>' +
+          (nextRank ? '<div class="xp-next-rank">Faltan '+(nextRank.min-xp).toLocaleString('es-MX')+' EXP para '+nextRank.icon+' '+nextRank.label+'</div>' : '<div class="xp-next-rank">🌌 ¡Rango máximo alcanzado!</div>') +
+        '</div>';
+    }
+
+    // Racha
+    var streakCard = document.getElementById('xpStreakCard');
+    if (streakCard) {
+      streakCard.innerHTML =
+        '<div class="xp-streak-card">' +
+          '<div class="xp-streak-fire">🔥</div>' +
+          '<div>' +
+            '<div class="xp-streak-num">'+streak+'</div>' +
+            '<div class="xp-streak-label">días de racha consecutiva</div>' +
+          '</div>' +
+          '<div style="margin-left:auto;font-size:.75rem;color:var(--muted);font-weight:700;text-align:right">+'+( 15*streak).toLocaleString('es-MX')+'<br>EXP/día</div>' +
+        '</div>';
+    }
+
+    // Lista de rangos
+    var ranksList = document.getElementById('xpRanksList');
+    if (ranksList) {
+      ranksList.innerHTML = '';
+      RANKS.forEach(function(r, i) {
+        var row = document.createElement('div');
+        var achieved = xp >= r.min;
+        var isCurrent = rank === r;
+        row.className = 'xp-rank-row' + (isCurrent?' current':achieved?' achieved':'');
+        row.innerHTML =
+          '<div class="xp-rank-row-icon">'+r.icon+'</div>' +
+          '<div class="xp-rank-row-info">' +
+            '<div class="xp-rank-row-name">'+r.label+'</div>' +
+            '<div class="xp-rank-row-req">'+r.min.toLocaleString('es-MX')+' EXP</div>' +
+          '</div>' +
+          (isCurrent ? '<div class="xp-rank-row-badge">✦ Actual</div>' : achieved ? '<div class="xp-rank-row-badge" style="color:var(--verde)">✓</div>' : '');
+        ranksList.appendChild(row);
+      });
+    }
+  }
+
+  // ── Hook: completar tarea → +5 EXP
+  var _origComplete = window.toggleComplete;
+  window.toggleComplete = function(taskId, date) {
+    if (_origComplete) _origComplete(taskId, date);
+    try {
+      var completions = JSON.parse(localStorage.getItem('completions')||'{}');
+      var key = taskId + '|' + date;
+      // Solo sumar si se acaba de marcar (no desmarcar)
+      if (completions[key]) {
+        window.yukiAddXP(5, 'Tarea');
+        window.yukiCheckStreak();
+      }
+    } catch(e){}
+  };
+
+  // ── Hook: completar hábito → +8 EXP
+  var _origHabitoLog = window.habitoToggleLog;
+  window.habitoToggleLog = function(id, dk) {
+    if (_origHabitoLog) _origHabitoLog(id, dk);
+    try {
+      var habitos = JSON.parse(localStorage.getItem('habitos_data')||'[]');
+      var h = habitos.find(function(x){ return x.id===id; });
+      if (h && h.log && h.log.indexOf(dk) > -1) {
+        window.yukiAddXP(8, 'Hábito');
+        window.yukiCheckStreak();
+      }
+    } catch(e){}
+  };
+
+  // Render al cargar
+  renderLogrosPage();
+  if (window.cloudSave) {
+    // También agregar a mirrorKeys dinámicamente si no está
+  }
+
+  // Re-render al entrar a la página
+  var _origShowXP = window.showPage;
+  window.showPage = function(pageId) {
+    if (_origShowXP) _origShowXP(pageId);
+    if (pageId === 'page-logros') renderLogrosPage();
+  };
+})();
+</script>
+
+<script>
+// ── FLORES DE SAKURA 🌸 + TIENDA
+(function(){
+  var SAKURA_KEY   = 'yuki_sakura';
+  var TIENDA_KEY   = 'yuki_tienda_recompensas';
+  var COMPRAS_KEY  = 'yuki_compras_historial';
+  var STUDY_KEY    = 'yuki_study_minutes'; // minutos acumulados de estudio
+
+  function getSakura()  { return parseInt(localStorage.getItem(SAKURA_KEY)  || '0'); }
+  function getTienda()  { try { return JSON.parse(localStorage.getItem(TIENDA_KEY)  || '[]'); } catch(e){ return []; } }
+  function getCompras() { try { return JSON.parse(localStorage.getItem(COMPRAS_KEY) || '[]'); } catch(e){ return []; } }
+  function getStudyMin(){ return parseInt(localStorage.getItem(STUDY_KEY) || '0'); }
+
+  function saveSakura(v)  { localStorage.setItem(SAKURA_KEY, v);  if(window.cloudSave) window.cloudSave(SAKURA_KEY, v); }
+  function saveTienda(v)  { localStorage.setItem(TIENDA_KEY, JSON.stringify(v));  if(window.cloudSave) window.cloudSave(TIENDA_KEY, v); }
+  function saveCompras(v) { localStorage.setItem(COMPRAS_KEY, JSON.stringify(v)); if(window.cloudSave) window.cloudSave(COMPRAS_KEY, v); }
+  function saveStudyMin(v){ localStorage.setItem(STUDY_KEY, v); if(window.cloudSave) window.cloudSave(STUDY_KEY, v); }
+
+  // ── Ganar flores
+  window.yukiAddSakura = function(amount) {
+    var s = getSakura() + amount;
+    saveSakura(s);
+    renderTiendaPage();
+    if (window.renderWidgets) window.renderWidgets();
+  };
+
+  // ── Horas de estudio → cada 3h acumuladas = +10 🌸
+  window.yukiAddStudyMinutes = function(mins) {
+    var prev = getStudyMin();
+    var next = prev + mins;
+    var prevBlocks = Math.floor(prev / 180);
+    var nextBlocks = Math.floor(next / 180);
+    if (nextBlocks > prevBlocks) {
+      var earned = (nextBlocks - prevBlocks) * 10;
+      window.yukiAddSakura(earned);
+    }
+    saveStudyMin(next);
+  };
+
+  // Enganchar también flores a tareas/hábitos/racha
+  var _origAddXP = window.yukiAddXP;
+  window.yukiAddXP = function(amount, reason) {
+    if (_origAddXP) _origAddXP(amount, reason);
+    if (reason === 'Tarea')   window.yukiAddSakura(1);
+    if (reason === 'Hábito')  window.yukiAddSakura(2);
+    if (reason && reason.indexOf('Racha') === 0) window.yukiAddSakura(3);
+  };
+
+  // ── Tienda
+  window.tiendaOpenAdd = function() {
+    document.getElementById('tiendaNombre').value = '';
+    document.getElementById('tiendaPrecio').value = '';
+    var bd = document.getElementById('tiendaModalBackdrop');
+    bd.style.display = 'flex';
+  };
+  window.tiendaCloseAdd = function() {
+    document.getElementById('tiendaModalBackdrop').style.display = 'none';
+  };
+  window.tiendaConfirmarAdd = function() {
+    var nombre = document.getElementById('tiendaNombre').value.trim();
+    var precio = parseInt(document.getElementById('tiendaPrecio').value);
+    if (!nombre) { alert('Ponle un nombre a la recompensa 🌸'); return; }
+    if (!precio || precio < 1) { alert('El precio debe ser al menos 1 🌸'); return; }
+    if (!confirm('¿Confirmas agregar "'+nombre+'" por '+precio+' 🌸?\n\nRecuerda: no podrás editarla ni eliminarla después.')) return;
+    var tienda = getTienda();
+    tienda.push({ id:'tr_'+Date.now(), nombre:nombre, precio:precio });
+    saveTienda(tienda);
+    tiendaCloseAdd();
+    renderTiendaPage();
+  };
+
+  window.tiendaComprar = function(id) {
+    var tienda  = getTienda();
+    var item    = tienda.find(function(x){ return x.id===id; });
+    if (!item) return;
+    var sakura  = getSakura();
+    if (sakura < item.precio) { alert('No tienes suficientes flores 🌸\nNecesitas '+item.precio+' y tienes '+sakura); return; }
+    if (!confirm('¿Canjear "'+item.nombre+'" por '+item.precio+' 🌸?')) return;
+    saveSakura(sakura - item.precio);
+    var compras = getCompras();
+    compras.unshift({ nombre:item.nombre, precio:item.precio, fecha: new Date().toLocaleDateString('es-MX') });
+    saveCompras(compras);
+    renderTiendaPage();
+    if (window.renderWidgets) window.renderWidgets();
+    alert('¡Disfrutalo mucho! 🌸✨\n"'+item.nombre+'" es tuyo.');
+  };
+
+  function renderTiendaPage() {
+    var sakura  = getSakura();
+    var tienda  = getTienda();
+    var compras = getCompras();
+
+    // Balance sakura
+    var balCard = document.getElementById('sakuraBalanceCard');
+    if (balCard) {
+      balCard.innerHTML =
+        '<div class="sakura-balance-card">' +
+          '<div class="sakura-balance-icon">🌸</div>' +
+          '<div>' +
+            '<div class="sakura-balance-num">'+sakura.toLocaleString('es-MX')+'</div>' +
+            '<div class="sakura-balance-label">Flores de Sakura disponibles</div>' +
+            '<div class="sakura-earn-info">Ganas flores completando tareas, hábitos y rachas 🌸</div>' +
+          '</div>' +
+        '</div>';
+    }
+
+    // Tienda grid
+    var grid = document.getElementById('tiendaGrid');
+    if (grid) {
+      grid.innerHTML = '';
+      if (tienda.length === 0) {
+        grid.innerHTML = '<div class="tienda-empty">Aún no tienes recompensas. ¡Agrega las cosas que te gustan! 🌸</div>';
+      } else {
+        tienda.forEach(function(item) {
+          var canBuy = sakura >= item.precio;
+          var card = document.createElement('div');
+          card.className = 'tienda-card';
+          card.innerHTML =
+            '<div class="tienda-card-info">' +
+              '<div class="tienda-card-nombre">'+item.nombre+'</div>' +
+              '<div class="tienda-card-precio">'+item.precio+' 🌸</div>' +
+            '</div>' +
+            '<button class="tienda-card-comprar" '+(canBuy?'':'disabled')+' onclick="tiendaComprar(\''+item.id+'\')">'+
+              (canBuy ? 'Canjear' : 'Faltan '+(item.precio-sakura)+'🌸') +
+            '</button>';
+          grid.appendChild(card);
+        });
+      }
+    }
+
+    // Historial
+    var hist = document.getElementById('comprasHistorial');
+    var title = document.getElementById('comprasTitle');
+    if (hist) {
+      hist.innerHTML = '';
+      if (compras.length > 0) {
+        if (title) title.style.display = '';
+        compras.slice(0,10).forEach(function(c) {
+          var item = document.createElement('div');
+          item.className = 'compra-item';
+          item.innerHTML =
+            '<span class="compra-item-nombre">🌸 '+c.nombre+'</span>' +
+            '<span class="compra-item-fecha">'+c.fecha+'</span>' +
+            '<span class="compra-item-precio">-'+c.precio+' 🌸</span>';
+          hist.appendChild(item);
+        });
+      } else {
+        if (title) title.style.display = 'none';
+      }
+    }
+  }
+
+  // Widget de flores en inicio
+  var _origRW = window.renderWidgets;
+  window.renderWidgets = function() {
+    if (_origRW) _origRW();
+    var row = document.getElementById('widgetsRow');
+    if (!row) return;
+    var sakura = getSakura();
+    var card = document.createElement('div');
+    card.className = 'widget-card';
+    card.onclick = function(){ if(window.showPage) window.showPage('page-logros'); };
+    card.innerHTML =
+      '<div class="widget-icon">🌸</div>' +
+      '<div>' +
+        '<div class="widget-value" style="color:var(--rosa)">'+sakura.toLocaleString('es-MX')+'</div>' +
+        '<div class="widget-sub">flores de Sakura</div>' +
+      '</div>' +
+      '<div class="widget-label">Tienda de recompensas</div>';
+    row.appendChild(card);
+  };
+
+  renderTiendaPage();
+})();
+</script>
+
 <div id="page-semana" class="page-section">
 <header class="header" id="sec-semana">
   <span class="week-label">🌿 organizador semanal</span>
@@ -6072,12 +6623,6 @@ function todayKey() { return dateKey(new Date()); }
     <button class="nav-btn" id="nextWeek">›</button>
   </div>
 </header>
-
-<div class="legend">
-  <div class="legend-item"><div class="legend-dot" style="background:#e8b87a"></div> Mañana</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#e895ad"></div> Tarde</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#8fc07e"></div> Noche</div>
-</div>
 
 <div class="grid-outer" id="gridOuter"></div>
 
@@ -8468,6 +9013,12 @@ function renderEjPasos(card, tpl, reg, regIdx, dk) {
       var allDone = total > 0 && done === total;
       card.querySelector('.ejercicio-card-meta').textContent = done + '/' + total + ' ejercicios';
       card.querySelector('.ejercicio-prog-mini-fill').style.width = pct + '%';
+      // 🎮 Rutina completada al 100% → EXP + flores
+      if (allDone && idx === -1) {
+        if (window.yukiAddXP) window.yukiAddXP(20, 'Ejercicio');
+        if (window.yukiAddSakura) window.yukiAddSakura(5);
+        if (window.yukiCheckStreak) window.yukiCheckStreak();
+      }
     };
 
     wrap.appendChild(row);
@@ -10852,6 +11403,33 @@ document.addEventListener('DOMContentLoaded', function() {
 </div><!-- end page-selfcare -->
 <div id="page-salud" class="page-section">
 <div id="sec-salud" style="scroll-margin-top:60px"></div>
+
+<!-- Header + Tabs de Salud -->
+<div class="salud-tabs-header">
+  <div>
+    <span class="section-sub">🍏 salud</span>
+    <h1 class="section-title"><em>Mi</em> Salud</h1>
+  </div>
+</div>
+<div class="salud-tabs">
+  <button class="salud-tab active" id="saludTabRegistros"  onclick="saludShowTab('registros')">📋 Registros</button>
+  <button class="salud-tab"        id="saludTabRutina"     onclick="saludShowTab('rutina')">⏰ Mis Horas</button>
+  <button class="salud-tab"        id="saludTabEstadisticas" onclick="saludShowTab('estadisticas')">📈 Progreso</button>
+</div>
+<script>
+window.saludShowTab = function(tab) {
+  ['registros','rutina','estadisticas'].forEach(function(t) {
+    var el  = document.getElementById('saludTab' + t.charAt(0).toUpperCase() + t.slice(1) + '-content');
+    var btn = document.getElementById('saludTab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el)  el.style.display = (t === tab) ? '' : 'none';
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
+  if (tab === 'estadisticas' && window.renderResumenSalud) window.renderResumenSalud();
+};
+</script>
+
+<!-- TAB: Registros -->
+<div id="saludTabRegistros-content">
 <section class="tracker-section" id="sec-tracker">
   <span class="section-sub">💧 cuidado personal</span>
   <h2 class="section-title"><em>Agua</em> & <em>Comidas</em></h2>
@@ -10874,16 +11452,71 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="tracker-card food-card">
       <div class="tracker-card-title">🍽️ Comidas del día</div>
       <div class="food-days" id="foodGrid"></div>
-      <div class="food-legend">
-        <div class="food-legend-item">🌅 Desayuno</div>
-        <div class="food-legend-item">☀️ Almuerzo</div>
-        <div class="food-legend-item">🌙 Cena</div>
-        <div class="food-legend-item">🍎 Snack</div>
-      </div>
     </div>
 
   </div>
 </section>
+
+<!-- Modal comida -->
+<div class="food-modal-backdrop" id="foodModalBackdrop" style="display:none" onclick="if(event.target===this)foodCloseModal()">
+  <div class="food-modal">
+    <div class="food-modal-header">
+      <span id="foodModalTitle">🌅 Desayuno</span>
+      <div style="display:flex;gap:.4rem;align-items:center">
+        <button id="foodModalEditBtn" onclick="foodSetEditing(true)" style="display:none;background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--muted)" title="Editar">✏️</button>
+        <button onclick="foodCloseModal()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted)">✕</button>
+      </div>
+    </div>
+
+    <!-- Vista solo lectura -->
+    <div class="food-modal-body" id="foodModalView">
+      <div class="food-view-empty" id="foodViewEmpty" style="display:none">
+        <span>Aún no has registrado esta comida 🌿</span>
+      </div>
+      <div id="foodViewData">
+        <div class="food-view-row" id="foodViewTextoRow">
+          <div class="food-modal-label">¿Qué comiste?</div>
+          <div class="food-view-value" id="foodViewTexto"></div>
+        </div>
+        <div class="food-view-row" id="foodViewHoraRow">
+          <div class="food-modal-label">Hora</div>
+          <div class="food-view-value" id="foodViewHora"></div>
+        </div>
+        <div class="food-view-row" id="foodViewQualityRow">
+          <div class="food-modal-label">¿Qué tan saludable fue?</div>
+          <div class="food-view-value" id="foodViewQuality"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista edición -->
+    <div class="food-modal-body" id="foodModalEdit" style="display:none">
+      <div class="food-modal-field">
+        <label class="food-modal-label">¿Qué comiste?</label>
+        <textarea class="food-modal-input" id="foodModalTexto" rows="3" placeholder="Ej: Avena con fruta, tacos de pollo…" style="resize:none"></textarea>
+      </div>
+      <div class="food-modal-field">
+        <label class="food-modal-label">Hora aproximada</label>
+        <input class="food-modal-input" type="time" id="foodModalHora">
+      </div>
+      <div class="food-modal-field">
+        <label class="food-modal-label">¿Qué tan saludable fue?</label>
+        <div class="food-quality-row" id="foodQualityRow">
+          <button class="food-quality-btn" data-val="1" onclick="foodPickQuality(1)">😬<span>Poco</span></button>
+          <button class="food-quality-btn" data-val="2" onclick="foodPickQuality(2)">😐<span>Regular</span></button>
+          <button class="food-quality-btn" data-val="3" onclick="foodPickQuality(3)">🙂<span>Bien</span></button>
+          <button class="food-quality-btn" data-val="4" onclick="foodPickQuality(4)">😋<span>Muy bien</span></button>
+        </div>
+        <input type="hidden" id="foodModalQuality" value="">
+      </div>
+    </div>
+
+    <div class="food-modal-footer" id="foodModalFooter" style="display:none">
+      <button class="food-modal-cancel" onclick="foodSetEditing(false)">Cancelar</button>
+      <button class="food-modal-save" onclick="foodSaveModal()">Guardar</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // --- CONFIG -----------------------------------------------
@@ -12500,7 +13133,8 @@ function renderTracker() {
 
     MEALS.forEach(meal => {
       const key = 'f_' + todayDk + '_' + meal.id;
-      const eaten = !!foodState[key];
+      const data = foodState[key]; // ahora es objeto o bool
+      const eaten = !!data;
 
       const mealItem = document.createElement('div');
       mealItem.className = 'meal-item';
@@ -12508,25 +13142,126 @@ function renderTracker() {
       const dot = document.createElement('div');
       dot.className = 'meal-dot' + (eaten ? ' eaten' : '');
       dot.textContent = meal.icon;
-      dot.title = meal.label + (eaten ? ' ✓' : ' - pendiente');
-      dot.onclick = () => {
-        foodState[key] = !foodState[key];
-        saveTracker();
-        renderTracker();
-      };
+      dot.title = meal.label;
+      dot.onclick = () => foodOpenModal(key, meal);
 
       const lbl = document.createElement('div');
       lbl.className = 'meal-dot-label';
       lbl.textContent = meal.label;
 
-      mealItem.appendChild(dot);
-      mealItem.appendChild(lbl);
+      // Si tiene hora guardada, mostrarla bajo el label
+      if (data && data.hora) {
+        const horaLbl = document.createElement('div');
+        horaLbl.className = 'meal-dot-label';
+        horaLbl.textContent = data.hora;
+        mealItem.appendChild(dot);
+        mealItem.appendChild(lbl);
+        mealItem.appendChild(horaLbl);
+      } else {
+        mealItem.appendChild(dot);
+        mealItem.appendChild(lbl);
+      }
+
       col.appendChild(mealItem);
     });
 
     fGrid.appendChild(col);
   }
 }
+
+// ── Food modal
+var _foodModalKey = null;
+var _foodModalMeal = null;
+const QUALITY_LABELS = { '1':'😬 Poco', '2':'😐 Regular', '3':'🙂 Bien', '4':'😋 Muy bien' };
+
+window.foodOpenModal = function(key, meal) {
+  _foodModalKey = key;
+  _foodModalMeal = meal;
+  const data = foodState[key];
+  document.getElementById('foodModalTitle').textContent = meal.icon + ' ' + meal.label;
+
+  if (data && data.eaten) {
+    // Tiene datos → mostrar vista lectura
+    foodRenderView(data);
+    foodSetEditing(false, true);
+  } else {
+    // Sin datos → ir directo a edición
+    foodSetEditing(true, true);
+  }
+  document.getElementById('foodModalBackdrop').style.display = 'flex';
+};
+
+function foodRenderView(data) {
+  const hasTexto   = !!(data && data.texto);
+  const hasHora    = !!(data && data.hora);
+  const hasQuality = !!(data && data.quality);
+  const hasAny = hasTexto || hasHora || hasQuality;
+
+  document.getElementById('foodViewEmpty').style.display = hasAny ? 'none' : '';
+  document.getElementById('foodViewData').style.display  = hasAny ? '' : 'none';
+
+  document.getElementById('foodViewTextoRow').style.display   = hasTexto ? '' : 'none';
+  document.getElementById('foodViewHoraRow').style.display    = hasHora ? '' : 'none';
+  document.getElementById('foodViewQualityRow').style.display = hasQuality ? '' : 'none';
+
+  document.getElementById('foodViewTexto').textContent   = data && data.texto   ? data.texto : '';
+  document.getElementById('foodViewHora').textContent    = data && data.hora    ? data.hora  : '';
+  document.getElementById('foodViewQuality').textContent = data && data.quality ? (QUALITY_LABELS[data.quality] || '') : '';
+}
+
+window.foodSetEditing = function(editing, skipPopulate) {
+  document.getElementById('foodModalView').style.display   = editing ? 'none' : '';
+  document.getElementById('foodModalEdit').style.display   = editing ? '' : 'none';
+  document.getElementById('foodModalFooter').style.display = editing ? '' : 'none';
+  document.getElementById('foodModalEditBtn').style.display = editing ? 'none' : '';
+
+  if (editing && !skipPopulate) {
+    // Populate edit fields from saved data
+    const data = foodState[_foodModalKey] || {};
+    document.getElementById('foodModalTexto').value = data.texto || '';
+    document.getElementById('foodModalHora').value  = data.hora  || '';
+    document.getElementById('foodModalQuality').value = data.quality || '';
+    document.querySelectorAll('.food-quality-btn').forEach(function(b) {
+      b.classList.toggle('active', String(b.dataset.val) === String(data.quality || ''));
+    });
+    setTimeout(function(){ document.getElementById('foodModalTexto').focus(); }, 150);
+  } else if (editing && skipPopulate) {
+    // New entry — clear fields
+    const data = foodState[_foodModalKey] || {};
+    document.getElementById('foodModalTexto').value = data.texto || '';
+    document.getElementById('foodModalHora').value  = data.hora  || '';
+    document.getElementById('foodModalQuality').value = data.quality || '';
+    document.querySelectorAll('.food-quality-btn').forEach(function(b) {
+      b.classList.toggle('active', String(b.dataset.val) === String(data.quality || ''));
+    });
+  }
+};
+
+window.foodCloseModal = function() {
+  document.getElementById('foodModalBackdrop').style.display = 'none';
+  _foodModalKey = null;
+  _foodModalMeal = null;
+};
+
+window.foodPickQuality = function(val) {
+  document.getElementById('foodModalQuality').value = val;
+  document.querySelectorAll('.food-quality-btn').forEach(function(b) {
+    b.classList.toggle('active', Number(b.dataset.val) === val);
+  });
+};
+
+window.foodSaveModal = function() {
+  if (!_foodModalKey) return;
+  const texto   = document.getElementById('foodModalTexto').value.trim();
+  const hora    = document.getElementById('foodModalHora').value;
+  const quality = document.getElementById('foodModalQuality').value;
+  foodState[_foodModalKey] = { eaten: true, texto, hora, quality };
+  saveTracker();
+  // Volver a vista lectura con datos actualizados
+  foodRenderView(foodState[_foodModalKey]);
+  foodSetEditing(false);
+  renderTracker();
+};
 
 // Patch nav buttons for tracker too
 document.getElementById('prevWeek').addEventListener('click', () => renderTracker());
@@ -12615,6 +13350,1172 @@ renderTracker();
     <div id="ejPlantillasList"></div>
   </div>
 </section>
+
+<!-- ══════════════════════════════════════════
+     SECCIÓN · TOMAR UNA DECISIÓN
+══════════════════════════════════════════ -->
+<section class="decision-section" id="sec-decision">
+  <div class="decision-header">
+    <div>
+      <span class="section-sub">🧠 impulsividad</span>
+      <h2 class="section-title"><em>Tomar una</em> Decisión</h2>
+      <p class="decision-desc">Antes de actuar, piénsalo aquí 💭</p>
+    </div>
+    <button class="decision-new-btn" id="decisionNewBtn">+ nueva</button>
+  </div>
+
+  <!-- Formulario -->
+  <div class="decision-form" id="decisionForm" style="display:none">
+    <div class="decision-form-inner">
+
+      <!-- Dilema + fechas -->
+      <div class="dec-field">
+        <label class="dec-label">¿Cuál es el dilema?</label>
+        <textarea class="dec-input" id="decDilema" rows="2" placeholder="Describe la situación o decisión que necesitas tomar…"></textarea>
+      </div>
+      <div class="dec-row-2">
+        <div class="dec-field">
+          <label class="dec-label">Fecha</label>
+          <input class="dec-input" type="date" id="decFecha">
+        </div>
+        <div class="dec-field">
+          <label class="dec-label">Decidir antes de…</label>
+          <input class="dec-input" type="date" id="decDeadline">
+        </div>
+      </div>
+
+      <!-- Niveles -->
+      <div class="dec-field">
+        <label class="dec-label">Importancia de la decisión</label>
+        <div class="dec-chips" id="decImportancia">
+          <button class="dec-chip" data-val="trivial">🤏 Trivial</button>
+          <button class="dec-chip" data-val="worthwhile">👍 Vale la pena</button>
+          <button class="dec-chip" data-val="weighty">⚖️ Importante</button>
+          <button class="dec-chip" data-val="lifechanging">🌟 Cambia mi vida</button>
+        </div>
+      </div>
+      <div class="dec-field">
+        <label class="dec-label">Nivel de indecisión</label>
+        <div class="dec-chips" id="decIndecision">
+          <button class="dec-chip" data-val="wishy">🌊 Muy indecisa</button>
+          <button class="dec-chip" data-val="neutral">😐 Neutral</button>
+          <button class="dec-chip" data-val="partisan">🤔 Casi decidida</button>
+          <button class="dec-chip" data-val="mindmadeup">✅ Ya sé qué quiero</button>
+        </div>
+      </div>
+
+      <!-- Escenarios -->
+      <div class="dec-field">
+        <label class="dec-label">🌈 Mejor escenario posible</label>
+        <textarea class="dec-input" id="decMejor" rows="2" placeholder="Si sale todo bien…"></textarea>
+        <label class="dec-checkbox-row">
+          <input type="checkbox" id="decPipedream"> <span>¿Es un sueño pipe dream?</span>
+        </label>
+      </div>
+      <div class="dec-field">
+        <label class="dec-label">⛈️ Peor escenario posible</label>
+        <textarea class="dec-input" id="decPeor" rows="2" placeholder="En el peor caso…"></textarea>
+        <label class="dec-checkbox-row">
+          <input type="checkbox" id="decApocalypse"> <span>¿Es apocalíptico?</span>
+        </label>
+      </div>
+
+      <!-- Gut feelings + pros/cons -->
+      <div class="dec-two-col">
+        <div class="dec-field">
+          <label class="dec-label">💭 Sentimiento gut</label>
+          <textarea class="dec-input" id="decGut" rows="5" placeholder="¿Qué te dice tu instinto?"></textarea>
+        </div>
+        <div class="dec-field">
+          <label class="dec-label">⚖️ Pros y contras</label>
+          <div class="dec-proscons" id="decProsCons">
+            <div class="dec-proscons-list" id="decProsList"></div>
+            <div class="dec-proscons-list" id="decConsList"></div>
+          </div>
+          <div class="dec-proscons-add">
+            <button class="dec-add-btn pro" onclick="decAddPro()">+ Pro</button>
+            <button class="dec-add-btn con" onclick="decAddCon()">− Contra</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conclusiones -->
+      <div class="dec-two-col">
+        <div class="dec-field">
+          <label class="dec-label">❤️ ¿Qué dice mi corazón?</label>
+          <textarea class="dec-input" id="decConcIntuitiva" rows="3" placeholder="Tu corazón dice…"></textarea>
+        </div>
+        <div class="dec-field">
+          <label class="dec-label">🧠 ¿Qué dice mi mente?</label>
+          <textarea class="dec-input" id="decConcRacional" rows="3" placeholder="Tu cabeza dice…"></textarea>
+        </div>
+      </div>
+      <div class="dec-two-col">
+        <div class="dec-field">
+          <label class="dec-label">✝️ ¿Qué haría Jesús?</label>
+          <textarea class="dec-input" id="decJesus" rows="3" placeholder="¿Qué crees que Él haría en tu lugar?"></textarea>
+        </div>
+        <div class="dec-field">
+          <label class="dec-label">📖 ¿Qué dice la Biblia?</label>
+          <textarea class="dec-input" id="decBiblia" rows="3" placeholder="Algún versículo, enseñanza o principio que aplique…"></textarea>
+        </div>
+      </div>
+
+      <!-- Decisión final -->
+      <div class="dec-field">
+        <label class="dec-label">🎯 Mi decisión</label>
+        <textarea class="dec-input" id="decDecision" rows="2" placeholder="Después de pensar todo esto, mi decisión es…"></textarea>
+        <label class="dec-checkbox-row">
+          <input type="checkbox" id="decForToday"> <span>Solo por hoy</span>
+        </label>
+      </div>
+      <div class="dec-field">
+        <label class="dec-label">👣 Próximos pasos</label>
+        <div id="decStepsList"></div>
+        <button class="dec-add-step-btn" onclick="decAddStep()">+ agregar paso</button>
+      </div>
+
+      <!-- Botones -->
+      <div class="dec-form-btns">
+        <button class="dec-cancel-btn" onclick="decCancelForm()">Cancelar</button>
+        <button class="dec-save-btn" onclick="decSave()">Guardar decisión</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historial de decisiones -->
+  <div class="decision-list" id="decisionList"></div>
+</section>
+
+<!-- Modal ver decisión -->
+<div class="dec-view-backdrop" id="decViewBackdrop" style="display:none" onclick="if(event.target===this)decCloseView()">
+  <div class="dec-view-modal">
+    <div class="dec-view-header">
+      <span id="decViewTitle"></span>
+      <div style="display:flex;gap:.4rem">
+        <button onclick="decEditFromView()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--muted)">✏️</button>
+        <button onclick="decCloseView()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted)">✕</button>
+      </div>
+    </div>
+    <div class="dec-view-body" id="decViewBody"></div>
+  </div>
+</div>
+
+<style>
+  .decision-section { max-width: 780px; margin: 2rem auto 0; padding: 0 1rem 3rem; animation: fadeUp .5s .3s ease both; opacity:0; animation-fill-mode:both; }
+  .decision-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1rem; }
+  .decision-desc { font-size:.78rem; color:var(--muted); margin:.2rem 0 0; font-weight:600; }
+  .decision-new-btn { background:var(--rosa); color:white; border:none; border-radius:20px; padding:.45rem 1.1rem; font-size:.78rem; font-weight:700; cursor:pointer; font-family:var(--font-body); white-space:nowrap; }
+
+  /* Form */
+  .decision-form { margin-bottom:1.5rem; }
+  .decision-form-inner { background:var(--card); border:1.5px solid var(--border); border-radius:18px; padding:1.2rem; display:flex; flex-direction:column; gap:1rem; }
+  .dec-field { display:flex; flex-direction:column; gap:.3rem; }
+  .dec-label { font-size:.7rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  .dec-input { border:1.5px solid var(--border); border-radius:10px; padding:.5rem .7rem; font-family:var(--font-body); font-size:.88rem; color:var(--text); background:var(--surface); outline:none; width:100%; box-sizing:border-box; resize:none; }
+  .dec-input:focus { border-color:var(--rosa); }
+  .dec-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; }
+  .dec-two-col { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; }
+  @media(max-width:520px){ .dec-two-col, .dec-row-2 { grid-template-columns:1fr; } }
+
+  /* Chips */
+  .dec-chips { display:flex; flex-wrap:wrap; gap:.4rem; }
+  .dec-chip { padding:.35rem .75rem; border:1.5px solid var(--border); border-radius:20px; background:var(--surface); font-family:var(--font-body); font-size:.72rem; font-weight:700; color:var(--muted); cursor:pointer; transition:all .15s; }
+  .dec-chip.active { background:var(--rosa); border-color:var(--rosa); color:white; }
+
+  /* Checkbox */
+  .dec-checkbox-row { display:flex; align-items:center; gap:.4rem; font-size:.75rem; color:var(--muted); font-weight:600; cursor:pointer; margin-top:.3rem; }
+
+  /* Pros/cons */
+  .dec-proscons { display:flex; flex-direction:column; gap:.3rem; margin-bottom:.4rem; }
+  .dec-proscons-item { display:flex; align-items:center; gap:.4rem; }
+  .dec-proscons-item input { flex:1; border:1.5px solid var(--border); border-radius:8px; padding:.3rem .5rem; font-size:.8rem; font-family:var(--font-body); background:var(--surface); color:var(--text); outline:none; }
+  .dec-proscons-item input:focus { border-color:var(--rosa); }
+  .dec-proscons-item .dec-sign { font-weight:900; font-size:.9rem; width:16px; flex-shrink:0; }
+  .dec-proscons-item .dec-sign.pro { color:var(--verde); }
+  .dec-proscons-item .dec-sign.con { color:var(--rosa); }
+  .dec-proscons-item button { background:none; border:none; color:var(--muted2); cursor:pointer; font-size:.8rem; padding:0 .2rem; }
+  .dec-proscons-add { display:flex; gap:.5rem; }
+  .dec-add-btn { padding:.3rem .8rem; border-radius:20px; border:1.5px solid var(--border); background:var(--surface); font-family:var(--font-body); font-size:.72rem; font-weight:700; cursor:pointer; }
+  .dec-add-btn.pro { color:var(--verde); border-color:var(--verde); }
+  .dec-add-btn.con { color:var(--rosa); border-color:var(--rosa); }
+
+  /* Steps */
+  .dec-step-row { display:flex; align-items:center; gap:.4rem; margin-bottom:.3rem; }
+  .dec-step-row input { flex:1; border:1.5px solid var(--border); border-radius:8px; padding:.35rem .5rem; font-size:.82rem; font-family:var(--font-body); background:var(--surface); color:var(--text); outline:none; }
+  .dec-step-row input:focus { border-color:var(--rosa); }
+  .dec-step-row button { background:none; border:none; color:var(--muted2); cursor:pointer; }
+  .dec-add-step-btn { font-size:.75rem; font-weight:700; color:var(--rosa); background:none; border:none; cursor:pointer; font-family:var(--font-body); padding:.2rem 0; }
+
+  /* Form btns */
+  .dec-form-btns { display:flex; justify-content:flex-end; gap:.6rem; padding-top:.4rem; border-top:1px solid var(--border); }
+  .dec-cancel-btn { background:var(--surface); border:1.5px solid var(--border); border-radius:20px; padding:.45rem 1.1rem; font-size:.8rem; font-weight:700; cursor:pointer; font-family:var(--font-body); color:var(--muted); }
+  .dec-save-btn { background:var(--rosa); border:none; border-radius:20px; padding:.45rem 1.2rem; font-size:.8rem; font-weight:700; cursor:pointer; font-family:var(--font-body); color:white; }
+
+  /* Historial cards */
+  .decision-list { display:flex; flex-direction:column; gap:.8rem; }
+  .dec-card { background:var(--card); border:1.5px solid var(--border); border-radius:14px; padding:.9rem 1.1rem; cursor:pointer; transition:border-color .2s; }
+  .dec-card:hover { border-color:var(--rosa-soft); }
+  .dec-card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:.5rem; margin-bottom:.35rem; }
+  .dec-card-dilema { font-size:.88rem; font-weight:700; color:var(--text); flex:1; }
+  .dec-card-date { font-size:.68rem; color:var(--muted2); white-space:nowrap; }
+  .dec-card-chips { display:flex; flex-wrap:wrap; gap:.3rem; margin-bottom:.4rem; }
+  .dec-card-chip { font-size:.62rem; font-weight:700; padding:.15rem .5rem; border-radius:20px; background:var(--rosa-soft); color:var(--rosa); }
+  .dec-card-chip.verde { background:var(--verde-soft); color:var(--verde); }
+  .dec-card-decision { font-size:.78rem; color:var(--muted); font-style:italic; }
+  .dec-card-footer { display:flex; justify-content:flex-end; gap:.4rem; margin-top:.5rem; }
+  .dec-card-btn { background:none; border:none; font-size:.8rem; color:var(--muted2); cursor:pointer; font-family:var(--font-body); padding:.1rem .3rem; }
+  .dec-empty { text-align:center; color:var(--muted); font-size:.85rem; padding:2rem 1rem; }
+
+  /* View modal */
+  .dec-view-backdrop { position:fixed; inset:0; background:rgba(244,167,192,.18); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); z-index:9000; align-items:center; justify-content:center; padding:1rem; }
+  .dec-view-modal { background:var(--card); border-radius:20px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.18); z-index:9001; margin:auto; }
+  .dec-view-header { display:flex; justify-content:space-between; align-items:center; padding:1.1rem 1.3rem .8rem; font-family:var(--font-title); font-style:italic; font-size:1rem; font-weight:700; border-bottom:1px solid var(--border); }
+  .dec-view-body { padding:1.1rem 1.3rem; display:flex; flex-direction:column; gap:.9rem; }
+  .dec-view-row { display:flex; flex-direction:column; gap:.2rem; }
+  .dec-view-lbl { font-size:.68rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  .dec-view-val { font-size:.88rem; color:var(--text); line-height:1.55; white-space:pre-wrap; }
+  .dec-view-two { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; }
+  @media(max-width:480px){ .dec-view-two { grid-template-columns:1fr; } }
+  .dec-view-chips { display:flex; flex-wrap:wrap; gap:.35rem; }
+  .dec-view-chip { font-size:.7rem; font-weight:700; padding:.2rem .6rem; border-radius:20px; }
+  .dec-view-chip.rosa { background:var(--rosa-soft); color:var(--rosa); }
+  .dec-view-chip.verde { background:var(--verde-soft); color:var(--verde); }
+  .dec-view-pros { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:.2rem; }
+  .dec-view-pros li { font-size:.82rem; display:flex; gap:.4rem; }
+  .dec-view-pros li .s { font-weight:900; }
+  .dec-view-pros li .s.p { color:var(--verde); }
+  .dec-view-pros li .s.c { color:var(--rosa); }
+  .dec-view-steps { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:.25rem; }
+  .dec-view-steps li { font-size:.82rem; display:flex; gap:.4rem; }
+  .dec-view-steps li::before { content:'👣'; font-size:.75rem; }
+</style>
+
+<script>
+(function(){
+  var DEC_KEY = 'yuki_decisions';
+  var decisions = [];
+  var editingDecId = null;
+
+  var IMPORTANCIA_LABELS = { trivial:'🤏 Trivial', worthwhile:'👍 Vale la pena', weighty:'⚖️ Importante', lifechanging:'🌟 Cambia mi vida' };
+  var INDECISION_LABELS  = { wishy:'🌊 Muy indecisa', neutral:'😐 Neutral', partisan:'🤔 Casi decidida', mindmadeup:'✅ Ya sé qué quiero' };
+
+  function load() { try { decisions = JSON.parse(localStorage.getItem(DEC_KEY)) || []; } catch(e){ decisions=[]; } }
+  function save() {
+    localStorage.setItem(DEC_KEY, JSON.stringify(decisions));
+    if (window.cloudSave) window.cloudSave(DEC_KEY, decisions);
+    if (window.cloudSave) window.cloudSave(DEC_KEY, decisions);
+  }
+
+  // ── Chips toggle
+  function initChips(containerId, hidden) {
+    document.querySelectorAll('#' + containerId + ' .dec-chip').forEach(function(btn) {
+      btn.onclick = function() {
+        document.querySelectorAll('#' + containerId + ' .dec-chip').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+      };
+    });
+  }
+  function getChipVal(containerId) {
+    var active = document.querySelector('#' + containerId + ' .dec-chip.active');
+    return active ? active.dataset.val : '';
+  }
+  function setChipVal(containerId, val) {
+    document.querySelectorAll('#' + containerId + ' .dec-chip').forEach(function(b){
+      b.classList.toggle('active', b.dataset.val === val);
+    });
+  }
+
+  // ── Pros/Cons
+  window.decAddPro = function(val) {
+    var row = document.createElement('div'); row.className = 'dec-proscons-item';
+    row.innerHTML = '<span class="dec-sign pro">+</span><input placeholder="Un pro…" value="'+(val||'')+'"><button onclick="this.parentElement.remove()">✕</button>';
+    document.getElementById('decProsList').appendChild(row);
+  };
+  window.decAddCon = function(val) {
+    var row = document.createElement('div'); row.className = 'dec-proscons-item';
+    row.innerHTML = '<span class="dec-sign con">−</span><input placeholder="Un contra…" value="'+(val||'')+'"><button onclick="this.parentElement.remove()">✕</button>';
+    document.getElementById('decConsList').appendChild(row);
+  };
+
+  // ── Steps
+  window.decAddStep = function(val) {
+    var row = document.createElement('div'); row.className = 'dec-step-row';
+    row.innerHTML = '<input placeholder="Paso a seguir…" value="'+(val||'')+'"><button onclick="this.parentElement.remove()">✕</button>';
+    document.getElementById('decStepsList').appendChild(row);
+  };
+
+  function clearForm() {
+    document.getElementById('decDilema').value = '';
+    document.getElementById('decFecha').value = new Date().toISOString().slice(0,10);
+    document.getElementById('decDeadline').value = '';
+    document.getElementById('decMejor').value = '';
+    document.getElementById('decPeor').value = '';
+    document.getElementById('decGut').value = '';
+    document.getElementById('decConcIntuitiva').value = '';
+    document.getElementById('decConcRacional').value = '';
+    document.getElementById('decJesus').value = '';
+    document.getElementById('decBiblia').value = '';
+    document.getElementById('decDecision').value = '';
+    document.getElementById('decPipedream').checked = false;
+    document.getElementById('decApocalypse').checked = false;
+    document.getElementById('decForToday').checked = false;
+    document.getElementById('decProsList').innerHTML = '';
+    document.getElementById('decConsList').innerHTML = '';
+    document.getElementById('decStepsList').innerHTML = '';
+    setChipVal('decImportancia', '');
+    setChipVal('decIndecision', '');
+    // Start with 3 empty pros/cons
+    decAddPro(); decAddPro(); decAddPro();
+    decAddCon(); decAddCon(); decAddCon();
+    decAddStep();
+  }
+
+  document.getElementById('decisionNewBtn').onclick = function() {
+    editingDecId = null;
+    clearForm();
+    document.getElementById('decisionForm').style.display = '';
+    document.getElementById('decisionForm').scrollIntoView({ behavior:'smooth', block:'start' });
+    setTimeout(function(){ document.getElementById('decDilema').focus(); }, 200);
+  };
+
+  window.decCancelForm = function() {
+    document.getElementById('decisionForm').style.display = 'none';
+    editingDecId = null;
+  };
+
+  window.decSave = function() {
+    var dilema = document.getElementById('decDilema').value.trim();
+    if (!dilema) { alert('Describe el dilema primero 💭'); return; }
+
+    var pros = Array.from(document.querySelectorAll('#decProsList input')).map(function(i){ return i.value.trim(); }).filter(Boolean);
+    var cons = Array.from(document.querySelectorAll('#decConsList input')).map(function(i){ return i.value.trim(); }).filter(Boolean);
+    var steps = Array.from(document.querySelectorAll('#decStepsList input')).map(function(i){ return i.value.trim(); }).filter(Boolean);
+
+    var dec = {
+      id: editingDecId || ('dec_' + Date.now()),
+      fecha: document.getElementById('decFecha').value,
+      deadline: document.getElementById('decDeadline').value,
+      dilema: dilema,
+      importancia: getChipVal('decImportancia'),
+      indecision: getChipVal('decIndecision'),
+      mejor: document.getElementById('decMejor').value.trim(),
+      pipedream: document.getElementById('decPipedream').checked,
+      peor: document.getElementById('decPeor').value.trim(),
+      apocalypse: document.getElementById('decApocalypse').checked,
+      gut: document.getElementById('decGut').value.trim(),
+      pros: pros,
+      cons: cons,
+      concIntuitiva: document.getElementById('decConcIntuitiva').value.trim(),
+      concRacional: document.getElementById('decConcRacional').value.trim(),
+      jesus: document.getElementById('decJesus').value.trim(),
+      biblia: document.getElementById('decBiblia').value.trim(),
+      decision: document.getElementById('decDecision').value.trim(),
+      forToday: document.getElementById('decForToday').checked,
+      steps: steps,
+    };
+
+    load();
+    if (editingDecId) {
+      var idx = decisions.findIndex(function(d){ return d.id === editingDecId; });
+      if (idx >= 0) decisions[idx] = dec; else decisions.unshift(dec);
+    } else {
+      decisions.unshift(dec);
+    }
+    save();
+    editingDecId = null;
+    document.getElementById('decisionForm').style.display = 'none';
+    render();
+  };
+
+  function render() {
+    load();
+    var list = document.getElementById('decisionList');
+    list.innerHTML = '';
+    if (decisions.length === 0) {
+      list.innerHTML = '<div class="dec-empty">Aún no tienes decisiones guardadas 💭<br><span style="font-size:.75rem">Cuando tengas un dilema, ¡escríbelo aquí antes de actuar!</span></div>';
+      return;
+    }
+    decisions.forEach(function(dec) {
+      var card = document.createElement('div'); card.className = 'dec-card';
+      var chips = '';
+      if (dec.importancia) chips += '<span class="dec-card-chip">' + (IMPORTANCIA_LABELS[dec.importancia]||dec.importancia) + '</span>';
+      if (dec.indecision)  chips += '<span class="dec-card-chip verde">' + (INDECISION_LABELS[dec.indecision]||dec.indecision) + '</span>';
+      card.innerHTML =
+        '<div class="dec-card-top">' +
+          '<div class="dec-card-dilema">' + dec.dilema + '</div>' +
+          '<div class="dec-card-date">' + (dec.fecha || '') + (dec.deadline ? '<br>📅 ' + dec.deadline : '') + '</div>' +
+        '</div>' +
+        (chips ? '<div class="dec-card-chips">' + chips + '</div>' : '') +
+        (dec.decision ? '<div class="dec-card-decision">🎯 ' + dec.decision + '</div>' : '') +
+        '<div class="dec-card-footer">' +
+          '<button class="dec-card-btn" onclick="decEdit(\'' + dec.id + '\');event.stopPropagation()">✏️</button>' +
+          '<button class="dec-card-btn" onclick="decDelete(\'' + dec.id + '\');event.stopPropagation()">🗑️</button>' +
+        '</div>';
+      card.onclick = function(){ decOpenView(dec.id); };
+      list.appendChild(card);
+    });
+  }
+
+  window.decDelete = function(id) {
+    if (!confirm('¿Eliminar esta decisión?')) return;
+    load();
+    decisions = decisions.filter(function(d){ return d.id !== id; });
+    save(); render();
+  };
+
+  window.decEdit = function(id) {
+    load();
+    var dec = decisions.find(function(d){ return d.id === id; });
+    if (!dec) return;
+    editingDecId = id;
+    clearForm();
+    document.getElementById('decDilema').value = dec.dilema || '';
+    document.getElementById('decFecha').value = dec.fecha || '';
+    document.getElementById('decDeadline').value = dec.deadline || '';
+    document.getElementById('decMejor').value = dec.mejor || '';
+    document.getElementById('decPeor').value = dec.peor || '';
+    document.getElementById('decGut').value = dec.gut || '';
+    document.getElementById('decConcIntuitiva').value = dec.concIntuitiva || '';
+    document.getElementById('decConcRacional').value = dec.concRacional || '';
+    document.getElementById('decJesus').value = dec.jesus || '';
+    document.getElementById('decBiblia').value = dec.biblia || '';
+    document.getElementById('decDecision').value = dec.decision || '';
+    document.getElementById('decPipedream').checked = !!dec.pipedream;
+    document.getElementById('decApocalypse').checked = !!dec.apocalypse;
+    document.getElementById('decForToday').checked = !!dec.forToday;
+    setChipVal('decImportancia', dec.importancia || '');
+    setChipVal('decIndecision', dec.indecision || '');
+    document.getElementById('decProsList').innerHTML = '';
+    document.getElementById('decConsList').innerHTML = '';
+    document.getElementById('decStepsList').innerHTML = '';
+    (dec.pros || []).forEach(function(p){ decAddPro(p); });
+    (dec.cons || []).forEach(function(c){ decAddCon(c); });
+    (dec.steps || []).forEach(function(s){ decAddStep(s); });
+    if (!dec.pros || dec.pros.length === 0) { decAddPro(); decAddPro(); }
+    if (!dec.cons || dec.cons.length === 0) { decAddCon(); decAddCon(); }
+    if (!dec.steps || dec.steps.length === 0) { decAddStep(); }
+    document.getElementById('decisionForm').style.display = '';
+    document.getElementById('decisionForm').scrollIntoView({ behavior:'smooth', block:'start' });
+  };
+
+  // ── Vista de solo lectura
+  window.decOpenView = function(id) {
+    load();
+    var dec = decisions.find(function(d){ return d.id === id; });
+    if (!dec) return;
+    document.getElementById('decViewTitle').textContent = '💭 ' + dec.dilema;
+    var body = document.getElementById('decViewBody');
+    body.innerHTML = '';
+
+    function row(lbl, val) {
+      if (!val) return;
+      var d = document.createElement('div'); d.className = 'dec-view-row';
+      d.innerHTML = '<div class="dec-view-lbl">'+lbl+'</div><div class="dec-view-val">'+val+'</div>';
+      body.appendChild(d);
+    }
+
+    // Chips
+    if (dec.importancia || dec.indecision) {
+      var cr = document.createElement('div'); cr.className = 'dec-view-chips';
+      if (dec.importancia) cr.innerHTML += '<span class="dec-view-chip rosa">'+(IMPORTANCIA_LABELS[dec.importancia]||dec.importancia)+'</span>';
+      if (dec.indecision)  cr.innerHTML += '<span class="dec-view-chip verde">'+(INDECISION_LABELS[dec.indecision]||dec.indecision)+'</span>';
+      body.appendChild(cr);
+    }
+
+    if (dec.fecha || dec.deadline) row('Fecha / Deadline', (dec.fecha||'') + (dec.deadline ? ' → decidir antes del ' + dec.deadline : ''));
+    if (dec.mejor) row('🌈 Mejor escenario' + (dec.pipedream ? ' (pipe dream 😅)' : ''), dec.mejor);
+    if (dec.peor)  row('⛈️ Peor escenario' + (dec.apocalypse ? ' (apocalíptico 😱)' : ''), dec.peor);
+
+    // Gut + pros/cons en dos columnas
+    if (dec.gut || (dec.pros && dec.pros.length) || (dec.cons && dec.cons.length)) {
+      var two = document.createElement('div'); two.className = 'dec-view-two';
+      if (dec.gut) {
+        var g = document.createElement('div'); g.className = 'dec-view-row';
+        g.innerHTML = '<div class="dec-view-lbl">💭 Gut feeling</div><div class="dec-view-val">'+dec.gut+'</div>';
+        two.appendChild(g);
+      }
+      if ((dec.pros && dec.pros.length) || (dec.cons && dec.cons.length)) {
+        var pc = document.createElement('div'); pc.className = 'dec-view-row';
+        pc.innerHTML = '<div class="dec-view-lbl">⚖️ Pros y contras</div>';
+        var ul = document.createElement('ul'); ul.className = 'dec-view-pros';
+        (dec.pros||[]).forEach(function(p){ ul.innerHTML += '<li><span class="s p">+</span>'+p+'</li>'; });
+        (dec.cons||[]).forEach(function(c){ ul.innerHTML += '<li><span class="s c">−</span>'+c+'</li>'; });
+        pc.appendChild(ul); two.appendChild(pc);
+      }
+      body.appendChild(two);
+    }
+
+    // Conclusiones
+    if (dec.concIntuitiva || dec.concRacional) {
+      var two2 = document.createElement('div'); two2.className = 'dec-view-two';
+      if (dec.concIntuitiva) { var r = document.createElement('div'); r.className='dec-view-row'; r.innerHTML='<div class="dec-view-lbl">❤️ ¿Qué dice mi corazón?</div><div class="dec-view-val">'+dec.concIntuitiva+'</div>'; two2.appendChild(r); }
+      if (dec.concRacional)  { var r2 = document.createElement('div'); r2.className='dec-view-row'; r2.innerHTML='<div class="dec-view-lbl">🧠 ¿Qué dice mi mente?</div><div class="dec-view-val">'+dec.concRacional+'</div>'; two2.appendChild(r2); }
+      body.appendChild(two2);
+    }
+
+    if (dec.jesus || dec.biblia) {
+      var two3 = document.createElement('div'); two3.className = 'dec-view-two';
+      if (dec.jesus)  { var r3 = document.createElement('div'); r3.className='dec-view-row'; r3.innerHTML='<div class="dec-view-lbl">✝️ ¿Qué haría Jesús?</div><div class="dec-view-val">'+dec.jesus+'</div>'; two3.appendChild(r3); }
+      if (dec.biblia) { var r4 = document.createElement('div'); r4.className='dec-view-row'; r4.innerHTML='<div class="dec-view-lbl">📖 ¿Qué dice la Biblia?</div><div class="dec-view-val">'+dec.biblia+'</div>'; two3.appendChild(r4); }
+      body.appendChild(two3);
+    }
+
+    if (dec.decision) row('🎯 Mi decisión' + (dec.forToday ? ' (solo por hoy)' : ''), dec.decision);
+
+    if (dec.steps && dec.steps.length) {
+      var sr = document.createElement('div'); sr.className = 'dec-view-row';
+      sr.innerHTML = '<div class="dec-view-lbl">👣 Próximos pasos</div>';
+      var sl = document.createElement('ul'); sl.className = 'dec-view-steps';
+      dec.steps.forEach(function(s){ sl.innerHTML += '<li>'+s+'</li>'; });
+      sr.appendChild(sl); body.appendChild(sr);
+    }
+
+    document.getElementById('decViewBackdrop').style.display = 'flex';
+    window._viewingDecId = id;
+  };
+
+  window.decCloseView = function() {
+    document.getElementById('decViewBackdrop').style.display = 'none';
+  };
+
+  window.decEditFromView = function() {
+    decCloseView();
+    if (window._viewingDecId) decEdit(window._viewingDecId);
+  };
+
+  initChips('decImportancia');
+  initChips('decIndecision');
+  render();
+})();
+</script>
+
+</div><!-- end saludTabRegistros-content -->
+
+<!-- TAB: Mis Horas -->
+<div id="saludTabRutina-content" style="display:none">
+<section class="rutina-horarios-section" id="sec-rutina-horarios">
+  <div class="rutina-h-header">
+    <div>
+      <span class="section-sub">⏰ mis horas</span>
+      <h2 class="section-title"><em>Ritmo</em> Circadiano</h2>
+      <p class="rutina-h-desc">Establece tus horarios — ayuda a tu cerebro a anticipar y no agotarse decidiendo 🧠</p>
+    </div>
+    <button class="rutina-h-add-btn" onclick="rutinaHorariosAdd()">+ agregar</button>
+  </div>
+  <div class="rutina-h-notif-banner" id="rutinaHNotifBanner" style="display:none">
+    <span>🔔 Activa las notificaciones para recibir recordatorios</span>
+    <button onclick="rutinaHorariosRequestNotif()">Activar</button>
+  </div>
+  <div class="rutina-h-list" id="rutinaHList"></div>
+</section>
+</div><!-- end saludTabRutina-content -->
+
+<!-- TAB: Estadísticas -->
+<div id="saludTabEstadisticas-content" style="display:none">
+<!-- ══════════════════════════════════════════
+     SECCIÓN · RESUMEN DE SALUD
+══════════════════════════════════════════ -->
+<section class="resumen-salud-section" id="sec-resumen-salud">
+  <div class="resumen-header">
+    <div>
+      <span class="section-sub">📊 estadísticas</span>
+      <h2 class="section-title"><em>Mis</em> Estadísticas</h2>
+    </div>
+  </div>
+  <div class="resumen-tabs">
+    <button class="resumen-tab active" id="resTabSemanal" onclick="resumenShowTab('semanal')">📅 Esta semana</button>
+    <button class="resumen-tab" id="resTabMensual" onclick="resumenShowTab('mensual')">🗓️ Este mes</button>
+  </div>
+  <div id="resumenContent"></div>
+</section>
+
+<style>
+  .resumen-salud-section { max-width:780px; margin:2rem auto 0; padding:0 1rem 2rem; animation:fadeUp .5s .2s ease both; opacity:0; animation-fill-mode:both; }
+  .resumen-header { margin-bottom:1rem; }
+  .resumen-tabs { display:flex; gap:.5rem; margin-bottom:1.2rem; }
+  .resumen-tab { flex:1; padding:.5rem .8rem; border:1.5px solid var(--border); border-radius:20px; background:var(--surface); font-family:var(--font-body); font-size:.8rem; font-weight:700; color:var(--muted); cursor:pointer; transition:all .2s; }
+  .resumen-tab.active { background:var(--rosa); color:white; border-color:var(--rosa); }
+
+  .resumen-grid { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; }
+  @media(max-width:480px){ .resumen-grid { grid-template-columns:1fr; } }
+
+  .resumen-card { background:var(--card); border:1.5px solid var(--border); border-radius:14px; padding:.9rem 1rem; }
+  .resumen-card-title { font-size:.68rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.6rem; }
+  .resumen-stat-big { font-size:2rem; font-weight:900; color:var(--text); line-height:1; }
+  .resumen-stat-sub { font-size:.72rem; color:var(--muted); margin-top:.2rem; font-weight:600; }
+
+  /* Barra de progreso */
+  .resumen-bar-wrap { margin-top:.5rem; display:flex; flex-direction:column; gap:.35rem; }
+  .resumen-bar-row { display:flex; align-items:center; gap:.5rem; }
+  .resumen-bar-label { font-size:.68rem; color:var(--muted); width:28px; flex-shrink:0; }
+  .resumen-bar-track { flex:1; height:7px; background:var(--surface); border-radius:10px; overflow:hidden; }
+  .resumen-bar-fill { height:100%; border-radius:10px; transition:width .6s ease; }
+  .resumen-bar-val { font-size:.68rem; font-weight:700; color:var(--muted); width:24px; text-align:right; flex-shrink:0; }
+
+  /* Mood row */
+  .resumen-mood-row { display:flex; gap:.3rem; flex-wrap:wrap; margin-top:.4rem; }
+  .resumen-mood-item { font-size:1.3rem; }
+  .resumen-mood-empty { font-size:.78rem; color:var(--muted2); font-style:italic; }
+
+  /* Comidas */
+  .resumen-meals-row { display:flex; gap:.5rem; margin-top:.4rem; flex-wrap:wrap; }
+  .resumen-meal-chip { font-size:.68rem; font-weight:700; padding:.2rem .55rem; border-radius:20px; background:var(--verde-soft); color:var(--verde); }
+  .resumen-meal-chip.parcial { background:var(--beige-soft); color:var(--text); }
+
+  /* Hábitos */
+  .resumen-habitos-list { display:flex; flex-direction:column; gap:.3rem; margin-top:.4rem; }
+  .resumen-habito-row { display:flex; align-items:center; gap:.5rem; font-size:.78rem; }
+  .resumen-habito-bar-track { flex:1; height:6px; background:var(--surface); border-radius:10px; overflow:hidden; }
+  .resumen-habito-bar-fill { height:100%; border-radius:10px; background:var(--rosa); }
+  .resumen-habito-pct { font-size:.65rem; font-weight:700; color:var(--muted); width:28px; text-align:right; }
+
+  .resumen-empty { text-align:center; color:var(--muted); font-size:.82rem; padding:1.5rem; font-style:italic; }
+  .resumen-full-card { grid-column:1/-1; }
+</style>
+
+<script>
+(function(){
+  var resumenTab = 'semanal';
+
+  function getDateRange(tab) {
+    var today = new Date(); today.setHours(0,0,0,0);
+    var dates = [];
+    if (tab === 'semanal') {
+      // Lun a hoy de la semana actual
+      var dow = today.getDay(); var lun = new Date(today);
+      lun.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+      for (var d = new Date(lun); d <= today; d.setDate(d.getDate()+1)) dates.push(fmt(new Date(d)));
+    } else {
+      // Días del mes hasta hoy
+      var y = today.getFullYear(), m = today.getMonth();
+      for (var day = 1; day <= today.getDate(); day++) {
+        dates.push(fmt(new Date(y, m, day)));
+      }
+    }
+    return dates;
+  }
+
+  function fmt(d) {
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+
+  function calcHorasSueno(dorm, desp) {
+    if (!dorm || !desp) return null;
+    var h1=parseInt(dorm), m1=parseInt(dorm.split(':')[1]||0);
+    var h2=parseInt(desp), m2=parseInt(desp.split(':')[1]||0);
+    var mins = (h2*60+m2) - (h1*60+m1);
+    if (mins < 0) mins += 24*60;
+    return Math.round(mins/60*10)/10;
+  }
+
+  function renderResumen() {
+    var dates = getDateRange(resumenTab);
+    var n = dates.length;
+    var content = document.getElementById('resumenContent');
+    content.innerHTML = '';
+
+    // — Cargar datos
+    var waterGoal  = parseInt(localStorage.getItem('water_goal')||'8');
+    var waterState = {}; try { waterState = JSON.parse(localStorage.getItem('water_state')||'{}'); } catch(e){}
+    var foodState  = {}; try { foodState  = JSON.parse(localStorage.getItem('food_state') ||'{}'); } catch(e){}
+    var suenoData  = {}; try { suenoData  = JSON.parse(localStorage.getItem('sueno_data') ||'{}'); } catch(e){}
+    var ciState    = {}; try { ciState    = JSON.parse(localStorage.getItem('ci_state')   ||'{}'); } catch(e){}
+    var ndState    = {}; try { ndState    = JSON.parse(localStorage.getItem('nd_state')   ||'{}'); } catch(e){}
+    var moodData   = {}; try { moodData   = JSON.parse(localStorage.getItem('mood_data')  ||'{}'); } catch(e){}
+    var ejRegs     = {}; try { ejRegs     = JSON.parse(localStorage.getItem('ej_registros')||'{}'); } catch(e){}
+    var habitosArr = []; try { habitosArr = JSON.parse(localStorage.getItem('habitos_data')||'[]'); } catch(e){}
+
+    var MEALS = [{id:'desayuno',icon:'🌅',label:'Desa.'},{id:'almuerzo',icon:'☀️',label:'Alm.'},{id:'cena',icon:'🌙',label:'Cena'},{id:'snack',icon:'🍎',label:'Snack'}];
+    var QUALITY = {'1':'😬','2':'😐','3':'🙂','4':'😋'};
+    var NEEDS_DEF = [
+      {id:'silencio',icon:'🔇',label:'Silencio'},
+      {id:'manta',icon:'🛋️',label:'Manta/peso'},
+      {id:'soledad',icon:'🚪',label:'Espacio solo'},
+      {id:'musica',icon:'🎵',label:'Música'},
+      {id:'mover',icon:'🚶',label:'Moverme'},
+      {id:'comer',icon:'🍵',label:'Algo rico'},
+    ];
+
+    // — Calcular métricas
+    // Agua
+    var totalAgua = 0, diasConAgua = 0;
+    dates.forEach(function(dk){ var v = waterState['w_'+dk]||0; totalAgua+=v; if(v>0) diasConAgua++; });
+    var promedioAgua = n > 0 ? Math.round(totalAgua/n*10)/10 : 0;
+
+    // Comidas
+    var comidasPorMeal = {}; var qualitySum = 0, qualityCount = 0;
+    MEALS.forEach(function(m){ comidasPorMeal[m.id]=0; });
+    dates.forEach(function(dk){
+      MEALS.forEach(function(m){
+        var d = foodState['f_'+dk+'_'+m.id];
+        if (d && d.eaten) {
+          comidasPorMeal[m.id]++;
+          if (d.quality) { qualitySum+=parseInt(d.quality); qualityCount++; }
+        }
+      });
+    });
+    var promedioQuality = qualityCount > 0 ? Math.round(qualitySum/qualityCount*10)/10 : null;
+
+    // Sueño
+    var horasSueno = [], totalSueno = 0, diasSueno = 0;
+    dates.forEach(function(dk){
+      var s = suenoData[dk];
+      if (s && s.dormirse && s.despertar) {
+        var h = calcHorasSueno(s.dormirse, s.despertar);
+        if (h) { horasSueno.push(h); totalSueno+=h; diasSueno++; }
+      }
+    });
+    var promedioSueno = diasSueno > 0 ? Math.round(totalSueno/diasSueno*10)/10 : null;
+
+    // Mood del Journal (emoji + puntuación)
+    var moods = [];
+    var scoreSum = 0, scoreCount = 0;
+    dates.forEach(function(dk){
+      var m = moodData[dk];
+      if (m && m.emoji) { moods.push({ emoji: m.emoji, score: m.score }); if(m.score) { scoreSum+=m.score; scoreCount++; } }
+    });
+
+    // Check-in sensorial (Calma)
+    var diasCheckin = 0;
+    var checkInEmojis = [];
+    dates.forEach(function(dk){
+      var em = ciState['ci_'+dk];
+      if (em) { diasCheckin++; checkInEmojis.push(em); }
+    });
+
+    // Necesidades más activadas (Calma)
+    var needsCount = {};
+    NEEDS_DEF.forEach(function(nd){ needsCount[nd.id] = 0; });
+    dates.forEach(function(dk){
+      NEEDS_DEF.forEach(function(nd){
+        if (ndState['nd_'+dk+'_'+nd.id]) needsCount[nd.id]++;
+      });
+    });
+    var needsStats = NEEDS_DEF.map(function(nd){
+      return { icon:nd.icon, label:nd.label, count:needsCount[nd.id], pct: n>0 ? Math.round(needsCount[nd.id]/n*100):0 };
+    }).filter(function(nd){ return nd.count > 0; }).sort(function(a,b){ return b.count-a.count; });
+
+    // Ejercicio
+    var diasEjercicio = 0;
+    dates.forEach(function(dk){ if(ejRegs[dk] && ejRegs[dk].length>0) diasEjercicio++; });
+
+    // Hábitos
+    var habitosStats = habitosArr.map(function(h){
+      var done = dates.filter(function(dk){ return h.log && h.log.indexOf(dk)>-1; }).length;
+      return { nombre:h.nombre, emoji:h.emoji||'', done:done, total:n, pct:n>0?Math.round(done/n*100):0 };
+    }).filter(function(h){ return h.done > 0; }).slice(0,5);
+
+    // — Render grid
+    var grid = document.createElement('div'); grid.className = 'resumen-grid';
+
+    // AGUA
+    var cardAgua = document.createElement('div'); cardAgua.className = 'resumen-card';
+    var pctAgua = Math.min(100, Math.round(promedioAgua/waterGoal*100));
+    cardAgua.innerHTML =
+      '<div class="resumen-card-title">💧 Agua</div>' +
+      '<div class="resumen-stat-big">'+promedioAgua+'<span style="font-size:1rem;font-weight:600;color:var(--muted)"> / '+waterGoal+'</span></div>' +
+      '<div class="resumen-stat-sub">vasos promedio por día · '+diasConAgua+'/'+n+' días registrados</div>' +
+      '<div class="resumen-bar-wrap"><div class="resumen-bar-row">' +
+        '<div class="resumen-bar-track" style="margin-top:.4rem"><div class="resumen-bar-fill" style="width:'+pctAgua+'%;background:var(--azul,#7ec8e3)"></div></div>' +
+      '</div></div>';
+    grid.appendChild(cardAgua);
+
+    // SUEÑO
+    var cardSueno = document.createElement('div'); cardSueno.className = 'resumen-card';
+    if (promedioSueno) {
+      var pctSueno = Math.min(100, Math.round(promedioSueno/9*100));
+      var suenoColor = promedioSueno >= 7 ? 'var(--verde)' : promedioSueno >= 5 ? '#f0c060' : 'var(--rosa)';
+      cardSueno.innerHTML =
+        '<div class="resumen-card-title">🌙 Sueño</div>' +
+        '<div class="resumen-stat-big" style="color:'+suenoColor+'">'+promedioSueno+'h</div>' +
+        '<div class="resumen-stat-sub">promedio por noche · '+diasSueno+' noches registradas</div>' +
+        '<div class="resumen-bar-wrap"><div class="resumen-bar-row">' +
+          '<div class="resumen-bar-track" style="margin-top:.4rem"><div class="resumen-bar-fill" style="width:'+pctSueno+'%;background:'+suenoColor+'"></div></div>' +
+        '</div></div>';
+    } else {
+      cardSueno.innerHTML = '<div class="resumen-card-title">🌙 Sueño</div><div class="resumen-empty">Sin registros aún</div>';
+    }
+    grid.appendChild(cardSueno);
+
+    // EJERCICIO
+    var cardEj = document.createElement('div'); cardEj.className = 'resumen-card';
+    var pctEj = n > 0 ? Math.round(diasEjercicio/n*100) : 0;
+    var ejColor = pctEj >= 60 ? 'var(--verde)' : pctEj >= 30 ? '#f0c060' : 'var(--rosa)';
+    cardEj.innerHTML =
+      '<div class="resumen-card-title">🏃 Ejercicio</div>' +
+      '<div class="resumen-stat-big" style="color:'+ejColor+'">'+diasEjercicio+'<span style="font-size:1rem;font-weight:600;color:var(--muted)"> / '+n+'</span></div>' +
+      '<div class="resumen-stat-sub">días activos · '+pctEj+'% del período</div>' +
+      '<div class="resumen-bar-wrap"><div class="resumen-bar-row">' +
+        '<div class="resumen-bar-track" style="margin-top:.4rem"><div class="resumen-bar-fill" style="width:'+pctEj+'%;background:'+ejColor+'"></div></div>' +
+      '</div></div>';
+    grid.appendChild(cardEj);
+
+    // MOOD
+    var cardMood = document.createElement('div'); cardMood.className = 'resumen-card';
+    cardMood.innerHTML = '<div class="resumen-card-title">😊 Mood del Journal</div>';
+    if (moods.length > 0) {
+      var avgScore = scoreCount > 0 ? Math.round(scoreSum/scoreCount*10)/10 : null;
+      cardMood.innerHTML += '<div class="resumen-stat-sub" style="margin-bottom:.4rem">'+moods.length+' / '+n+' días registrados'+(avgScore?' · Promedio: '+avgScore+'/10':'')+'</div>';
+      var moodRow = document.createElement('div'); moodRow.className = 'resumen-mood-row';
+      moods.forEach(function(m){ var s=document.createElement('span'); s.className='resumen-mood-item'; s.textContent=m.emoji; moodRow.appendChild(s); });
+      cardMood.appendChild(moodRow);
+    } else {
+      cardMood.innerHTML += '<div class="resumen-mood-empty">Sin registros aún</div>';
+    }
+    grid.appendChild(cardMood);
+
+    // CHECK-IN SENSORIAL (Calma)
+    var cardCheckin = document.createElement('div'); cardCheckin.className = 'resumen-card';
+    cardCheckin.innerHTML = '<div class="resumen-card-title">🧠 Check-in Sensorial</div>';
+    if (diasCheckin > 0) {
+      cardCheckin.innerHTML += '<div class="resumen-stat-big">'+diasCheckin+'<span style="font-size:1rem;font-weight:600;color:var(--muted)"> / '+n+'</span></div>';
+      cardCheckin.innerHTML += '<div class="resumen-stat-sub">días con check-in registrado</div>';
+      var ciRow = document.createElement('div'); ciRow.className = 'resumen-mood-row'; ciRow.style.marginTop='.5rem';
+      checkInEmojis.forEach(function(e){ var s=document.createElement('span'); s.className='resumen-mood-item'; s.textContent=e; ciRow.appendChild(s); });
+      cardCheckin.appendChild(ciRow);
+    } else {
+      cardCheckin.innerHTML += '<div class="resumen-mood-empty">Sin registros aún</div>';
+    }
+    grid.appendChild(cardCheckin);
+
+    // NECESIDADES más activadas (Calma) — ancho completo
+    if (needsStats.length > 0) {
+      var cardNeeds = document.createElement('div'); cardNeeds.className = 'resumen-card resumen-full-card';
+      cardNeeds.innerHTML = '<div class="resumen-card-title">🛋️ Necesidades sensoriales más frecuentes</div>';
+      var needsBars = document.createElement('div'); needsBars.className = 'resumen-habitos-list';
+      needsStats.forEach(function(nd){
+        var row = document.createElement('div'); row.className = 'resumen-habito-row';
+        row.innerHTML =
+          '<span style="font-size:.85rem">'+nd.icon+'</span>' +
+          '<span style="flex:1;font-size:.78rem;color:var(--text)">'+nd.label+'</span>' +
+          '<div class="resumen-habito-bar-track"><div class="resumen-habito-bar-fill" style="width:'+nd.pct+'%;background:var(--beige,#e8c89a)"></div></div>' +
+          '<div class="resumen-habito-pct">'+nd.count+'d</div>';
+        needsBars.appendChild(row);
+      });
+      cardNeeds.appendChild(needsBars);
+      grid.appendChild(cardNeeds);
+    }
+
+    // COMIDAS — ancho completo
+    var cardComidas = document.createElement('div'); cardComidas.className = 'resumen-card resumen-full-card';
+    var totalComidas = Object.values(comidasPorMeal).reduce(function(a,b){return a+b;},0);
+    cardComidas.innerHTML = '<div class="resumen-card-title">🍽️ Comidas</div>';
+    if (totalComidas > 0) {
+      cardComidas.innerHTML += '<div class="resumen-stat-sub" style="margin-bottom:.5rem">'+totalComidas+' comidas registradas en '+n+' días'+(promedioQuality?' · Calidad promedio: '+(QUALITY[String(Math.round(promedioQuality))]||''):'')+'</div>';
+      var barsWrap = document.createElement('div'); barsWrap.className = 'resumen-bar-wrap';
+      MEALS.forEach(function(m){
+        var pct = n > 0 ? Math.round(comidasPorMeal[m.id]/n*100) : 0;
+        var row = document.createElement('div'); row.className = 'resumen-bar-row';
+        row.innerHTML =
+          '<div class="resumen-bar-label">'+m.icon+'</div>' +
+          '<div class="resumen-bar-track"><div class="resumen-bar-fill" style="width:'+pct+'%;background:var(--verde)"></div></div>' +
+          '<div class="resumen-bar-val">'+comidasPorMeal[m.id]+'d</div>';
+        barsWrap.appendChild(row);
+      });
+      cardComidas.appendChild(barsWrap);
+    } else {
+      cardComidas.innerHTML += '<div class="resumen-empty">Sin registros aún</div>';
+    }
+    grid.appendChild(cardComidas);
+
+    // HÁBITOS — ancho completo
+    if (habitosStats.length > 0) {
+      var cardHab = document.createElement('div'); cardHab.className = 'resumen-card resumen-full-card';
+      cardHab.innerHTML = '<div class="resumen-card-title">🌱 Hábitos</div>';
+      var habList = document.createElement('div'); habList.className = 'resumen-habitos-list';
+      habitosStats.forEach(function(h){
+        var row = document.createElement('div'); row.className = 'resumen-habito-row';
+        row.innerHTML =
+          '<span style="font-size:.85rem">'+h.emoji+'</span>' +
+          '<span style="flex:1;font-size:.78rem;color:var(--text)">'+h.nombre+'</span>' +
+          '<div class="resumen-habito-bar-track"><div class="resumen-habito-bar-fill" style="width:'+h.pct+'%"></div></div>' +
+          '<div class="resumen-habito-pct">'+h.pct+'%</div>';
+        habList.appendChild(row);
+      });
+      cardHab.appendChild(habList);
+      grid.appendChild(cardHab);
+    }
+
+    content.appendChild(grid);
+  }
+
+  window.resumenShowTab = function(tab) {
+    resumenTab = tab;
+    document.getElementById('resTabSemanal').classList.toggle('active', tab==='semanal');
+    document.getElementById('resTabMensual').classList.toggle('active', tab==='mensual');
+    renderResumen();
+  };
+
+  window.renderResumenSalud = renderResumen;
+
+  // Re-render cuando se vuelve a la página de salud
+  var _origShowPage = window.showPage;
+  window.showPage = function(pageId) {
+    if (_origShowPage) _origShowPage(pageId);
+    if (pageId === 'page-salud') setTimeout(renderResumen, 80);
+  };
+
+  setTimeout(renderResumen, 400);
+})();
+</script>
+</section>
+</div><!-- end saludTabEstadisticas-content -->
+
+<style>
+  .rutina-horarios-section { max-width:780px; margin:0 auto; padding:1.2rem 1rem 3rem; }
+  .rutina-h-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:.8rem; }
+  .rutina-h-desc { font-size:.78rem; color:var(--muted); margin:.2rem 0 0; font-weight:600; }
+  .rutina-h-add-btn { background:var(--rosa); color:white; border:none; border-radius:20px; padding:.45rem 1.1rem; font-size:.78rem; font-weight:700; cursor:pointer; font-family:var(--font-body); white-space:nowrap; }
+
+  .rutina-h-notif-banner { display:flex; align-items:center; justify-content:space-between; gap:.8rem; background:var(--beige-soft); border:1.5px solid var(--beige); border-radius:12px; padding:.7rem 1rem; margin-bottom:1rem; font-size:.8rem; color:var(--text); font-weight:600; }
+  .rutina-h-notif-banner button { background:var(--rosa); color:white; border:none; border-radius:20px; padding:.35rem .9rem; font-size:.75rem; font-weight:700; cursor:pointer; font-family:var(--font-body); white-space:nowrap; }
+
+  .rutina-h-list { display:flex; flex-direction:column; gap:.7rem; }
+  .rutina-h-card { background:var(--card); border:1.5px solid var(--border); border-radius:14px; padding:.85rem 1rem; display:flex; align-items:center; gap:.8rem; transition:border-color .2s; }
+  .rutina-h-card:hover { border-color:var(--rosa-soft); }
+  .rutina-h-time { font-size:1.3rem; font-weight:900; color:var(--rosa); font-family:var(--font-title); min-width:58px; }
+  .rutina-h-body { flex:1; }
+  .rutina-h-label { font-size:.88rem; font-weight:700; color:var(--text); }
+  .rutina-h-note { font-size:.75rem; color:var(--muted); margin-top:.15rem; }
+  .rutina-h-notif-dot { font-size:.85rem; flex-shrink:0; }
+  .rutina-h-actions { display:flex; gap:.3rem; }
+  .rutina-h-btn { background:none; border:none; cursor:pointer; font-size:.85rem; color:var(--muted2); padding:.1rem .3rem; }
+  .rutina-h-empty { text-align:center; color:var(--muted); font-size:.85rem; padding:2.5rem 1rem; font-style:italic; }
+
+  /* Modal */
+  .rutina-h-modal-backdrop { position:fixed; inset:0; background:rgba(244,167,192,.22); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); z-index:9000; align-items:center; justify-content:center; padding:1rem; }
+  .rutina-h-modal { background:var(--card); border-radius:20px; width:100%; max-width:460px; max-height:88vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.18); z-index:9001; margin:auto; }
+  .rutina-h-modal-header { display:flex; justify-content:space-between; align-items:center; padding:1.1rem 1.3rem .8rem; font-family:var(--font-title); font-style:italic; font-size:1.05rem; font-weight:700; border-bottom:1px solid var(--border); }
+  .rutina-h-modal-body { padding:1rem 1.3rem; display:flex; flex-direction:column; gap:.85rem; }
+  .rutina-h-field { display:flex; flex-direction:column; gap:.3rem; }
+  .rutina-h-field-label { font-size:.7rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  .rutina-h-input { border:1.5px solid var(--border); border-radius:10px; padding:.5rem .7rem; font-family:var(--font-body); font-size:.88rem; color:var(--text); background:var(--surface); outline:none; width:100%; box-sizing:border-box; }
+  .rutina-h-input:focus { border-color:var(--rosa); }
+  .rutina-h-modal-footer { display:flex; justify-content:flex-end; gap:.6rem; padding:.9rem 1.3rem; border-top:1px solid var(--border); }
+  .rutina-h-cancel { background:var(--surface); border:1.5px solid var(--border); border-radius:20px; padding:.45rem 1.1rem; font-size:.8rem; font-weight:700; cursor:pointer; font-family:var(--font-body); color:var(--muted); }
+  .rutina-h-save { background:var(--rosa); border:none; border-radius:20px; padding:.45rem 1.2rem; font-size:.8rem; font-weight:700; cursor:pointer; font-family:var(--font-body); color:white; }
+  .rutina-h-notif-toggle { display:flex; align-items:center; gap:.6rem; font-size:.82rem; font-weight:600; color:var(--text); cursor:pointer; }
+  .rutina-h-notif-toggle input { width:16px; height:16px; cursor:pointer; accent-color:var(--rosa); }
+</style>
+
+<!-- Modal rutina horarios -->
+<div class="rutina-h-modal-backdrop" id="rutinaHModalBackdrop" style="display:none" onclick="if(event.target===this)rutinaHorariosCloseModal()">
+  <div class="rutina-h-modal">
+    <div class="rutina-h-modal-header">
+      <span id="rutinaHModalTitle">Nuevo horario</span>
+      <button onclick="rutinaHorariosCloseModal()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted)">✕</button>
+    </div>
+    <div class="rutina-h-modal-body">
+      <div class="rutina-h-field">
+        <label class="rutina-h-field-label">Hora</label>
+        <input class="rutina-h-input" type="time" id="rutinaHHora">
+      </div>
+      <div class="rutina-h-field">
+        <label class="rutina-h-field-label">¿Qué es?</label>
+        <input class="rutina-h-input" id="rutinaHLabel" placeholder="Ej: Hora de dormir, Desayuno, Ejercicio…">
+      </div>
+      <div class="rutina-h-field">
+        <label class="rutina-h-field-label">Nota (opcional)</label>
+        <input class="rutina-h-input" id="rutinaHNota" placeholder="Ej: Apaga el cel 30 min antes">
+      </div>
+      <label class="rutina-h-notif-toggle">
+        <input type="checkbox" id="rutinaHNotifCheck">
+        🔔 Recordarme con notificación
+      </label>
+    </div>
+    <div class="rutina-h-modal-footer">
+      <button class="rutina-h-cancel" onclick="rutinaHorariosCloseModal()">Cancelar</button>
+      <button class="rutina-h-save" onclick="rutinaHorariosGuardar()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var RH_KEY = 'yuki_rutina_horarios';
+  var horarios = [];
+  var editingId = null;
+  var notifTimers = [];
+
+  function load() { try { horarios = JSON.parse(localStorage.getItem(RH_KEY)) || []; } catch(e){ horarios=[]; } }
+  function save() {
+    horarios.sort(function(a,b){ return a.hora.localeCompare(b.hora); });
+    localStorage.setItem(RH_KEY, JSON.stringify(horarios));
+    if (window.cloudSave) window.cloudSave(RH_KEY, horarios);
+    if (window.cloudSave) window.cloudSave(RH_KEY, horarios);
+  }
+
+  function render() {
+    load();
+    var list = document.getElementById('rutinaHList');
+    if (!list) return;
+    list.innerHTML = '';
+    if (horarios.length === 0) {
+      list.innerHTML = '<div class="rutina-h-empty">Aún no tienes horarios. Agrega tus horas de sueño, comidas y más 🌸</div>';
+      return;
+    }
+    horarios.forEach(function(h) {
+      var card = document.createElement('div');
+      card.className = 'rutina-h-card';
+      card.innerHTML =
+        '<div class="rutina-h-time">'+h.hora+'</div>' +
+        '<div class="rutina-h-body">' +
+          '<div class="rutina-h-label">'+h.label+'</div>' +
+          (h.nota ? '<div class="rutina-h-note">'+h.nota+'</div>' : '') +
+        '</div>' +
+        '<div class="rutina-h-notif-dot">'+(h.notif ? '🔔' : '')+'</div>' +
+        '<div class="rutina-h-actions">' +
+          '<button class="rutina-h-btn" onclick="rutinaHorariosEdit(\''+h.id+'\')">✏️</button>' +
+          '<button class="rutina-h-btn" onclick="rutinaHorariosDelete(\''+h.id+'\')">🗑️</button>' +
+        '</div>';
+      list.appendChild(card);
+    });
+  }
+
+  // Notificaciones
+  function checkNotifPermission() {
+    if (!('Notification' in window)) return;
+    var banner = document.getElementById('rutinaHNotifBanner');
+    if (!banner) return;
+    if (Notification.permission === 'default') {
+      banner.style.display = 'flex';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
+  window.rutinaHorariosRequestNotif = function() {
+    if (!('Notification' in window)) { alert('Tu navegador no soporta notificaciones'); return; }
+    Notification.requestPermission().then(function(p) {
+      checkNotifPermission();
+      if (p === 'granted') scheduleAll();
+    });
+  };
+
+  function scheduleAll() {
+    notifTimers.forEach(clearTimeout);
+    notifTimers = [];
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    load();
+    horarios.forEach(function(h) {
+      if (!h.notif) return;
+      var parts = h.hora.split(':');
+      var now = new Date();
+      var target = new Date();
+      target.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
+      if (target <= now) target.setDate(target.getDate() + 1);
+      var ms = target - now;
+      var t = setTimeout(function() {
+        new Notification('⏰ ' + h.label, {
+          body: h.nota || 'Es hora — ' + h.hora,
+          icon: ''
+        });
+        scheduleAll(); // reprogramar para el día siguiente
+      }, ms);
+      notifTimers.push(t);
+    });
+  }
+
+  window.rutinaHorariosAdd = function() {
+    editingId = null;
+    document.getElementById('rutinaHModalTitle').textContent = 'Nuevo horario';
+    document.getElementById('rutinaHHora').value = '';
+    document.getElementById('rutinaHLabel').value = '';
+    document.getElementById('rutinaHNota').value = '';
+    document.getElementById('rutinaHNotifCheck').checked = true;
+    document.getElementById('rutinaHModalBackdrop').style.display = 'flex';
+    setTimeout(function(){ document.getElementById('rutinaHHora').focus(); }, 100);
+  };
+
+  window.rutinaHorariosEdit = function(id) {
+    load();
+    var h = horarios.find(function(x){ return x.id === id; });
+    if (!h) return;
+    editingId = id;
+    document.getElementById('rutinaHModalTitle').textContent = 'Editar horario';
+    document.getElementById('rutinaHHora').value = h.hora;
+    document.getElementById('rutinaHLabel').value = h.label;
+    document.getElementById('rutinaHNota').value = h.nota || '';
+    document.getElementById('rutinaHNotifCheck').checked = !!h.notif;
+    document.getElementById('rutinaHModalBackdrop').style.display = 'flex';
+  };
+
+  window.rutinaHorariosCloseModal = function() {
+    document.getElementById('rutinaHModalBackdrop').style.display = 'none';
+    editingId = null;
+  };
+
+  window.rutinaHorariosGuardar = function() {
+    var hora  = document.getElementById('rutinaHHora').value;
+    var label = document.getElementById('rutinaHLabel').value.trim();
+    if (!hora || !label) { alert('Pon la hora y el nombre 🌸'); return; }
+    load();
+    var h = {
+      id: editingId || ('rh_' + Date.now()),
+      hora: hora,
+      label: label,
+      nota: document.getElementById('rutinaHNota').value.trim(),
+      notif: document.getElementById('rutinaHNotifCheck').checked,
+    };
+    if (editingId) {
+      var idx = horarios.findIndex(function(x){ return x.id === editingId; });
+      if (idx >= 0) horarios[idx] = h; else horarios.push(h);
+    } else {
+      horarios.push(h);
+      // 🎮 Nuevo horario de ritmo circadiano → EXP + flores
+      if (window.yukiAddXP) window.yukiAddXP(10, 'Ritmo Circadiano');
+      if (window.yukiAddSakura) window.yukiAddSakura(3);
+    }
+    save(); rutinaHorariosCloseModal(); render(); scheduleAll();
+    // Pedir permiso si tiene notif activada y no hay permiso
+    if (h.notif && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(function(p){ checkNotifPermission(); if(p==='granted') scheduleAll(); });
+    }
+  };
+
+  window.rutinaHorariosDelete = function(id) {
+    if (!confirm('¿Eliminar este horario?')) return;
+    load();
+    horarios = horarios.filter(function(x){ return x.id !== id; });
+    save(); render(); scheduleAll();
+  };
+
+  load(); render(); checkNotifPermission(); scheduleAll();
+
+  // 🎮 Verificar horarios cumplidos al abrir la app
+  // Si la hora actual está dentro de ±15 min de un horario y no se ha dado XP hoy por ese horario
+  window.yukiCheckCircadiano = function() {
+    load();
+    if (horarios.length === 0) return;
+    var now = new Date();
+    var todayStr = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+    var xpKey = 'yuki_circ_xp_' + todayStr;
+    var dado = {};
+    try { dado = JSON.parse(localStorage.getItem(xpKey)||'{}'); } catch(e){}
+    var nowMins = now.getHours()*60 + now.getMinutes();
+    var earned = false;
+    horarios.forEach(function(h) {
+      if (dado[h.id]) return; // ya se dio hoy
+      var parts = h.hora.split(':');
+      var hMins = parseInt(parts[0])*60 + parseInt(parts[1]);
+      if (Math.abs(nowMins - hMins) <= 15) {
+        dado[h.id] = true;
+        earned = true;
+        if (window.yukiAddXP) window.yukiAddXP(10, 'Circadiano');
+        if (window.yukiAddSakura) window.yukiAddSakura(3);
+      }
+    });
+    if (earned) {
+      localStorage.setItem(xpKey, JSON.stringify(dado));
+      if (window.cloudSave) window.cloudSave(xpKey, dado);
+    }
+  };
+
+  // Verificar al cargar
+  setTimeout(window.yukiCheckCircadiano, 500);
+})();
+</script>
 
 </div><!-- end page-salud -->
 
@@ -12877,7 +14778,7 @@ renderTracker();
 
   /* Modal */
   .pets-modal-backdrop { position: fixed; inset: 0; background: rgba(244,167,192,.22); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 9000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-  .pets-modal { background: var(--card); border-radius: 20px; width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.18); position: relative; margin: auto; }
+  .pets-modal { background: var(--card); border-radius: 20px; width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.18); position: relative; margin: auto; z-index: 9001; }
   .pets-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.3rem .8rem; font-family: var(--font-title); font-style: italic; font-size: 1.1rem; font-weight: 700; border-bottom: 1px solid var(--border); }
   .pets-modal-body { padding: 1rem 1.3rem; display: flex; flex-direction: column; gap: .7rem; }
   .pets-modal-footer { display: flex; justify-content: flex-end; gap: .6rem; padding: .9rem 1.3rem; border-top: 1px solid var(--border); }
@@ -12963,7 +14864,7 @@ renderTracker();
           '<button class="pets-card-btn" title="Editar" onclick="petsOpenModal(\''+pet.id+'\');event.stopPropagation()">✏️</button>'+
           '<button class="pets-card-btn" title="Eliminar" onclick="petsDelete(\''+pet.id+'\');event.stopPropagation()">🗑️</button>'+
         '</div>';
-      card.onclick = function(){ petsOpenModal(pet.id); };
+      card.onclick = (function(pid){ return function(){ petsOpenModal(pid); }; })(pet.id);
       grid.appendChild(card);
     });
   }
@@ -13001,10 +14902,13 @@ renderTracker();
     document.getElementById('petsColor').value = pet ? (pet.color||'') : '';
     document.getElementById('petsNotas').value = pet ? (pet.notas||'') : '';
     document.getElementById('petsPhotoData').value = pet ? (pet.foto||'') : '';
+    // Resetear file input para evitar bugs en móvil
+    var fileInp = document.getElementById('petsPhotoInput');
+    fileInp.value = '';
     var img = document.getElementById('petsPhotoImg');
     var ph = document.getElementById('petsPhotoPlaceholder');
     if (pet && pet.foto) { img.src = pet.foto; img.style.display=''; ph.style.display='none'; }
-    else { img.style.display='none'; ph.style.display=''; }
+    else { img.src=''; img.style.display='none'; ph.style.display=''; }
     // Cuidados
     var cl = document.getElementById('petsCuidadosList'); cl.innerHTML='';
     (pet ? pet.cuidados||[] : []).forEach(function(c){ addCuidadoRow(c); });
@@ -13016,6 +14920,10 @@ renderTracker();
 
   window.petsCloseModal = function() {
     document.getElementById('petsModalBackdrop').style.display='none';
+    // Limpiar file input siempre al cerrar
+    var fileInp = document.getElementById('petsPhotoInput');
+    if (fileInp) fileInp.value = '';
+    editingId = null;
   };
 
   window.petsHandlePhoto = function(input) {
@@ -15154,7 +17062,6 @@ document.addEventListener('DOMContentLoaded', function() {
     border: 1.5px solid var(--border);
     border-radius: var(--radius);
     padding: 1.2rem 1.4rem;
-    max-width: 420px;
   }
 
   .mens-header {
@@ -15413,6 +17320,14 @@ function renderSueno() {
       const w12 = to12h(suenoData[dk].despertar);
       const dur = calcHoras(suenoData[dk].dormirse, suenoData[dk].despertar);
       horasEl.textContent = dur ? (d12 + ' → ' + w12 + ' · ' + dur) : '';
+      // 🎮 Sueño completo → EXP + flores (solo cuando ambos están llenos y es hoy)
+      if (suenoData[dk].dormirse && suenoData[dk].despertar && isToday && !suenoData[dk]._xpSueno) {
+        suenoData[dk]._xpSueno = true;
+        savesueno();
+        if (window.yukiAddXP) window.yukiAddXP(20, 'Sueño');
+        if (window.yukiAddSakura) window.yukiAddSakura(5);
+        if (window.yukiCheckStreak) window.yukiCheckStreak();
+      }
     };
     fDormir.appendChild(inDormir);
     card.appendChild(fDormir);
@@ -15431,6 +17346,14 @@ function renderSueno() {
       const w12 = to12h(suenoData[dk].despertar);
       const dur = calcHoras(suenoData[dk].dormirse, suenoData[dk].despertar);
       horasEl.textContent = dur ? (d12 + ' → ' + w12 + ' · ' + dur) : '';
+      // 🎮 Sueño completo → EXP + flores (solo cuando ambos están llenos y es hoy)
+      if (suenoData[dk].dormirse && suenoData[dk].despertar && isToday && !suenoData[dk]._xpSueno) {
+        suenoData[dk]._xpSueno = true;
+        savesueno();
+        if (window.yukiAddXP) window.yukiAddXP(20, 'Sueño');
+        if (window.yukiAddSakura) window.yukiAddSakura(5);
+        if (window.yukiCheckStreak) window.yukiCheckStreak();
+      }
     };
     fDespertar.appendChild(inDespertar);
     card.appendChild(fDespertar);
@@ -15457,8 +17380,16 @@ function renderSueno() {
       btn.className = 'sueno-emoji-btn' + (entry.calidad === emoji ? ' selected-calidad' : '');
       btn.textContent = emoji;
       btn.onclick = () => {
+        const prev = suenoData[dk].calidad;
         suenoData[dk].calidad = suenoData[dk].calidad === emoji ? '' : emoji;
         savesueno(); renderSueno();
+        // 🎮 Calidad registrada por primera vez hoy → +8 EXP +2🌸
+        if (!prev && suenoData[dk].calidad && isToday && !suenoData[dk]._xpCalidad) {
+          suenoData[dk]._xpCalidad = true;
+          savesueno();
+          if (window.yukiAddXP) window.yukiAddXP(8, 'Calidad sueño');
+          if (window.yukiAddSakura) window.yukiAddSakura(2);
+        }
       };
       calidadRow.appendChild(btn);
     });
@@ -16211,15 +18142,29 @@ document.addEventListener('DOMContentLoaded', function() {
 // ══════════════════════════════════════════
 //  TRACKER DE MENSTRUACIÓN
 // ══════════════════════════════════════════
-let mensData = { lastDate: null }; // { lastDate: 'YYYY-MM-DD' }
+let mensData = {}; // { lastDate, dias: { 'YYYY-MM-DD': { flujo, sintomas:[], nota } } }
 
 function saveMens() {
   try { localStorage.setItem('mens_data', JSON.stringify(mensData)); } catch(e){}
   if (window.cloudSave) window.cloudSave('mens_data', mensData);
 }
 function loadMens() {
-  mensData = window._mensData || JSON.parse(localStorage.getItem('mens_data') || '{"lastDate":null}');
+  var raw = window._mensData || JSON.parse(localStorage.getItem('mens_data') || '{}');
+  // migrar formato viejo (solo lastDate)
+  if (raw && raw.lastDate !== undefined && !raw.dias) {
+    mensData = { lastDate: raw.lastDate, dias: {} };
+  } else {
+    mensData = raw || { lastDate: null, dias: {} };
+  }
+  if (!mensData.dias) mensData.dias = {};
 }
+
+const MENS_SINTOMAS = [
+  '😣 Cólicos','🤕 Dolor de cabeza','😮‍💨 Cansancio','😤 Irritabilidad',
+  '🫠 Hinchazón','🤢 Náuseas','💤 Mucho sueño','😰 Ansiedad',
+  '🍫 Antojos','🥶 Escalofríos','💪 Dolor de espalda','😢 Tristeza'
+];
+const MENS_FLUJO = ['🔴 Abundante','🩸 Moderado','🩷 Ligero','🤏 Manchado','⚪ Ninguno'];
 
 function renderMens() {
   const card = document.getElementById('mensCard');
@@ -16227,38 +18172,37 @@ function renderMens() {
   card.innerHTML = '';
 
   const today = new Date();
+  const todayDk = dateKey(today);
   const lastDate = mensData.lastDate ? new Date(mensData.lastDate + 'T12:00:00') : null;
   const daysSince = lastDate ? Math.floor((today - lastDate) / 86400000) : null;
-
   const MESES_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const todayEntry = mensData.dias[todayDk] || {};
 
+  // ── Header: días desde último periodo + botón marcar hoy
   const header = document.createElement('div');
   header.className = 'mens-header';
 
   const drop = document.createElement('div');
   drop.className = 'mens-drop' + (lastDate ? ' active' : '');
   drop.textContent = '🩸';
-  drop.title = 'Click para marcar hoy como inicio de periodo';
+  drop.title = 'Marcar hoy como inicio de periodo';
   drop.onclick = () => {
     kittyConfirm('¿Marcar hoy como inicio de tu periodo?', function() {
-      mensData.lastDate = dateKey(today);
+      mensData.lastDate = todayDk;
       saveMens(); renderMens();
     });
   };
 
   const info = document.createElement('div');
   info.className = 'mens-info';
-
   const title = document.createElement('div');
   title.className = 'mens-title';
   title.textContent = 'Último periodo';
-
   const dateLabel = document.createElement('div');
   dateLabel.className = 'mens-date-label';
   dateLabel.textContent = lastDate
-    ? `${lastDate.getDate()} de ${MESES_ES[lastDate.getMonth()]} de ${lastDate.getFullYear()}`
+    ? `${lastDate.getDate()} de ${MESES_ES[lastDate.getMonth()]} — día ${daysSince}`
     : 'Toca 🩸 para marcar la fecha';
-
   info.appendChild(title);
   info.appendChild(dateLabel);
   header.appendChild(drop);
@@ -16266,29 +18210,123 @@ function renderMens() {
 
   if (daysSince !== null) {
     const daysEl = document.createElement('div');
-    daysEl.style.textAlign = 'right';
+    daysEl.style.cssText = 'text-align:right;flex-shrink:0';
     const num = document.createElement('div');
     num.className = 'mens-days-since';
     num.textContent = daysSince;
     const lbl = document.createElement('div');
     lbl.className = 'mens-days-label';
-    lbl.textContent = daysSince === 1 ? 'dia desde tu ultimo periodo' : 'dias desde tu ultimo periodo';
+    lbl.textContent = 'días';
     daysEl.appendChild(num);
     daysEl.appendChild(lbl);
     header.appendChild(daysEl);
   }
-
   card.appendChild(header);
 
-  if (lastDate) {
-    const hint = document.createElement('div');
-    hint.className = 'mens-hint';
-    hint.textContent = '🩸 Toca la gotita para actualizar la fecha';
-    card.appendChild(hint);
+  // ── Registro del día de hoy
+  const todaySection = document.createElement('div');
+  todaySection.style.cssText = 'margin-top:.9rem;border-top:1px solid var(--border);padding-top:.9rem';
 
+  const todayTitle = document.createElement('div');
+  todayTitle.style.cssText = 'font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem';
+  todayTitle.textContent = '📋 Registro de hoy';
+  todaySection.appendChild(todayTitle);
+
+  // Flujo
+  const flujoLabel = document.createElement('div');
+  flujoLabel.style.cssText = 'font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:.35rem';
+  flujoLabel.textContent = 'Flujo';
+  todaySection.appendChild(flujoLabel);
+
+  const flujoRow = document.createElement('div');
+  flujoRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.8rem';
+  MENS_FLUJO.forEach(function(f) {
+    var btn = document.createElement('button');
+    var isActive = todayEntry.flujo === f;
+    btn.style.cssText = 'padding:.3rem .65rem;border-radius:20px;border:1.5px solid '+(isActive?'var(--rosa)':'var(--border)')+';background:'+(isActive?'var(--rosa-soft)':'var(--surface)')+';font-family:var(--font-body);font-size:.72rem;font-weight:700;color:'+(isActive?'var(--rosa)':'var(--muted)')+';cursor:pointer';
+    btn.textContent = f;
+    btn.onclick = function() {
+      if (!mensData.dias[todayDk]) mensData.dias[todayDk] = {};
+      mensData.dias[todayDk].flujo = (mensData.dias[todayDk].flujo === f) ? null : f;
+      saveMens(); renderMens();
+    };
+    flujoRow.appendChild(btn);
+  });
+  todaySection.appendChild(flujoRow);
+
+  // Síntomas
+  const sinLabel = document.createElement('div');
+  sinLabel.style.cssText = 'font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:.35rem';
+  sinLabel.textContent = 'Síntomas';
+  todaySection.appendChild(sinLabel);
+
+  const sinRow = document.createElement('div');
+  sinRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.8rem';
+  var activeSins = (todayEntry.sintomas || []);
+  MENS_SINTOMAS.forEach(function(s) {
+    var isActive = activeSins.indexOf(s) > -1;
+    var btn = document.createElement('button');
+    btn.style.cssText = 'padding:.3rem .65rem;border-radius:20px;border:1.5px solid '+(isActive?'#c0556a':'var(--border)')+';background:'+(isActive?'rgba(192,85,106,.12)':'var(--surface)')+';font-family:var(--font-body);font-size:.7rem;font-weight:700;color:'+(isActive?'#c0556a':'var(--muted)')+';cursor:pointer';
+    btn.textContent = s;
+    btn.onclick = function() {
+      if (!mensData.dias[todayDk]) mensData.dias[todayDk] = {};
+      if (!mensData.dias[todayDk].sintomas) mensData.dias[todayDk].sintomas = [];
+      var idx = mensData.dias[todayDk].sintomas.indexOf(s);
+      if (idx > -1) mensData.dias[todayDk].sintomas.splice(idx, 1);
+      else mensData.dias[todayDk].sintomas.push(s);
+      saveMens(); renderMens();
+    };
+    sinRow.appendChild(btn);
+  });
+  todaySection.appendChild(sinRow);
+
+  // Nota del día
+  const notaLabel = document.createElement('div');
+  notaLabel.style.cssText = 'font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:.35rem';
+  notaLabel.textContent = '📝 Nota del día';
+  todaySection.appendChild(notaLabel);
+
+  const notaInput = document.createElement('textarea');
+  notaInput.style.cssText = 'width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:.5rem .7rem;font-family:var(--font-body);font-size:.82rem;color:var(--text);background:var(--surface);outline:none;resize:none;min-height:60px';
+  notaInput.placeholder = 'Cómo te sientes hoy, algo que quieras recordar...';
+  notaInput.value = todayEntry.nota || '';
+  notaInput.oninput = function() {
+    if (!mensData.dias[todayDk]) mensData.dias[todayDk] = {};
+    mensData.dias[todayDk].nota = notaInput.value;
+    saveMens();
+  };
+  notaInput.onfocus = function() { notaInput.style.borderColor = 'var(--rosa)'; };
+  notaInput.onblur = function() { notaInput.style.borderColor = 'var(--border)'; };
+  todaySection.appendChild(notaInput);
+  card.appendChild(todaySection);
+
+  // ── Calendario desplegable
+  const calWrap = document.createElement('div');
+  calWrap.style.cssText = 'margin-top:.9rem;border-top:1px solid var(--border);padding-top:.7rem';
+
+  const calToggle = document.createElement('button');
+  calToggle.style.cssText = 'width:100%;display:flex;align-items:center;justify-content:space-between;background:none;border:none;cursor:pointer;font-family:var(--font-body);font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:.1rem 0';
+  var calOpen = false;
+  calToggle.innerHTML = '<span>📅 Calendario del ciclo</span><span id="mensCalChevron" style="transition:transform .25s;display:inline-block">›</span>';
+  calToggle.onclick = function() {
+    calOpen = !calOpen;
+    calBody.style.display = calOpen ? '' : 'none';
+    document.getElementById('mensCalChevron').style.transform = calOpen ? 'rotate(90deg)' : 'rotate(0deg)';
+    if (calOpen) renderMensCal(calBody);
+  };
+  calWrap.appendChild(calToggle);
+
+  const calBody = document.createElement('div');
+  calBody.style.display = 'none';
+  calBody.style.marginTop = '.7rem';
+  calWrap.appendChild(calBody);
+  card.appendChild(calWrap);
+
+  // Borrar registro
+  if (mensData.lastDate) {
     const clearBtn = document.createElement('button');
     clearBtn.className = 'mens-clear-btn';
-    clearBtn.textContent = 'Borrar registro';
+    clearBtn.textContent = 'Borrar fecha de último periodo';
     clearBtn.onclick = () => {
       kittyConfirm('¿Borrar el registro del periodo?', function() {
         mensData.lastDate = null;
@@ -16297,6 +18335,100 @@ function renderMens() {
     };
     card.appendChild(clearBtn);
   }
+}
+
+function renderMensCal(container) {
+  container.innerHTML = '';
+  var now = new Date();
+  var year = now.getFullYear(), month = now.getMonth();
+  var MESES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  var DIAS_ES = ['L','M','X','J','V','S','D'];
+
+  // Nav
+  var nav = document.createElement('div');
+  nav.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem';
+  var prevBtn = document.createElement('button');
+  prevBtn.textContent = '‹';
+  prevBtn.style.cssText = 'background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--muted);padding:.2rem .4rem';
+  var nextBtn = document.createElement('button');
+  nextBtn.textContent = '›';
+  nextBtn.style.cssText = prevBtn.style.cssText;
+  var monthLabel = document.createElement('span');
+  monthLabel.style.cssText = 'font-size:.82rem;font-weight:800;color:var(--text)';
+
+  function buildCal(y, m) {
+    monthLabel.textContent = MESES_ES[m] + ' ' + y;
+    var grid = container.querySelector('.mens-cal-grid');
+    if (grid) grid.remove();
+    grid = document.createElement('div');
+    grid.className = 'mens-cal-grid';
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(7,1fr);gap:3px';
+
+    DIAS_ES.forEach(function(d) {
+      var h = document.createElement('div');
+      h.style.cssText = 'text-align:center;font-size:.58rem;font-weight:800;color:var(--muted);padding:.2rem 0';
+      h.textContent = d;
+      grid.appendChild(h);
+    });
+
+    var first = new Date(y, m, 1);
+    var startDow = first.getDay(); // 0=Dom
+    var offset = startDow === 0 ? 6 : startDow - 1;
+    for (var i=0; i<offset; i++) {
+      grid.appendChild(document.createElement('div'));
+    }
+    var daysInMonth = new Date(y, m+1, 0).getDate();
+    for (var day=1; day<=daysInMonth; day++) {
+      var dk = y+'-'+String(m+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+      var entry = mensData.dias[dk] || {};
+      var isToday = dk === dateKey(new Date());
+      var isLast = mensData.lastDate === dk;
+      var hasSin = entry.sintomas && entry.sintomas.length > 0;
+      var hasFlujo = !!entry.flujo;
+
+      var cell = document.createElement('div');
+      cell.style.cssText = 'text-align:center;border-radius:8px;padding:.3rem .1rem;cursor:pointer;font-size:.72rem;font-weight:700;position:relative;' +
+        (isToday ? 'background:var(--rosa-soft);color:var(--rosa);' : isLast ? 'background:rgba(192,85,106,.2);color:#c0556a;' : 'color:var(--text);') ;
+      cell.textContent = day;
+
+      // Indicadores
+      if (hasFlujo || hasSin || entry.nota) {
+        var dot = document.createElement('div');
+        dot.style.cssText = 'width:4px;height:4px;border-radius:50%;background:'+(hasFlujo?'#c0556a':'var(--muted)')+';margin:1px auto 0';
+        cell.appendChild(dot);
+      }
+      if (isLast) { cell.textContent = '🩸'; }
+
+      cell.onclick = function(dk2) { return function() { mensDayDetail(dk2, container); }; }(dk);
+      grid.appendChild(cell);
+    }
+    container.appendChild(grid);
+  }
+
+  prevBtn.onclick = function() { month--; if(month<0){month=11;year--;} buildCal(year,month); };
+  nextBtn.onclick = function() { month++; if(month>11){month=0;year++;} buildCal(year,month); };
+  nav.appendChild(prevBtn);
+  nav.appendChild(monthLabel);
+  nav.appendChild(nextBtn);
+  container.appendChild(nav);
+  buildCal(year, month);
+}
+
+function mensDayDetail(dk, container) {
+  var existing = container.querySelector('.mens-day-detail');
+  if (existing) existing.remove();
+  var entry = mensData.dias[dk] || {};
+  if (!entry.flujo && (!entry.sintomas || !entry.sintomas.length) && !entry.nota) return;
+  var detail = document.createElement('div');
+  detail.className = 'mens-day-detail';
+  detail.style.cssText = 'background:var(--surface);border-radius:10px;padding:.7rem .9rem;margin-top:.5rem;font-size:.78rem';
+  var d = new Date(dk+'T12:00:00');
+  var MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  detail.innerHTML = '<div style="font-weight:800;color:var(--text);margin-bottom:.4rem">'+d.getDate()+' '+MESES[d.getMonth()]+'</div>' +
+    (entry.flujo ? '<div style="margin-bottom:.25rem">'+entry.flujo+'</div>' : '') +
+    (entry.sintomas && entry.sintomas.length ? '<div style="color:var(--muted);margin-bottom:.25rem">'+entry.sintomas.join(' · ')+'</div>' : '') +
+    (entry.nota ? '<div style="color:var(--muted);font-style:italic">'+entry.nota+'</div>' : '');
+  container.appendChild(detail);
 }
 
 // Patch cloud sync
@@ -16925,6 +19057,7 @@ renderTimeline();
 // Flat list of all pages (used for showPage lookups)
 const NAV_PAGES = [
   { icon:'🏠', label:'Inicio',      page:'page-inicio'    },
+  { icon:'🚀', label:'Logros',      page:'page-logros'    },
   { icon:'🐱', label:'Mi Semana',   page:'page-semana'    },
   { icon:'🔍', label:'Buscar',      page:'page-buscar'    },
   { icon:'🙏', label:'Fe',          page:'page-fe'        },
@@ -19573,6 +21706,37 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     } catch(e) {}
 
+    // ── Comidas
+    try {
+      var fStateHist = JSON.parse(localStorage.getItem('food_state') || '{}');
+      var qualityTxt = { '1':'😬 Poco saludable', '2':'😐 Regular', '3':'🙂 Bien', '4':'😋 Muy saludable' };
+      var mealDefs = [
+        { id:'desayuno', icon:'🌅', label:'Desayuno' },
+        { id:'almuerzo', icon:'☀️', label:'Almuerzo' },
+        { id:'cena',     icon:'🌙', label:'Cena' },
+        { id:'snack',    icon:'🍎', label:'Snack' },
+      ];
+      var comidassec = null;
+      mealDefs.forEach(function(meal) {
+        var data = fStateHist['f_' + dk + '_' + meal.id];
+        if (!data || !data.eaten) return;
+        if (!comidassec) {
+          comidassec = document.createElement('div');
+          comidassec.className = 'hist-rec-section';
+          comidassec.innerHTML = '<div class="hist-rec-title">🍽️ Comidas</div>';
+        }
+        var it = document.createElement('div');
+        it.className = 'hist-rec-item';
+        var html = '<span style="font-weight:800">' + meal.icon + ' ' + meal.label + '</span>';
+        if (data.hora)    html += ' <span style="color:var(--muted);font-size:.75rem">· ' + data.hora + '</span>';
+        if (data.texto)   html += '<div style="margin-top:.15rem;font-size:.82rem">' + data.texto + '</div>';
+        if (data.quality) html += '<div style="font-size:.72rem;color:var(--muted);margin-top:.1rem">' + (qualityTxt[data.quality]||'') + '</div>';
+        it.innerHTML = html;
+        comidassec.appendChild(it);
+      });
+      if (comidassec) { hasAnything = true; panel.appendChild(comidassec); }
+    } catch(e) {}
+
     if (!hasAnything) {
       var empty = document.createElement('div');
       empty.className = 'hist-no-data';
@@ -21719,7 +23883,195 @@ document.addEventListener('DOMContentLoaded', function() {
       🚪 Cerrar sesión
     </button>
   </div>
+
+  <!-- Citas favoritas -->
+  <div class="config-block">
+    <div class="config-block-title">📚 Mis citas favoritas</div>
+    <p style="font-size:.75rem;color:var(--muted);margin-bottom:.8rem">Aparecen en tu pantalla de inicio y rotan automáticamente</p>
+
+    <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem">
+      <label style="font-size:.75rem;font-weight:700;color:var(--text);flex-shrink:0">Cambiar cada</label>
+      <input id="citasDias" type="number" min="1" max="30" style="width:60px;border:1.5px solid var(--border);border-radius:8px;padding:.35rem .5rem;font-family:var(--font-body);font-size:.85rem;color:var(--text);background:var(--surface);outline:none;text-align:center" oninput="citasGuardarDias(this.value)">
+      <label style="font-size:.75rem;font-weight:700;color:var(--text)">días</label>
+    </div>
+
+    <div id="citasListaConfig"></div>
+
+    <button onclick="citasAbrirAdd()" style="margin-top:.7rem;background:var(--rosa);color:white;border:none;border-radius:20px;padding:.45rem 1.1rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:var(--font-body)">+ agregar cita</button>
+  </div>
 </section>
+
+<!-- Modal agregar cita -->
+<div id="citaModalBackdrop" style="display:none;position:fixed;inset:0;background:rgba(244,167,192,.22);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:9000;align-items:center;justify-content:center;padding:1rem" onclick="if(event.target===this)citasCerrarAdd()">
+  <div style="background:var(--card);border-radius:20px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;z-index:9001;margin:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:1.1rem 1.3rem .8rem;font-family:var(--font-title);font-style:italic;font-size:1.05rem;font-weight:700;border-bottom:1px solid var(--border)">
+      <span>Nueva cita</span>
+      <button onclick="citasCerrarAdd()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted)">✕</button>
+    </div>
+    <div style="padding:1rem 1.3rem;display:flex;flex-direction:column;gap:.8rem">
+      <div style="display:flex;flex-direction:column;gap:.3rem">
+        <label style="font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">La cita</label>
+        <textarea id="citaTexto" rows="4" style="border:1.5px solid var(--border);border-radius:10px;padding:.5rem .7rem;font-family:var(--font-body);font-size:.88rem;color:var(--text);background:var(--surface);outline:none;width:100%;box-sizing:border-box;resize:none" placeholder="Escribe la cita aquí…"></textarea>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.3rem">
+        <label style="font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Libro</label>
+        <input id="citaLibro" style="border:1.5px solid var(--border);border-radius:10px;padding:.5rem .7rem;font-family:var(--font-body);font-size:.88rem;color:var(--text);background:var(--surface);outline:none;width:100%;box-sizing:border-box" placeholder="Título del libro">
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:.6rem;padding:.9rem 1.3rem;border-top:1px solid var(--border)">
+      <button onclick="citasCerrarAdd()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:.45rem 1.1rem;font-size:.8rem;font-weight:700;cursor:pointer;font-family:var(--font-body);color:var(--muted)">Cancelar</button>
+      <button onclick="citasGuardarNueva()" style="background:var(--rosa);border:none;border-radius:20px;padding:.45rem 1.2rem;font-size:.8rem;font-weight:700;cursor:pointer;font-family:var(--font-body);color:white">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var CITAS_KEY = 'yuki_citas';
+  var CITAS_DIAS_KEY = 'yuki_citas_dias';
+  var CITAS_LAST_KEY = 'yuki_citas_last';
+  var CITAS_IDX_KEY  = 'yuki_citas_idx';
+
+  function getCitas()   { try { return JSON.parse(localStorage.getItem(CITAS_KEY)||'[]'); } catch(e){ return []; } }
+  function getDias()    { return parseInt(localStorage.getItem(CITAS_DIAS_KEY)||'1'); }
+
+  function saveCitas(v) { localStorage.setItem(CITAS_KEY, JSON.stringify(v)); if(window.cloudSave) window.cloudSave(CITAS_KEY, v); }
+
+  // ── Obtener cita actual (rota cada N días)
+  window.citaActual = function() {
+    var citas = getCitas();
+    if (!citas.length) return null;
+    var dias  = getDias();
+    var today = new Date();
+    var dk    = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+    var last  = localStorage.getItem(CITAS_LAST_KEY) || '';
+    var idx   = parseInt(localStorage.getItem(CITAS_IDX_KEY)||'0');
+
+    // calcular días desde last
+    if (last) {
+      var lastD = new Date(last+'T12:00:00');
+      var diff  = Math.floor((today - lastD) / 86400000);
+      if (diff >= dias) {
+        idx = (idx + 1) % citas.length;
+        localStorage.setItem(CITAS_IDX_KEY, idx);
+        localStorage.setItem(CITAS_LAST_KEY, dk);
+        if(window.cloudSave){ window.cloudSave(CITAS_IDX_KEY, idx); window.cloudSave(CITAS_LAST_KEY, dk); }
+      }
+    } else {
+      localStorage.setItem(CITAS_LAST_KEY, dk);
+      if(window.cloudSave) window.cloudSave(CITAS_LAST_KEY, dk);
+    }
+    if (idx >= citas.length) idx = 0;
+    return citas[idx];
+  };
+
+  // ── Cambiar manualmente
+  window.citaSiguiente = function() {
+    var citas = getCitas();
+    if (!citas.length) return;
+    var idx = (parseInt(localStorage.getItem(CITAS_IDX_KEY)||'0') + 1) % citas.length;
+    var dk = new Date();
+    var dkStr = dk.getFullYear()+'-'+String(dk.getMonth()+1).padStart(2,'0')+'-'+String(dk.getDate()).padStart(2,'0');
+    localStorage.setItem(CITAS_IDX_KEY, idx);
+    localStorage.setItem(CITAS_LAST_KEY, dkStr);
+    if(window.cloudSave){ window.cloudSave(CITAS_IDX_KEY, idx); window.cloudSave(CITAS_LAST_KEY, dkStr); }
+    renderCitaWidget();
+  };
+
+  // ── Config: guardar días
+  window.citasGuardarDias = function(v) {
+    var n = parseInt(v);
+    if (n < 1 || isNaN(n)) return;
+    localStorage.setItem(CITAS_DIAS_KEY, n);
+    if(window.cloudSave) window.cloudSave(CITAS_DIAS_KEY, n);
+  };
+
+  // ── Modal agregar
+  window.citasAbrirAdd = function() {
+    document.getElementById('citaTexto').value = '';
+    document.getElementById('citaLibro').value = '';
+    document.getElementById('citaModalBackdrop').style.display = 'flex';
+    setTimeout(function(){ document.getElementById('citaTexto').focus(); }, 100);
+  };
+  window.citasCerrarAdd = function() {
+    document.getElementById('citaModalBackdrop').style.display = 'none';
+  };
+  window.citasGuardarNueva = function() {
+    var texto = document.getElementById('citaTexto').value.trim();
+    var libro = document.getElementById('citaLibro').value.trim();
+    if (!texto) { alert('Escribe la cita 📚'); return; }
+    var citas = getCitas();
+    citas.push({ id:'cita_'+Date.now(), texto:texto, libro:libro });
+    saveCitas(citas);
+    citasCerrarAdd();
+    renderCitasConfig();
+    renderCitaWidget();
+  };
+  window.citasEliminar = function(id) {
+    if (!confirm('¿Eliminar esta cita?')) return;
+    var citas = getCitas().filter(function(c){ return c.id !== id; });
+    saveCitas(citas);
+    renderCitasConfig();
+    renderCitaWidget();
+  };
+
+  // ── Render lista en config
+  function renderCitasConfig() {
+    var el = document.getElementById('citasListaConfig');
+    if (!el) return;
+    var citas = getCitas();
+    var diasInput = document.getElementById('citasDias');
+    if (diasInput) diasInput.value = getDias();
+    el.innerHTML = '';
+    if (!citas.length) {
+      el.innerHTML = '<p style="font-size:.78rem;color:var(--muted);font-style:italic">Aún no tienes citas. ¡Agrega las que más te gusten! 📚</p>';
+      return;
+    }
+    citas.forEach(function(c) {
+      var row = document.createElement('div');
+      row.style.cssText = 'background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.65rem .9rem;margin-bottom:.5rem;display:flex;align-items:flex-start;gap:.6rem';
+      row.innerHTML =
+        '<div style="flex:1">' +
+          '<div style="font-size:.82rem;color:var(--text);font-style:italic;margin-bottom:.2rem">"'+c.texto+'"</div>' +
+          (c.libro ? '<div style="font-size:.68rem;color:var(--muted);font-weight:700">— '+c.libro+'</div>' : '') +
+        '</div>' +
+        '<button onclick="citasEliminar(\''+c.id+'\')" style="background:none;border:none;cursor:pointer;color:var(--muted2);font-size:.85rem;flex-shrink:0;padding:.1rem .2rem">🗑️</button>';
+      el.appendChild(row);
+    });
+  }
+
+  // ── Widget en inicio
+  function renderCitaWidget() {
+    var el = document.getElementById('citaWidgetHome');
+    if (!el) return;
+    var cita = window.citaActual();
+    if (!cita) {
+      el.style.display = 'none';
+      return;
+    }
+    el.style.display = '';
+    el.innerHTML =
+      '<div style="font-size:.62rem;font-weight:800;color:var(--rosa);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">📚 Cita del momento</div>' +
+      '<div style="font-size:.85rem;color:var(--text);font-style:italic;line-height:1.55;margin-bottom:.5rem">"'+cita.texto+'"</div>' +
+      (cita.libro ? '<div style="font-size:.72rem;color:var(--muted);font-weight:700;margin-bottom:.5rem">— '+cita.libro+'</div>' : '') +
+      '<button onclick="citaSiguiente()" style="background:none;border:1.5px solid var(--border);border-radius:20px;padding:.25rem .7rem;font-size:.68rem;font-weight:700;color:var(--muted);cursor:pointer;font-family:var(--font-body)">siguiente →</button>';
+  }
+
+  // Init
+  renderCitasConfig();
+  renderCitaWidget();
+
+  // Re-render al entrar config
+  var _origShowCitas = window.showPage;
+  window.showPage = function(pageId) {
+    if (_origShowCitas) _origShowCitas(pageId);
+    if (pageId === 'page-config') setTimeout(renderCitasConfig, 100);
+  };
+
+  // Exponer para mirrorKeys
+  window._renderCitaWidget = renderCitaWidget;
+})();
+</script>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function(){
