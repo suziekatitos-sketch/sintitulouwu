@@ -160,8 +160,13 @@ window.kittyConfirm = function(msg, onYes, onNo) {
           'yuki_xp','yuki_xp_streak','yuki_xp_last_date',
           'yuki_sakura','yuki_tienda_recompensas','yuki_compras_historial','yuki_study_minutes',
           'yuki_citas','yuki_citas_dias','yuki_citas_last','yuki_citas_idx'];
+        var _now = Date.now();
+        var _lastWrite = window._lastSemanaWrite || 0;
+        var _protegidas = (_now - _lastWrite) < 5000; // 5s de proteccion tras guardar
         mirrorKeys.forEach(function(k) {
           if (raw[k] !== undefined) {
+            // No sobreescribir tareas/completions si acabamos de guardar localmente
+            if (_protegidas && (k === 'recurring_tasks' || k === 'completions')) return;
             try { localStorage.setItem(k, raw[k]); } catch(e) {}
           }
         });
