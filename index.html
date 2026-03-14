@@ -12380,6 +12380,7 @@ function updateProgress() {
 function saveData() {
   try { localStorage.setItem('recurring_tasks', JSON.stringify(recurringTasks)); } catch(e){}
   try { localStorage.setItem('completions', JSON.stringify(completions)); } catch(e){}
+  window._lastSemanaWrite = Date.now(); // marcar tiempo de escritura
   if (window.cloudSave) {
     window.cloudSave('recurring_tasks', recurringTasks);
     window.cloudSave('completions', completions);
@@ -12580,10 +12581,11 @@ var _nW = document.getElementById('nextWeek'); if(_nW) _nW.onclick = () => { wee
 
 // --- SYNC FROM CLOUD ---------------------------------------
 window.syncFromCloud = function() {
-  var hasPendingRT = window._saveTimers && window._saveTimers['recurring_tasks'];
-  var hasPendingCo = window._saveTimers && window._saveTimers['completions'];
-  if (!hasPendingRT && window._recurringTasks !== undefined) recurringTasks = window._recurringTasks;
-  if (!hasPendingCo && window._completions    !== undefined) completions    = window._completions;
+  // No sobreescribir si escribimos hace menos de 3 segundos (race condition con Firebase)
+  var msSinceWrite = window._lastSemanaWrite ? (Date.now() - window._lastSemanaWrite) : 99999;
+  var tooSoon = msSinceWrite < 3000;
+  if (!tooSoon && window._recurringTasks !== undefined) recurringTasks = window._recurringTasks;
+  if (!tooSoon && window._completions    !== undefined) completions    = window._completions;
   render();
   if (typeof renderCheckin    === 'function') { loadCheckin();    renderCheckin();    }
   if (typeof loadSpark        === 'function') { loadSpark();                          }
