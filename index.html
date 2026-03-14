@@ -12390,8 +12390,9 @@ function saveData() {
 }
 
 function loadData() {
-  recurringTasks = window._recurringTasks || JSON.parse(localStorage.getItem('recurring_tasks') || '[]');
-  completions    = window._completions    || JSON.parse(localStorage.getItem('completions')     || '{}');
+  // Siempre leer de localStorage -- _recurringTasks puede estar desactualizado si Firebase llega tarde
+  recurringTasks = JSON.parse(localStorage.getItem('recurring_tasks') || '[]');
+  completions    = JSON.parse(localStorage.getItem('completions')     || '{}');
 }
 
 function resetWeek() {
@@ -12739,8 +12740,16 @@ async function initApp() {
       const raw = await window.cloudLoad();
       if (raw.sem_data)            window._data             = JSON.parse(raw.sem_data);
       if (raw.sem_custom)          window._customTasks      = JSON.parse(raw.sem_custom);
-      if (raw.recurring_tasks)     window._recurringTasks   = JSON.parse(raw.recurring_tasks);
-      if (raw.completions)         window._completions      = JSON.parse(raw.completions);
+      if (raw.recurring_tasks) {
+        var rt = JSON.parse(raw.recurring_tasks);
+        window._recurringTasks = rt;
+        try { localStorage.setItem('recurring_tasks', JSON.stringify(rt)); } catch(e){}
+      }
+      if (raw.completions) {
+        var co = JSON.parse(raw.completions);
+        window._completions = co;
+        try { localStorage.setItem('completions', JSON.stringify(co)); } catch(e){}
+      }
       if (raw.ci_state)            window._checkinState     = JSON.parse(raw.ci_state);
       if (raw.nd_state)            window._needsState       = JSON.parse(raw.nd_state);
       if (raw.calm_tools)          window._calmTools        = JSON.parse(raw.calm_tools);
