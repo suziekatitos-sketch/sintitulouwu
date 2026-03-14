@@ -4329,8 +4329,8 @@ window.kittyConfirm = function(msg, onYes, onNo) {
   ══════════════════════════════════════════ */
   /* Salud tabs */
   .salud-tabs-header { max-width:780px; margin:0 auto; padding:1.2rem 1rem .2rem; }
-  .salud-tabs { display:flex; gap:.5rem; max-width:780px; margin:0 auto 1.2rem; padding:0 1rem; }
-  .salud-tab { flex:1; padding:.5rem .8rem; border:1.5px solid var(--border); border-radius:20px; background:var(--surface); font-family:var(--font-body); font-size:.78rem; font-weight:700; color:var(--muted); cursor:pointer; transition:all .2s; }
+  .salud-tabs { display:flex; flex-wrap:wrap; gap:.45rem; max-width:780px; margin:0 auto 1.2rem; padding:0 1rem; }
+  .salud-tab { flex:0 0 auto; padding:.45rem .9rem; border:1.5px solid var(--border); border-radius:20px; background:var(--surface); font-family:var(--font-body); font-size:.78rem; font-weight:700; color:var(--muted); cursor:pointer; transition:all .2s; white-space:nowrap; }
   .salud-tab.active { background:var(--rosa); color:white; border-color:var(--rosa); }
   .salud-tab:not(.active):hover { border-color:var(--rosa); color:var(--rosa); }
 
@@ -4982,6 +4982,32 @@ window.kittyConfirm = function(msg, onYes, onNo) {
     box-shadow: 0 3px 16px rgba(192,132,252,.4);
     transition: all .2s;
   }
+
+  /* Botón regresar */
+  .back-btn {
+    position: fixed;
+    top: 14px;
+    left: 16px;
+    z-index: 400;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    width: 48px;
+    height: 48px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: var(--rosa);
+    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+    transition: all .2s;
+  }
+  .back-btn.visible { display: flex; }
+  .back-btn:hover { background: var(--rosa-soft); }
+  @media (min-width: 901px) {
+    .hamburger-btn { right: 60px; }
+  }
   .hamburger-btn:hover { opacity: .88; }
   .hamburger-btn span {
     display: block;
@@ -5307,6 +5333,7 @@ function todayKey() { return dateKey(new Date()); }
 <!-- APP SCREEN (hidden until login) -->
 <div id="app-screen">
 <!-- ══ HAMBURGER + DRAWER ══ -->
+<button class="back-btn" id="backBtn" aria-label="Regresar" onclick="yukiGoBack()">‹</button>
 <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menú">
   <span></span><span></span><span></span>
 </button>
@@ -6331,7 +6358,8 @@ function todayKey() { return dateKey(new Date()); }
   };
 
   function renderLogrosPage() {
-    var xp     = getXP();
+    // Siempre leer fresco del localStorage por si cambió desde otra sección
+    var xp     = parseInt(localStorage.getItem(XP_KEY) || '0');
     var streak = getStreak();
     var rank   = getCurrentRank(xp);
     var rankIdx = RANKS.indexOf(rank);
@@ -6432,7 +6460,10 @@ function todayKey() { return dateKey(new Date()); }
   var _origShowXP = window.showPage;
   window.showPage = function(pageId) {
     if (_origShowXP) _origShowXP(pageId);
-    if (pageId === 'page-logros') renderLogrosPage();
+    if (pageId === 'page-logros') {
+      setTimeout(renderLogrosPage, 100);
+      setTimeout(renderLogrosPage, 800); // por si Firebase carga tarde
+    }
   };
 })();
 </script>
@@ -7942,6 +7973,8 @@ function openRutinaModal(templateId, tipo) {
     };
   });
 
+  } // end if rutinaTipo === 'texto'
+
   // Preview de URL en tiempo real
   if (rutinaTipo === 'foto') {
     const urlInput = backdrop.querySelector('#rutFotoUrl');
@@ -8036,12 +8069,13 @@ function openRutinaModal(templateId, tipo) {
   }
 
   backdrop.querySelector('#rutNombre').focus();
-}
+} // end openRutinaModal
 
 // ══════════════════════════════════════════
 // PROYECTOS ACADÉMICOS
 // ══════════════════════════════════════════
-let univProyectos = [];
+window.univProyectos = [];
+var univProyectos = window.univProyectos;
 
 function saveProyectos() {
   try { localStorage.setItem('univ_proyectos', JSON.stringify(univProyectos)); } catch(e){}
@@ -8050,6 +8084,7 @@ function saveProyectos() {
 
 function loadProyectos() {
   univProyectos = window._univProyectos || JSON.parse(localStorage.getItem('univ_proyectos') || '[]');
+  window.univProyectos = univProyectos;
 }
 
 function renderProyectos() {
@@ -8243,12 +8278,8 @@ window.openProyectoModal = function openProyectoModal(proyId) {
   box.querySelector('#pTitle').focus();
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  loadProyectos();
-  renderProyectos();
-  const btn = document.getElementById('univNewProyectoBtn');
-  if (btn) btn.onclick = () => openProyectoModal(null);
-});
+loadProyectos();
+renderProyectos();
 
 
 // Nav buttons
@@ -8268,7 +8299,6 @@ window.syncFromCloud = function() {
 
 loadRutinas();
 renderRutinas();
-}
 </script>
 
 <script>
@@ -9883,6 +9913,28 @@ document.addEventListener('DOMContentLoaded', function() {
 </div><!-- end page-fe -->
 <div id="page-calma" class="page-section">
 <div id="sec-calma-nav" style="scroll-margin-top:60px"></div>
+
+<!-- Pestañas Calma -->
+<div class="salud-tabs" style="margin-bottom:0">
+  <button class="salud-tab active" id="calmaTab0" onclick="calmaShowTab(0)">🌿 Recarga</button>
+  <button class="salud-tab" id="calmaTab1" onclick="calmaShowTab(1)">🌡️ Check-in</button>
+  <button class="salud-tab" id="calmaTab2" onclick="calmaShowTab(2)">🔄 Cambio</button>
+  <button class="salud-tab" id="calmaTab3" onclick="calmaShowTab(3)">📅 Eventos</button>
+  <button class="salud-tab" id="calmaTab4" onclick="calmaShowTab(4)">💙 Recuperación</button>
+</div>
+<script>
+window.calmaShowTab = function(idx) {
+  for (var i=0; i<5; i++) {
+    var btn = document.getElementById('calmaTab'+i);
+    var el  = document.getElementById('calmaTabContent'+i);
+    if (btn) btn.classList.toggle('active', i===idx);
+    if (el)  el.style.display = (i===idx) ? '' : 'none';
+  }
+};
+</script>
+
+<!-- TAB 0: Recarga -->
+<div id="calmaTabContent0">
 <section class="cuida-section" id="sec-cuida">
   <span class="section-sub">🌸 selfcare</span>
   <h2 class="section-title"><em>Mi Tiempo de</em> Recarga</h2>
@@ -9903,12 +9955,14 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="quote-nav" id="quoteNav"></div>
   </div>
 </section>
+</div><!-- end calmaTabContent0 -->
+
+<!-- TAB 1: Check-in -->
+<div id="calmaTabContent1" style="display:none">
 <section class="checkin-section" id="sec-checkin">
   <span class="section-sub">🌡️ autorregulación</span>
   <h2 class="section-title"><em>Check-in Sensorial</em> del Día</h2>
   <div class="checkin-grid" id="checkinGrid"></div>
-
-  <!-- Caja de herramientas de calma -->
   <div class="calm-box">
     <div class="calm-box-title">🧸 Mis Herramientas de Calma</div>
     <div class="calm-tools-grid" id="calmTools"></div>
@@ -9918,6 +9972,10 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 </section>
+</div><!-- end calmaTabContent1 -->
+
+<!-- TAB 2: Cambio -->
+<div id="calmaTabContent2" style="display:none">
 <section class="cambio-section" id="sec-cambio">
   <span class="section-sub">🔄 flexibilidad</span>
   <h2 class="section-title"><em>Tarjetas de</em> Cambio</h2>
@@ -9932,40 +9990,33 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="cambio-custom-list" id="cambioList"></div>
   </div>
 </section>
+</div><!-- end calmaTabContent2 -->
 
-
-
-
-<!-- ── PREPARACIÓN PARA EVENTOS ── -->
+<!-- TAB 3: Eventos -->
+<div id="calmaTabContent3" style="display:none">
 <section class="rutinas-section" id="sec-prep-eventos" style="margin-top:1.5rem">
   <span class="section-sub">📅 anticipación</span>
   <h2 class="section-title"><em>Preparación</em> para Eventos</h2>
   <p style="font-size:.75rem;color:var(--muted);font-weight:600;line-height:1.6;margin-bottom:1rem">Saber lo que va a pasar ayuda a que tu mente esté tranquila 🧩</p>
-
   <button onclick="eventoNuevoModal()" style="width:100%;padding:.65rem;border-radius:12px;border:1.5px dashed var(--rosa);background:none;color:var(--rosa);font-family:var(--font-body);font-size:.82rem;font-weight:800;cursor:pointer;margin-bottom:.9rem">＋ Preparar un evento</button>
-
   <div id="eventosList" style="display:flex;flex-direction:column;gap:.8rem"></div>
 </section>
+</div><!-- end calmaTabContent3 -->
 
-<!-- ── MODO RECUPERACIÓN ── -->
+<!-- TAB 4: Recuperación -->
+<div id="calmaTabContent4" style="display:none">
 <section class="rutinas-section" id="sec-recuperacion" style="margin-top:1.5rem;margin-bottom:2rem">
   <span class="section-sub">🌿 autorregulación</span>
   <h2 class="section-title"><em>Modo</em> Recuperación</h2>
   <p style="font-size:.75rem;color:var(--muted);font-weight:600;line-height:1.6;margin-bottom:1rem">Después de un momento difícil, aquí no hay prisa. Solo pasos pequeños 💙</p>
-
-  <!-- Frases suaves -->
   <div style="background:var(--rosa-soft);border-radius:16px;padding:1rem 1.1rem;margin-bottom:1rem;text-align:center">
     <p id="recuperFrase" style="font-size:.88rem;font-weight:700;color:var(--text);line-height:1.6;font-style:italic;margin-bottom:.6rem"></p>
     <button onclick="recuperNuevaFrase()" style="background:none;border:none;color:var(--rosa);font-size:.72rem;font-weight:800;cursor:pointer;font-family:var(--font-body)">otra frase 🌸</button>
   </div>
-
-  <!-- Pasos pequeños -->
   <div style="background:var(--card);border-radius:16px;padding:1rem 1.1rem;border:1px solid var(--border);margin-bottom:1rem">
     <p style="font-size:.72rem;font-weight:800;color:var(--rosa);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.8rem">🐾 Pasos pequeños para volver</p>
     <div id="recuperPasos" style="display:flex;flex-direction:column;gap:.5rem"></div>
   </div>
-
-  <!-- Registro de cómo me sentí -->
   <div style="background:var(--card);border-radius:16px;padding:1rem 1.1rem;border:1px solid var(--border)">
     <p style="font-size:.72rem;font-weight:800;color:var(--rosa);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.7rem">📓 ¿Cómo fue este momento?</p>
     <p style="font-size:.72rem;color:var(--muted);font-weight:600;margin-bottom:.5rem">¿Qué lo desencadenó?</p>
@@ -9976,6 +10027,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div id="recuperGuardadoMsg" style="display:none;text-align:center;font-size:.72rem;color:var(--rosa);font-weight:800;margin-top:.5rem">✓ Guardado con amor 🌸</div>
   </div>
 </section>
+</div><!-- end calmaTabContent4 -->
 
 </div><!-- end page-calma -->
 <div id="page-tareas" class="page-section">
@@ -10109,6 +10161,490 @@ document.addEventListener('DOMContentLoaded', function() {
 </section>
 </div><!-- end page-concentro -->
 
+<!-- ══════════════════════════════════════════
+     PÁGINA · TEMPORIZADOR ⏱
+══════════════════════════════════════════ -->
+<div id="page-temporizador" class="page-section">
+<style>
+  .timer-page { max-width:600px; margin:0 auto; padding:1.5rem 1rem 4rem; }
+  .timer-page-header { margin-bottom:1.4rem; }
+
+  /* Selector de actividad */
+  .timer-selector-title { font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.7rem; }
+  .timer-selector-list { display:flex; flex-direction:column; gap:.5rem; }
+  .timer-selector-item { background:var(--card); border:1.5px solid var(--border); border-radius:14px; padding:.8rem 1rem; display:flex; align-items:center; gap:.8rem; cursor:pointer; transition:border-color .2s; }
+  .timer-selector-item:hover { border-color:var(--rosa); }
+  .timer-selector-item-icon { font-size:1.3rem; flex-shrink:0; }
+  .timer-selector-item-info { flex:1; }
+  .timer-selector-item-name { font-size:.85rem; font-weight:700; color:var(--text); }
+  .timer-selector-item-sub { font-size:.7rem; color:var(--muted); margin-top:.1rem; }
+  .timer-selector-item-arrow { font-size:1rem; color:var(--muted2); }
+  .timer-empty { text-align:center; color:var(--muted); font-size:.82rem; padding:2rem 1rem; font-style:italic; }
+
+  /* Pantalla completa del temporizador */
+  .timer-fullscreen {
+    position:fixed; inset:0; z-index:9500;
+    background:var(--bg);
+    flex-direction:column; align-items:center; justify-content:center;
+    padding:2rem 1.5rem;
+    animation:fadeIn .3s ease;
+  }
+  .timer-fs-close { position:absolute; top:18px; right:18px; background:none; border:none; font-size:1.3rem; color:var(--muted); cursor:pointer; }
+  .timer-fs-activity { font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:.4rem; text-align:center; }
+  .timer-fs-step { font-size:1.1rem; font-weight:800; color:var(--text); text-align:center; margin-bottom:.3rem; font-family:var(--font-title); font-style:italic; }
+  .timer-fs-stepcount { font-size:.72rem; color:var(--muted); margin-bottom:2rem; text-align:center; font-weight:600; }
+
+  /* Círculo SVG */
+  .timer-circle-wrap { position:relative; width:240px; height:240px; margin-bottom:2rem; }
+  .timer-circle-wrap svg { transform:rotate(-90deg); }
+  .timer-circle-bg { fill:none; stroke:var(--border); stroke-width:12; }
+  .timer-circle-fill { fill:none; stroke:var(--rosa); stroke-width:12; stroke-linecap:round; transition:stroke-dashoffset .9s linear; }
+  .timer-circle-time { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .timer-circle-digits { font-size:3rem; font-weight:900; color:var(--text); font-family:var(--font-title); line-height:1; }
+  .timer-circle-label { font-size:.65rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-top:.3rem; }
+
+  /* Botones */
+  .timer-fs-btns { display:flex; gap:.8rem; margin-top:.5rem; }
+  .timer-fs-btn-main { background:var(--rosa); color:white; border:none; border-radius:24px; padding:.7rem 2rem; font-size:.9rem; font-weight:800; cursor:pointer; font-family:var(--font-body); }
+  .timer-fs-btn-skip { background:var(--surface); color:var(--muted); border:1.5px solid var(--border); border-radius:24px; padding:.7rem 1.2rem; font-size:.9rem; font-weight:700; cursor:pointer; font-family:var(--font-body); }
+
+  /* Modal ¿lista para el siguiente? */
+  .timer-next-modal { position:fixed; inset:0; z-index:9600; background:rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; padding:1.5rem; }
+  .timer-next-box { background:var(--card); border-radius:20px; padding:1.5rem; max-width:360px; width:100%; text-align:center; }
+  .timer-next-emoji { font-size:2.5rem; margin-bottom:.6rem; }
+  .timer-next-title { font-size:1rem; font-weight:800; color:var(--text); font-family:var(--font-title); font-style:italic; margin-bottom:.3rem; }
+  .timer-next-sub { font-size:.78rem; color:var(--muted); font-weight:600; margin-bottom:1.2rem; }
+  .timer-next-btns { display:flex; flex-direction:column; gap:.5rem; }
+  .timer-next-yes { background:var(--rosa); color:white; border:none; border-radius:20px; padding:.6rem 1.2rem; font-size:.85rem; font-weight:800; cursor:pointer; font-family:var(--font-body); }
+  .timer-next-pause { background:var(--surface); color:var(--muted); border:1.5px solid var(--border); border-radius:20px; padding:.6rem 1.2rem; font-size:.85rem; font-weight:700; cursor:pointer; font-family:var(--font-body); }
+</style>
+
+<section class="timer-page">
+  <div class="timer-page-header">
+    <span class="section-sub">⏱ foco</span>
+    <h1 class="section-title"><em>Temporizador</em></h1>
+    <p style="font-size:.78rem;color:var(--muted);font-weight:600;margin-top:.2rem">Elige qué vas a hacer y empieza 🌸</p>
+  </div>
+  <div class="timer-selector-title">¿Qué vas a hacer?</div>
+  <div class="timer-selector-list" id="timerSelectorList"></div>
+</section>
+
+<!-- Pantalla completa temporizador -->
+<div class="timer-fullscreen" id="timerFullscreen" style="display:none">
+  <button class="timer-fs-close" onclick="timerClose()">✕</button>
+  <div class="timer-fs-activity" id="timerFsActivity"></div>
+
+  <!-- Círculo grande: tiempo total -->
+  <div class="timer-circle-wrap" style="width:260px;height:260px;margin-bottom:1rem">
+    <svg width="260" height="260" viewBox="0 0 260 260">
+      <circle class="timer-circle-bg" cx="130" cy="130" r="118"/>
+      <circle class="timer-circle-fill" id="timerCircleFillTotal" cx="130" cy="130" r="118"
+        stroke-dasharray="741.4" stroke-dashoffset="0"/>
+    </svg>
+    <div class="timer-circle-time">
+      <div id="timerCircleEmoji" style="font-size:2.8rem;line-height:1;margin-bottom:.2rem">🌸</div>
+      <div class="timer-circle-digits" id="timerDigitsTotal" style="font-size:2.2rem">00:00</div>
+      <div class="timer-circle-label">tiempo total</div>
+    </div>
+  </div>
+
+  <!-- Círculo pequeño: paso actual -->
+  <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem">
+    <div style="position:relative;width:72px;height:72px;flex-shrink:0">
+      <svg width="72" height="72" viewBox="0 0 72 72" style="transform:rotate(-90deg)">
+        <circle fill="none" stroke="var(--border)" stroke-width="6" cx="36" cy="36" r="30"/>
+        <circle fill="none" stroke="var(--rosa)" stroke-width="6" stroke-linecap="round"
+          cx="36" cy="36" r="30" id="timerCircleFillStep"
+          stroke-dasharray="188.5" stroke-dashoffset="0"/>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:900;color:var(--text)" id="timerDigitsStep">00:00</div>
+    </div>
+    <div>
+      <div class="timer-fs-step" id="timerFsStep" style="margin-bottom:.1rem"></div>
+      <div class="timer-fs-stepcount" id="timerFsStepCount" style="margin-bottom:0"></div>
+    </div>
+  </div>
+
+  <div class="timer-fs-btns">
+    <button class="timer-fs-btn-main" id="timerBtnMain" onclick="timerToggle()">▶ Iniciar</button>
+    <button class="timer-fs-btn-skip" onclick="timerSkip()">Saltar →</button>
+  </div>
+</div>
+
+<!-- Modal siguiente paso -->
+<div class="timer-next-modal" id="timerNextModal" style="display:none">
+  <div class="timer-next-box">
+    <div class="timer-next-emoji">🎉</div>
+    <div class="timer-next-title" id="timerNextTitle">¡Paso completado!</div>
+    <div class="timer-next-sub" id="timerNextSub">¿Lista para el siguiente?</div>
+    <div class="timer-next-btns">
+      <button class="timer-next-yes" onclick="timerNextStep()">¡Sí, siguiente! →</button>
+      <button class="timer-next-pause" onclick="timerPauseHere()">Necesito un momento 🌸</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- end page-temporizador -->
+
+<script>
+(function(){
+  var timerSteps = [];
+  var timerIdx = 0;
+  var timerSecsLeft = 0;
+  var timerTotal = 0;
+  var timerInterval = null;
+  var timerRunning = false;
+  var timerActivityName = '';
+
+  // ── Construir lista de actividades disponibles
+  window.timerBuildSelector = function() {
+    var list = document.getElementById('timerSelectorList');
+    if (!list) return;
+    list.innerHTML = '';
+    var items = [];
+
+    // 1. Tareas de hoy de Mi Semana (con duración si tienen)
+    try {
+      var semData = JSON.parse(localStorage.getItem('sem_data')||'[]');
+      var completions = JSON.parse(localStorage.getItem('completions')||'{}');
+      var today = new Date();
+      var dk = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+      var dow = ['dom','lun','mar','mie','jue','vie','sab'][today.getDay()];
+      semData.forEach(function(task) {
+        if (!task.dias || !task.dias[dow]) return;
+        var key = task.id+'|'+dk;
+        if (completions[key]) return; // ya completada
+        items.push({
+          icon: task.emoji || '✅',
+          name: task.title || task.nombre || 'Tarea',
+          sub: 'Mi Semana · hoy',
+          steps: [{ nombre: task.title || task.nombre, segundos: 25*60 }]
+        });
+      });
+    } catch(e){}
+
+    // 2. Tareas complejas (desglose)
+    try {
+      var desgl = JSON.parse(localStorage.getItem('desglose_items')||'[]');
+      desgl.forEach(function(item) {
+        if (!item.pasos || !item.pasos.length) return;
+        var steps = item.pasos.map(function(p) {
+          var txt = typeof p === 'string' ? p : (p.texto||p.nombre||p.name||'Paso');
+          return { nombre: txt, segundos: 25*60 };
+        });
+        items.push({ icon:'🧩', name: item.title||'Tarea compleja', sub: steps.length+' pasos · 25 min c/u', steps: steps });
+      });
+    } catch(e){}
+
+    // 3. Rutinas de ejercicio
+    try {
+      var ejTpls = JSON.parse(localStorage.getItem('ej_templates')||'[]');
+      ejTpls.forEach(function(tpl) {
+        if (!tpl.pasos || !tpl.pasos.length) return;
+        var steps = tpl.pasos.map(function(p) {
+          var txt = typeof p === 'string' ? p : (p.texto||p.nombre||'Ejercicio');
+          var dur = typeof p === 'object' && p.duracion ? parseDuracion(p.duracion) : 60;
+          return { nombre: txt, segundos: dur };
+        });
+        items.push({ icon: tpl.emoji||'💪', name: tpl.name||'Rutina', sub: 'Ejercicio · '+steps.length+' pasos', steps: steps });
+      });
+    } catch(e){}
+
+    // 4. Rutinas de limpieza
+    try {
+      var limpTpls = JSON.parse(localStorage.getItem('limp_rutinas')||'[]');
+      limpTpls.forEach(function(r) {
+        if (!r.pasos || !r.pasos.length) return;
+        var steps = r.pasos.map(function(p) {
+          return { nombre: typeof p==='string'?p:(p.nombre||p.texto||'Paso'), segundos: 5*60 };
+        });
+        items.push({ icon:'🧹', name: r.nombre||r.name||'Rutina de limpieza', sub: 'Limpieza · '+steps.length+' pasos', steps: steps });
+      });
+    } catch(e){}
+
+    // 5. Mis Horas (ritmo circadiano) — como actividad libre
+    try {
+      var rhoras = JSON.parse(localStorage.getItem('yuki_rutina_horarios')||'[]');
+      rhoras.forEach(function(h) {
+        items.push({ icon:'⏰', name: h.label, sub: 'Mis Horas · '+h.hora+(h.nota?' · '+h.nota:''), steps: [{ nombre: h.label, segundos: 30*60 }] });
+      });
+    } catch(e){}
+
+    if (!items.length) {
+      list.innerHTML = '<div class="timer-empty">Agrega tareas en Mi Semana, rutinas de ejercicio o limpieza para poder temporizarlas 🌸</div>';
+      return;
+    }
+
+    items.forEach(function(item) {
+      var el = document.createElement('div');
+      el.className = 'timer-selector-item';
+      el.innerHTML =
+        '<div class="timer-selector-item-icon">'+item.icon+'</div>'+
+        '<div class="timer-selector-item-info">'+
+          '<div class="timer-selector-item-name">'+item.name+'</div>'+
+          '<div class="timer-selector-item-sub">'+item.sub+'</div>'+
+        '</div>'+
+        '<div class="timer-selector-item-arrow">›</div>';
+      el.onclick = (function(it){ return function(){ timerStart(it); }; })(item);
+      list.appendChild(el);
+    });
+  };
+
+  function parseDuracion(str) {
+    if (!str) return 60;
+    str = str.toLowerCase().trim();
+    var m = str.match(/(\d+)\s*min/); if(m) return parseInt(m[1])*60;
+    var s = str.match(/(\d+)\s*seg/); if(s) return parseInt(s[1]);
+    var h = str.match(/(\d+)\s*h/);   if(h) return parseInt(h[1])*3600;
+    var n = parseInt(str);             if(!isNaN(n)) return n*60;
+    return 60;
+  }
+
+  function timerFmt(s) {
+    var m = Math.floor(s/60), sec = s%60;
+    return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+  }
+
+  function timerUpdateCircles() {
+    // Círculo grande — total
+    var fillTotal = document.getElementById('timerCircleFillTotal');
+    var digitsTotal = document.getElementById('timerDigitsTotal');
+    if (fillTotal && timerTotalSecs > 0) {
+      fillTotal.style.strokeDashoffset = CIRCUM_BIG * (1 - timerTotalLeft/timerTotalSecs);
+    }
+    if (digitsTotal) digitsTotal.textContent = timerFmt(Math.max(0, timerTotalLeft));
+    // Círculo pequeño — paso
+    var fillStep = document.getElementById('timerCircleFillStep');
+    var digitsStep = document.getElementById('timerDigitsStep');
+    if (fillStep && timerTotal > 0) {
+      fillStep.style.strokeDashoffset = CIRCUM_SMALL * (1 - timerSecsLeft/timerTotal);
+    }
+    if (digitsStep) digitsStep.textContent = timerFmt(Math.max(0, timerSecsLeft));
+  }
+
+  function timerLoadStep() {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    var step = timerSteps[timerIdx];
+    timerSecsLeft = step.segundos;
+    timerTotal = step.segundos;
+    document.getElementById('timerFsActivity').textContent = timerActivityName;
+    document.getElementById('timerFsStep').textContent = step.nombre;
+    document.getElementById('timerFsStepCount').textContent =
+      timerSteps.length > 1 ? 'Paso '+(timerIdx+1)+' de '+timerSteps.length : '';
+    document.getElementById('timerBtnMain').textContent = '▶ Iniciar';
+    timerUpdateCircles();
+  }
+
+  window.timerToggle = function() {
+    if (timerRunning) {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      document.getElementById('timerBtnMain').textContent = '▶ Continuar';
+    } else {
+      timerRunning = true;
+      document.getElementById('timerBtnMain').textContent = '⏸ Pausar';
+      timerInterval = setInterval(function() {
+        timerSecsLeft--;
+        if (timerTotalLeft > 0) timerTotalLeft--;
+        timerUpdateCircles();
+        if (timerSecsLeft <= 0) {
+          clearInterval(timerInterval);
+          timerRunning = false;
+          timerStepDone();
+        }
+      }, 1000);
+    }
+  };
+
+  window.timerStart = function(item) {
+    // Mostrar pantalla de configuración de tiempos primero
+    timerActivityName = item.name;
+    timerSteps = item.steps.map(function(s){ return { nombre:s.nombre, segundos:s.segundos }; });
+    timerShowConfig();
+  };
+
+  var timerEmoji = '🌸'; // emoji seleccionado para el temporizador
+  var timerTotalSecs = 0;    // tiempo total de la actividad
+  var timerTotalLeft = 0;    // tiempo total restante
+  var timerTotalInterval = null;
+  var CIRCUM_BIG  = 2 * Math.PI * 118; // 741.4
+  var CIRCUM_SMALL = 2 * Math.PI * 30; // 188.5
+  var TIMER_EMOJIS = ['🌸','🫧','🦄','🪷','🌱','⭐','💗','💌','🌷','🌿','🌠','🌊','🦓','🪶','🪽','🦭','🐋','🦪','🪸','🐚','🐝','🦋','🐛','🍓','🥬','🍐','🫖','🖌️','🖍️','🪡','🧵','🧶','🖼️','🎹','📸','🎷','🎺','🎸','🧼','🧹','🧴','🧸','👘','👒','🩻','🗒️','📁','📂','📖','🔖','📒','📝','📋','📍','🪞','🎮','👾','🩰','🏀','🎀','🧚🏻'];
+
+  function timerShowConfig() {
+    var old = document.getElementById('timerConfigModal');
+    if (old) old.remove();
+
+    var modal = document.createElement('div');
+    modal.id = 'timerConfigModal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:9480;background:var(--bg);display:flex;flex-direction:column;overflow-y:auto';
+
+    var html = '<div style="max-width:520px;margin:0 auto;padding:1.5rem 1rem 4rem;width:100%">';
+    html += '<div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1.2rem">';
+    html += '<button onclick="document.getElementById(\'timerConfigModal\').remove()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted)">‹</button>';
+    html += '<div><div style="font-size:.65rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Temporizador</div>';
+    html += '<div style="font-size:1rem;font-weight:800;color:var(--text);font-family:var(--font-title);font-style:italic">'+timerActivityName+'</div></div></div>';
+
+    // Selector de emoji
+    html += '<div style="font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">✨ Elige un emoji</div>';
+    html += '<div id="timerEmojiPicker" style="display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:1.2rem;background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:.8rem">';
+    TIMER_EMOJIS.forEach(function(e) {
+      var isActive = e === timerEmoji;
+      html += '<button onclick="timerSelectEmoji(\''+e+'\')" style="font-size:1.4rem;background:'+(isActive?'var(--rosa-soft)':'none')+';border:'+(isActive?'1.5px solid var(--rosa)':'1.5px solid transparent')+';border-radius:8px;padding:.2rem .3rem;cursor:pointer;transition:all .15s" id="timerEmojiBtn_'+e.codePointAt(0)+'">'+e+'</button>';
+    });
+    html += '</div>';
+
+    html += '<div style="font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.7rem">⏱ Ajusta los tiempos</div>';
+
+    // Tiempo total
+    var totalMins = Math.round(timerSteps.reduce(function(s,p){ return s+p.segundos; },0)/60);
+    html += '<div style="background:var(--card);border:1.5px solid var(--rosa-soft);border-radius:12px;padding:.8rem 1rem;margin-bottom:.8rem;display:flex;align-items:center;gap:.7rem">';
+    html += '<div style="flex:1"><div style="font-size:.72rem;font-weight:800;color:var(--rosa);margin-bottom:.3rem">⏰ Tiempo total de la actividad</div>';
+    html += '<div style="display:flex;align-items:center;gap:.4rem">';
+    html += '<input type="number" min="1" max="480" value="'+totalMins+'" id="timerTotalMins" style="width:60px;border:1.5px solid var(--border);border-radius:8px;padding:.3rem .4rem;font-family:var(--font-body);font-size:.9rem;font-weight:800;color:var(--text);background:var(--surface);text-align:center;outline:none">';
+    html += '<span style="font-size:.75rem;color:var(--muted);font-weight:700">minutos en total</span>';
+    html += '</div></div></div>';
+
+    html += '<div style="font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">📋 Tiempo por paso</div>';
+    html += '<div id="timerConfigSteps" style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.4rem"></div>';
+    html += '<button onclick="timerConfigStart()" style="width:100%;padding:.7rem;border-radius:14px;border:none;background:var(--rosa);color:white;font-family:var(--font-body);font-size:.9rem;font-weight:800;cursor:pointer">▶ ¡Empezar!</button>';
+    html += '</div>';
+    modal.innerHTML = html;
+    document.body.appendChild(modal);
+
+    renderTimerConfigSteps();
+  }
+
+  window.timerSelectEmoji = function(e) {
+    timerEmoji = e;
+    // Actualizar visual
+    document.querySelectorAll('#timerEmojiPicker button').forEach(function(btn) {
+      btn.style.background = 'none';
+      btn.style.border = '1.5px solid transparent';
+    });
+    var btn = document.getElementById('timerEmojiBtn_'+e.codePointAt(0));
+    if (btn) { btn.style.background = 'var(--rosa-soft)'; btn.style.border = '1.5px solid var(--rosa)'; }
+    // Actualizar emoji en el círculo si está visible
+    var emojiEl = document.getElementById('timerCircleEmoji');
+    if (emojiEl) emojiEl.textContent = timerEmoji;
+  };
+
+  function renderTimerConfigSteps() {
+    var cont = document.getElementById('timerConfigSteps');
+    if (!cont) return;
+    cont.innerHTML = '';
+    timerSteps.forEach(function(step, i) {
+      var mins = Math.floor(step.segundos/60);
+      var secs = step.segundos % 60;
+      var row = document.createElement('div');
+      row.style.cssText = 'background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:.8rem 1rem;display:flex;align-items:center;gap:.7rem';
+      row.innerHTML =
+        '<div style="flex:1">' +
+          '<div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:.4rem">'+(timerSteps.length>1?'Paso '+(i+1)+': ':'')+step.nombre+'</div>' +
+          '<div style="display:flex;align-items:center;gap:.4rem">' +
+            '<input type="number" min="0" max="180" value="'+mins+'" style="width:52px;border:1.5px solid var(--border);border-radius:8px;padding:.3rem .4rem;font-family:var(--font-body);font-size:.85rem;font-weight:700;color:var(--text);background:var(--surface);text-align:center;outline:none" onchange="timerConfigUpdateStep('+i+',this.value,\'mins\')">' +
+            '<span style="font-size:.72rem;color:var(--muted);font-weight:700">min</span>' +
+            '<input type="number" min="0" max="59" value="'+secs+'" style="width:52px;border:1.5px solid var(--border);border-radius:8px;padding:.3rem .4rem;font-family:var(--font-body);font-size:.85rem;font-weight:700;color:var(--text);background:var(--surface);text-align:center;outline:none" onchange="timerConfigUpdateStep('+i+',this.value,\'secs\')">' +
+            '<span style="font-size:.72rem;color:var(--muted);font-weight:700">seg</span>' +
+          '</div>' +
+        '</div>';
+      cont.appendChild(row);
+    });
+  }
+
+  window.timerConfigUpdateStep = function(idx, val, unit) {
+    val = parseInt(val) || 0;
+    var step = timerSteps[idx];
+    var mins = Math.floor(step.segundos/60);
+    var secs = step.segundos % 60;
+    if (unit === 'mins') mins = Math.max(0, Math.min(180, val));
+    else secs = Math.max(0, Math.min(59, val));
+    timerSteps[idx].segundos = mins*60 + secs;
+  };
+
+  window.timerConfigStart = function() {
+    var totalInput = document.getElementById('timerTotalMins');
+    timerTotalSecs = totalInput ? (parseInt(totalInput.value)||30)*60 : timerSteps.reduce(function(s,p){ return s+p.segundos; },0);
+    timerTotalLeft = timerTotalSecs;
+    var modal = document.getElementById('timerConfigModal');
+    if (modal) modal.remove();
+    timerIdx = 0;
+    timerLoadStep();
+    var emojiEl = document.getElementById('timerCircleEmoji');
+    if (emojiEl) emojiEl.textContent = timerEmoji;
+    document.getElementById('timerFullscreen').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  };
+
+  function timerStepDone() {
+    if ('vibrate' in navigator) navigator.vibrate([200,100,200]);
+    if (timerIdx >= timerSteps.length - 1) {
+      // Última — completado todo
+      var modal = document.getElementById('timerNextModal');
+      document.getElementById('timerNextTitle').textContent = '¡Todo completado! 🎉';
+      document.getElementById('timerNextSub').textContent = timerActivityName+' terminado. ¡Bien hecho!';
+      document.querySelector('.timer-next-yes').textContent = '¡Cerrar! 🌸';
+      document.querySelector('.timer-next-yes').onclick = function() { timerClose(); };
+      document.querySelector('.timer-next-pause').style.display = 'none';
+      modal.style.display = 'flex';
+    } else {
+      // Hay más pasos
+      var next = timerSteps[timerIdx+1];
+      var modal = document.getElementById('timerNextModal');
+      document.getElementById('timerNextTitle').textContent = '¡Paso completado! 🎉';
+      document.getElementById('timerNextSub').textContent = 'Siguiente: '+next.nombre+' ('+timerFmt(next.segundos)+')';
+      document.querySelector('.timer-next-yes').textContent = '¡Sí, siguiente! →';
+      document.querySelector('.timer-next-yes').onclick = timerNextStep;
+      document.querySelector('.timer-next-pause').style.display = '';
+      modal.style.display = 'flex';
+    }
+  }
+
+  window.timerNextStep = function() {
+    document.getElementById('timerNextModal').style.display = 'none';
+    document.querySelector('.timer-next-pause').style.display = '';
+    timerIdx++;
+    timerLoadStep();
+  };
+
+  window.timerPauseHere = function() {
+    document.getElementById('timerNextModal').style.display = 'none';
+    // Queda en pantalla con el siguiente paso listo pero sin iniciar
+    timerIdx++;
+    timerLoadStep();
+  };
+
+  window.timerSkip = function() {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    if (timerIdx >= timerSteps.length - 1) { timerClose(); return; }
+    timerIdx++;
+    timerLoadStep();
+  };
+
+  window.timerClose = function() {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    document.getElementById('timerFullscreen').style.display = 'none';
+    document.getElementById('timerNextModal').style.display = 'none';
+    var cfg = document.getElementById('timerConfigModal');
+    if (cfg) cfg.remove();
+    document.body.style.overflow = '';
+    document.querySelector('.timer-next-pause').style.display = '';
+  };
+
+  // Re-render selector al entrar a la página
+  var _origShowTimer = window.showPage;
+  window.showPage = function(p) {
+    if (_origShowTimer) _origShowTimer(p);
+    if (p === 'page-temporizador') { setTimeout(window.timerBuildSelector, 100); }
+  };
+
+  // Solo construir selector cuando se entra a la página
+  // setTimeout(window.timerBuildSelector, 500); // removido — se carga al entrar
+})();
+</script>
 <div id="page-transiciones" class="page-section">
 <div id="sec-transiciones-nav" style="scroll-margin-top:60px"></div>
 <section class="rutinas-section" id="sec-transiciones" style="margin-top:1rem;margin-bottom:2rem">
@@ -10711,7 +11247,7 @@ document.addEventListener('DOMContentLoaded', function() {
   .diario-card-tag { font-size: .62rem; font-weight: 700; padding: .15rem .5rem; border-radius: 20px; background: var(--surface); border: 1.5px solid var(--border); color: var(--muted); }
 
   /* Modal */
-  .diario-modal-backdrop { position: fixed; inset: 0; background: rgba(244,167,192,.22); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 9000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .diario-modal-backdrop { position: fixed; inset: 0; background: rgba(244,167,192,.22); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 9000; align-items: center; justify-content: center; padding: 1rem; }
   .diario-modal {
     background: var(--card); border-radius: 20px; width: 100%; max-width: 620px;
     max-height: 88vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.18);
@@ -14689,7 +15225,7 @@ renderTracker();
         <span id="petsPhotoPlaceholder">📷 foto</span>
         <img id="petsPhotoImg" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%">
       </div>
-      <input type="file" id="petsPhotoInput" accept="image/*" style="display:none" onchange="petsHandlePhoto(this)">
+      <input type="file" id="petsPhotoInput" accept="image/*" style="display:none">
       <input type="hidden" id="petsPhotoData">
 
       <div class="pets-field">
@@ -14777,7 +15313,7 @@ renderTracker();
   .pets-card-btn:hover { background: var(--surface); }
 
   /* Modal */
-  .pets-modal-backdrop { position: fixed; inset: 0; background: rgba(244,167,192,.22); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 9000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .pets-modal-backdrop { position: fixed; inset: 0; background: rgba(244,167,192,.22); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 9000; align-items: center; justify-content: center; padding: 1rem; }
   .pets-modal { background: var(--card); border-radius: 20px; width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.18); position: relative; margin: auto; z-index: 9001; }
   .pets-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.3rem .8rem; font-family: var(--font-title); font-style: italic; font-size: 1.1rem; font-weight: 700; border-bottom: 1px solid var(--border); }
   .pets-modal-body { padding: 1rem 1.3rem; display: flex; flex-direction: column; gap: .7rem; }
@@ -14938,6 +15474,10 @@ renderTracker();
     };
     reader.readAsDataURL(file);
   };
+
+  // Asignar onchange por JS para evitar problemas al mover el modal al body
+  var petsPhotoInp = document.getElementById('petsPhotoInput');
+  if (petsPhotoInp) petsPhotoInp.onchange = function(){ window.petsHandlePhoto(this); };
 
   function addCuidadoRow(c) {
     c = c || { nombre:'', fecha:'' };
@@ -15136,7 +15676,7 @@ renderTracker();
   .plants-card-btn { background: none; border: none; font-size: .8rem; cursor: pointer; padding: .2rem .4rem; border-radius: 8px; color: var(--muted); }
   .plants-card-btn:hover { background: var(--surface); }
 
-  .plants-modal-backdrop { position: fixed; inset: 0; background: rgba(180,220,180,.22); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 9000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .plants-modal-backdrop { position: fixed; inset: 0; background: rgba(180,220,180,.22); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 9000; align-items: center; justify-content: center; padding: 1rem; }
   .plants-modal { background: var(--card); border-radius: 20px; width: 100%; max-width: 500px; max-height: 88vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.18); position: relative; margin: auto; }
   .plants-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.3rem .8rem; font-family: var(--font-title); font-style: italic; font-size: 1.1rem; font-weight: 700; border-bottom: 1px solid var(--border); }
   .plants-modal-body { padding: 1rem 1.3rem; display: flex; flex-direction: column; gap: .7rem; }
@@ -19067,7 +19607,7 @@ const NAV_PAGES = [
   { icon:'🧠', label:'Braindump',   page:'page-braindump' },
   { icon:'🍏', label:'Salud',       page:'page-salud'     },
   { icon:'✨', label:'Selfcare',    page:'page-selfcare'  },
-  { icon:'🌿', label:'Calma',       page:'page-calma'     },
+  { icon:'⏱️', label:'Temporizador', page:'page-temporizador'  },
   { icon:'🍽️', label:'Recetario',   page:'page-recetario' },
   { icon:'🧹', label:'Limpieza',    page:'page-limpieza'  },
   { icon:'📋', label:'Listas',      page:'page-listas'    },
@@ -19112,6 +19652,7 @@ const DRAWER_STRUCTURE = {
     { id:'organizacion', icon:'📌', label:'Organización', items: [
       { icon:'', label:'Tareas',  page:'page-tareas'  },
       { icon:'', label:'Rutinas', page:'page-rutinas' },
+      { icon:'⏱️', label:'Temporizador', page:'page-temporizador' },
       { icon:'', label:'Me concentro', page:'page-concentro' },
       { icon:'', label:'Transiciones', page:'page-transiciones' },
     ]},
@@ -20799,6 +21340,26 @@ document.addEventListener('DOMContentLoaded', function() {
             pomSessionsDone++;
             pomUpdateSessions();
             pomNotify('¡Sesión completada! 🍅 Tómate un descanso.');
+            // 🎓 Registrar minutos en tracker de horas
+            var workMins = Math.round(POM_MODES['work'] / 60);
+            var tdk2 = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
+            // Acumular minutos en clave temporal
+            var accKey = 'yuki_pom_mins_' + tdk2;
+            var accMins = parseInt(localStorage.getItem(accKey) || '0') + workMins;
+            localStorage.setItem(accKey, accMins);
+            // Cada 60 min acumulados → +1 hora en el tracker
+            var horasAntes = Math.floor((accMins - workMins) / 60);
+            var horasDespues = Math.floor(accMins / 60);
+            if (horasDespues > horasAntes && typeof univData !== 'undefined') {
+              var diff = horasDespues - horasAntes;
+              if (!univData.horas) univData.horas = {};
+              univData.horas[tdk2] = (univData.horas[tdk2] || 0) + diff;
+              saveUniv();
+              if (typeof renderUnivHoras === 'function') renderUnivHoras();
+              if (typeof renderUnivCalendario === 'function') renderUnivCalendario();
+            }
+            // Flores de Sakura por horas de estudio
+            if (window.yukiAddStudyMinutes) window.yukiAddStudyMinutes(workMins);
           } else {
             pomNotify('¡Descanso terminado! Vuelve al foco 💪');
           }
@@ -22333,7 +22894,7 @@ document.addEventListener('DOMContentLoaded', function() {
   .bib-card.dopamina .bib-card-link { color: #b8860b; background: #fff8e1; }
 
   /* Modal */
-  .bib-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .bib-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
   .bib-modal { background: var(--card); border-radius: 20px; width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.18); }
   .bib-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.3rem .8rem; font-family: var(--font-title); font-style: italic; font-size: 1.1rem; font-weight: 700; border-bottom: 1px solid var(--border); }
   .bib-modal-close { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--muted); }
@@ -24495,6 +25056,49 @@ window.showPage = function(pageId) {
 };
 </script>
 
+<script>
+// ── Historial de navegación interno (botón regresar)
+(function(){
+  var history = ['page-inicio'];
+  var current = 'page-inicio';
+
+  var _origShowBack = window.showPage;
+  window.showPage = function(pageId) {
+    if (_origShowBack) _origShowBack(pageId);
+    if (pageId && pageId !== current) {
+      history.push(pageId);
+      if (history.length > 20) history.shift();
+      current = pageId;
+    }
+    updateBackBtn();
+  };
+
+  window.yukiGoBack = function() {
+    if (history.length <= 1) return;
+    history.pop(); // quitar current
+    var prev = history[history.length - 1] || 'page-inicio';
+    current = prev;
+    if (window.showPage) {
+      // llamar el chain sin agregar al historial de nuevo
+      var _temp = window.showPage;
+      window.showPage = _origShowBack;
+      if (_origShowBack) _origShowBack(prev);
+      window.showPage = _temp;
+    }
+    updateBackBtn();
+  };
+
+  function updateBackBtn() {
+    var btn = document.getElementById('backBtn');
+    if (!btn) return;
+    var onInicio = current === 'page-inicio' || history.length <= 1;
+    btn.classList.toggle('visible', !onInicio);
+  }
+
+  updateBackBtn();
+})();
+</script>
+
 
 
 
@@ -25328,6 +25932,26 @@ document.createElement = function(tag) {
   }
   return el;
 };
+</script>
+
+<script>
+// ── Mover modales estáticos al root del body para que position:fixed funcione correctamente en móvil
+(function(){
+  var modalIds = [
+    'foodModalBackdrop','decViewBackdrop','rutinaHModalBackdrop',
+    'petsModalBackdrop','plantsModalBackdrop','bibPlaylistModalBackdrop',
+    'bibDopModalBackdrop','tiendaModalBackdrop','citaModalBackdrop',
+    'timerFullscreen','timerNextModal'
+  ];
+  document.addEventListener('DOMContentLoaded', function(){
+    modalIds.forEach(function(id){
+      var el = document.getElementById(id);
+      if (el && el.parentNode !== document.body) {
+        document.body.appendChild(el);
+      }
+    });
+  });
+})();
 </script>
 </body>
 </html>
