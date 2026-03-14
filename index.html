@@ -185,6 +185,7 @@ window.kittyConfirm = function(msg, onYes, onNo) {
 
   // Debounce para cloudSave
   var _saveTimers = {};
+  window._saveTimers = _saveTimers;
   
   window.cloudSave = async function(key, value) {
     // Guardar siempre en la cola local por si falla
@@ -5669,27 +5670,26 @@ function todayKey() { return dateKey(new Date()); }
     (function(){
       var total = 0, done = 0;
       try {
-        var completions = JSON.parse(localStorage.getItem('completions') || '{}');
-        var tasks = JSON.parse(localStorage.getItem('sem_data') || '[]');
+        var completions = window._completions || JSON.parse(localStorage.getItem('completions') || '{}');
+        var rTasks = window._recurringTasks || JSON.parse(localStorage.getItem('recurring_tasks') || '[]');
         var now = new Date();
-        var dow = ['dom','lun','mar','mie','jue','vie','sab'][now.getDay()];
-        // Also check window globals if available
-        if (window._completions) completions = window._completions;
-
-        // Count today's tasks
-        Object.keys(completions).forEach(function(k) {
-          if (k.includes(todayKey)) { total++; if(completions[k]) done++; }
+        var jsDay = now.getDay();
+        var dayIdx = jsDay === 0 ? 6 : jsDay - 1;
+        rTasks.forEach(function(task) {
+          var visible = false;
+          if (task.recurrence === 'daily') { visible = true; }
+          else if (task.recurrence === 'weekly') { visible = (task.days||[]).includes(dayIdx); }
+          else if (task.recurrence === 'once') { visible = task.onceDate === todayKey; }
+          else if (task.recurrence === 'custom') {
+            var created = new Date(task.createdAt);
+            var diff = Math.round((now - created) / 86400000);
+            visible = diff >= 0 && diff % (task.interval||1) === 0;
+          }
+          if (!visible) return;
+          total++;
+          var cKey = task.id + '|' + todayKey;
+          if (completions[cKey]) done++;
         });
-        // fallback: count from sem_data
-        if (total === 0 && window._data) {
-          window._data.forEach(function(slot) {
-            if (slot.day === dow) {
-              total++;
-              var cKey = slot.id + '_' + todayKey;
-              if (completions[cKey]) done++;
-            }
-          });
-        }
       } catch(e){}
 
       var pct = total > 0 ? Math.round(done/total*100) : 0;
@@ -5700,6 +5700,72 @@ function todayKey() { return dateKey(new Date()); }
         done + '/' + total,
         total === 0 ? 'Sin tareas' : (done === total ? '¡Todo listo! 🌟' : (total - done) + ' pendiente' + (total-done!==1?'s':'')),
         pct, 'page-semana', accent
+      ));
+    })();
+
+    // ── 1b. Rutinas de hoy
+    (function(){
+      var total = 0, done = 0;
+      try {
+        var dkR = todayKey;
+
+        // Rutinas generales
+        var rutinaAsig = window._rutinaAsignaciones || JSON.parse(localStorage.getItem('rutina_asignaciones') || '{}');
+        var rutinaTpls = window._rutinaTemplates    || JSON.parse(localStorage.getItem('rutina_templates')    || '[]');
+        var rutinaComp = window._rutinaCompletions  || JSON.parse(localStorage.getItem('rutina_completions')  || '{}');
+        var assignedId = rutinaAsig[dkR];
+        if (assignedId) {
+          var tpl = rutinaTpls.find(function(t){ return t.id === assignedId; });
+          if (tpl) {
+            var franjas = ['m','t','n'];
+            var totalPasos = 0, donePasos = 0;
+            franjas.forEach(function(f){
+              var pasos = (tpl.pasos && tpl.pasos[f]) ? tpl.pasos[f] : [];
+              pasos.forEach(function(p, idx){
+                totalPasos++;
+                var cKey = assignedId + '|' + dkR + '|' + f + '|' + idx;
+                if (rutinaComp[cKey]) donePasos++;
+              });
+            });
+            total++;
+            if (totalPasos === 0 || donePasos === totalPasos) done++;
+          }
+        }
+
+        // Rutinas de ejercicio
+        var ejRegs = window._ejRegistros || JSON.parse(localStorage.getItem('ej_registros') || '{}');
+        var ejTpls = window._ejTemplates || JSON.parse(localStorage.getItem('ej_templates') || '[]');
+        var ejHoy  = ejRegs[dkR] || [];
+        ejHoy.forEach(function(reg){
+          total++;
+          var tplE = ejTpls.find(function(t){ return t.id === reg.templateId; });
+          var totalP = tplE && tplE.pasos ? tplE.pasos.length : 0;
+          var doneP  = reg.completedSteps ? reg.completedSteps.length : 0;
+          if (totalP === 0 || doneP >= totalP) done++;
+        });
+
+        // Rutinas de belleza
+        var belRegs = window._bellezaRegistros || JSON.parse(localStorage.getItem('belleza_registros') || '{}');
+        var belTpls = window._bellezaTemplates || JSON.parse(localStorage.getItem('belleza_templates') || '[]');
+        var belHoy  = belRegs[dkR] || [];
+        belHoy.forEach(function(reg){
+          total++;
+          var tplB = belTpls.find(function(t){ return t.id === reg.templateId; });
+          var totalP = tplB && tplB.pasos ? tplB.pasos.length : 0;
+          var doneP  = reg.completedSteps ? reg.completedSteps.length : 0;
+          if (totalP === 0 || doneP >= totalP) done++;
+        });
+
+      } catch(e){}
+
+      var pct    = total > 0 ? Math.round(done/total*100) : 0;
+      var accent = done === total && total > 0 ? 'var(--verde)' : '#c084fc';
+      row.appendChild(makeWidget(
+        total > 0 && done === total ? '⭐' : '⭐',
+        'Rutinas hoy',
+        done + '/' + total,
+        total === 0 ? 'Sin rutinas asignadas' : (done === total ? '¡Todo listo! 🌟' : (total - done) + ' pendiente' + (total-done!==1?'s':'')),
+        pct, 'page-rutinas', accent
       ));
     })();
 
@@ -6425,29 +6491,32 @@ function todayKey() { return dateKey(new Date()); }
   var _origComplete = window.toggleComplete;
   window.toggleComplete = function(taskId, date) {
     if (_origComplete) _origComplete(taskId, date);
-    try {
-      var completions = JSON.parse(localStorage.getItem('completions')||'{}');
-      var key = taskId + '|' + date;
-      // Solo sumar si se acaba de marcar (no desmarcar)
-      if (completions[key]) {
-        window.yukiAddXP(5, 'Tarea');
-        window.yukiCheckStreak();
-      }
-    } catch(e){}
+    setTimeout(function() {
+      try {
+        var completions = JSON.parse(localStorage.getItem('completions')||'{}');
+        var key = taskId + '|' + date;
+        if (completions[key]) {
+          window.yukiAddXP(5, 'Tarea');
+          window.yukiCheckStreak();
+        }
+      } catch(e){}
+    }, 50);
   };
 
   // ── Hook: completar hábito → +8 EXP
   var _origHabitoLog = window.habitoToggleLog;
   window.habitoToggleLog = function(id, dk) {
     if (_origHabitoLog) _origHabitoLog(id, dk);
-    try {
-      var habitos = JSON.parse(localStorage.getItem('habitos_data')||'[]');
-      var h = habitos.find(function(x){ return x.id===id; });
-      if (h && h.log && h.log.indexOf(dk) > -1) {
-        window.yukiAddXP(8, 'Hábito');
-        window.yukiCheckStreak();
-      }
-    } catch(e){}
+    setTimeout(function() {
+      try {
+        var habitos = JSON.parse(localStorage.getItem('habitos_data')||'[]');
+        var h = habitos.find(function(x){ return x.id===id; });
+        if (h && h.log && h.log.indexOf(dk) > -1) {
+          window.yukiAddXP(8, 'Hábito');
+          window.yukiCheckStreak();
+        }
+      } catch(e){}
+    }, 50);
   };
 
   // Render al cargar
@@ -10303,22 +10372,35 @@ window.calmaShowTab = function(idx) {
     list.innerHTML = '';
     var items = [];
 
-    // 1. Tareas de hoy de Mi Semana (con duración si tienen)
+    // 1. Tareas de hoy de Mi Semana (recurring_tasks)
     try {
-      var semData = JSON.parse(localStorage.getItem('sem_data')||'[]');
-      var completions = JSON.parse(localStorage.getItem('completions')||'{}');
+      var recurringTasksT = window._recurringTasks || JSON.parse(localStorage.getItem('recurring_tasks')||'[]');
+      var completions = window._completions || JSON.parse(localStorage.getItem('completions')||'{}');
       var today = new Date();
       var dk = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
-      var dow = ['dom','lun','mar','mie','jue','vie','sab'][today.getDay()];
-      semData.forEach(function(task) {
-        if (!task.dias || !task.dias[dow]) return;
+      var jsDay = today.getDay();
+      var dayIdx = jsDay === 0 ? 6 : jsDay - 1;
+      var slotNames = { m:'Mañana', t:'Tarde', n:'Noche' };
+      var slotIcons = { m:'🌅', t:'☀️', n:'🌙' };
+      recurringTasksT.forEach(function(task) {
+        var visible = false;
+        if (task.recurrence === 'daily') { visible = true; }
+        else if (task.recurrence === 'weekly') { visible = (task.days||[]).includes(dayIdx); }
+        else if (task.recurrence === 'once') { visible = task.onceDate === dk; }
+        else if (task.recurrence === 'custom') {
+          var created = new Date(task.createdAt);
+          var diff = Math.round((today - created) / 86400000);
+          visible = diff >= 0 && diff % (task.interval||1) === 0;
+        }
+        if (!visible) return;
         var key = task.id+'|'+dk;
-        if (completions[key]) return; // ya completada
+        if (completions[key]) return;
+        var slotId = task.slotId || 'm';
         items.push({
-          icon: task.emoji || '✅',
-          name: task.title || task.nombre || 'Tarea',
-          sub: 'Mi Semana · hoy',
-          steps: [{ nombre: task.title || task.nombre, segundos: 25*60 }]
+          icon: slotIcons[slotId] || '✅',
+          name: task.text || 'Tarea',
+          sub: 'Mi Semana · ' + (slotNames[slotId] || 'hoy'),
+          steps: [{ nombre: task.text || 'Tarea', segundos: 25*60 }]
         });
       });
     } catch(e){}
@@ -12498,8 +12580,10 @@ var _nW = document.getElementById('nextWeek'); if(_nW) _nW.onclick = () => { wee
 
 // --- SYNC FROM CLOUD ---------------------------------------
 window.syncFromCloud = function() {
-  if (window._recurringTasks !== undefined) recurringTasks = window._recurringTasks;
-  if (window._completions    !== undefined) completions    = window._completions;
+  var hasPendingRT = window._saveTimers && window._saveTimers['recurring_tasks'];
+  var hasPendingCo = window._saveTimers && window._saveTimers['completions'];
+  if (!hasPendingRT && window._recurringTasks !== undefined) recurringTasks = window._recurringTasks;
+  if (!hasPendingCo && window._completions    !== undefined) completions    = window._completions;
   render();
   if (typeof renderCheckin    === 'function') { loadCheckin();    renderCheckin();    }
   if (typeof loadSpark        === 'function') { loadSpark();                          }
