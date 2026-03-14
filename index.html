@@ -162,11 +162,21 @@ window.kittyConfirm = function(msg, onYes, onNo) {
           'yuki_citas','yuki_citas_dias','yuki_citas_last','yuki_citas_idx'];
         var _now = Date.now();
         var _lastWrite = window._lastSemanaWrite || 0;
-        var _protegidas = (_now - _lastWrite) < 5000; // 5s de proteccion tras guardar
+        var _protegidas = (_now - _lastWrite) < 8000; // 8s de proteccion tras guardar
         mirrorKeys.forEach(function(k) {
           if (raw[k] !== undefined) {
-            // No sobreescribir tareas/completions si acabamos de guardar localmente
-            if (_protegidas && (k === 'recurring_tasks' || k === 'completions')) return;
+            if (k === 'recurring_tasks' || k === 'completions') {
+              // Solo sobreescribir si NO hay proteccion activa
+              if (_protegidas) return;
+              // Y solo si Firebase tiene MAS tareas que localStorage (nunca borrar)
+              if (k === 'recurring_tasks') {
+                try {
+                  var localRT = JSON.parse(localStorage.getItem('recurring_tasks') || '[]');
+                  var fireRT  = JSON.parse(raw[k]);
+                  if (fireRT.length < localRT.length) return; // Firebase tiene menos, no sobreescribir
+                } catch(e) {}
+              }
+            }
             try { localStorage.setItem(k, raw[k]); } catch(e) {}
           }
         });
@@ -203,14 +213,14 @@ window.kittyConfirm = function(msg, onYes, onNo) {
     // Cancelar timer anterior si existe
     if (_saveTimers[key]) clearTimeout(_saveTimers[key]);
     
-    // Debounce: esperar 500ms antes de guardar
+    // Debounce: esperar 3s antes de guardar (para que Firebase confirme antes de recargar)
     _saveTimers[key] = setTimeout(async () => {
       try {
         await setDoc(getUserDoc(currentUID), { [key]: JSON.stringify(_pendingSaves[key]) }, { merge: true });
         delete _pendingSaves[key]; // éxito, quitar de cola
       } catch(e) { console.warn("cloudSave error", e); }
       delete _saveTimers[key];
-    }, 500);
+    }, 3000);
   };
 
   // Cuando el usuario se autentica, enviar todo lo que estaba en cola
