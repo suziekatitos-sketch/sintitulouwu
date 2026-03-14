@@ -12313,6 +12313,8 @@ function renderCell(cell, slot, date) {
       e.stopPropagation();
       completions[cKey] = !done;
       if (!done && window.starBurst) window.starBurst(chk);
+      if (!done && window.yukiAddXP) window.yukiAddXP(5, 'Tarea');
+      if (!done && window.yukiCheckStreak) window.yukiCheckStreak();
       saveData(); updateProgress(); renderCell(cell, slot, date);
     };
 
@@ -12581,11 +12583,10 @@ var _nW = document.getElementById('nextWeek'); if(_nW) _nW.onclick = () => { wee
 
 // --- SYNC FROM CLOUD ---------------------------------------
 window.syncFromCloud = function() {
-  // No sobreescribir si escribimos hace menos de 3 segundos (race condition con Firebase)
-  var msSinceWrite = window._lastSemanaWrite ? (Date.now() - window._lastSemanaWrite) : 99999;
-  var tooSoon = msSinceWrite < 3000;
-  if (!tooSoon && window._recurringTasks !== undefined) recurringTasks = window._recurringTasks;
-  if (!tooSoon && window._completions    !== undefined) completions    = window._completions;
+  // recurring_tasks y completions siempre desde localStorage (fuente de verdad local)
+  // Firebase puede llegar tarde y sobreescribir datos nuevos -- no lo permitimos
+  recurringTasks = JSON.parse(localStorage.getItem('recurring_tasks') || '[]');
+  completions    = JSON.parse(localStorage.getItem('completions')     || '{}');
   render();
   if (typeof renderCheckin    === 'function') { loadCheckin();    renderCheckin();    }
   if (typeof loadSpark        === 'function') { loadSpark();                          }
@@ -19197,6 +19198,8 @@ function renderHabitos() {
       } else {
         habitosData[idx].completions[todayKey] = true;
         if (window.starBurst) window.starBurst(chk);
+        if (window.yukiAddXP) window.yukiAddXP(8, 'Hábito');
+        if (window.yukiCheckStreak) window.yukiCheckStreak();
       }
       saveHabitos(); renderHabitos();
     };
