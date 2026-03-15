@@ -97,102 +97,40 @@ window.kittyConfirm = function(msg, onYes, onNo) {
   const provider = new GoogleAuthProvider();
 
   let currentUID = null;
-  let unsubSnapshot = null;
 
   function getUserDoc(uid) {
     return doc(db, "kittyplan", uid);
   }
 
-  function subscribeToUserDoc(uid) {
-    if (unsubSnapshot) unsubSnapshot();
-    unsubSnapshot = onSnapshot(getUserDoc(uid), (snap) => {
+  // Carga unica desde Firebase al iniciar sesion (sin onSnapshot en tiempo real)
+  async function subscribeToUserDoc(uid) {
+    try {
+      const snap = await getDoc(getUserDoc(uid));
       if (!snap.exists()) return;
       const raw = snap.data();
-      try {
-        if (raw.sem_data)     { window._data        = JSON.parse(raw.sem_data);     }
-        if (raw.sem_custom)   { window._customTasks  = JSON.parse(raw.sem_custom);   }
-        if (raw.recurring_tasks)    { window._recurringTasks    = JSON.parse(raw.recurring_tasks);    }
-        if (raw.completions)         { window._completions        = JSON.parse(raw.completions);         }
-        if (raw.rutina_templates)    { window._rutinaTemplates    = JSON.parse(raw.rutina_templates);    }
-        if (raw.rutina_asignaciones) { window._rutinaAsignaciones = JSON.parse(raw.rutina_asignaciones); }
-        if (raw.rutina_completions)  { window._rutinaCompletions  = JSON.parse(raw.rutina_completions);  }
-        if (raw.desglose_items)      { window._desgloseItems      = JSON.parse(raw.desglose_items);      }
-        if (raw.gratitud_data)       { window._gratitudData       = JSON.parse(raw.gratitud_data);       }
-        if (raw.sueno_data)          { window._suenoData          = JSON.parse(raw.sueno_data);          }
-        if (raw.mens_data)           { window._mensData           = JSON.parse(raw.mens_data);           }
-        if (raw.deco_imgs)           { window._decoImgs           = JSON.parse(raw.deco_imgs);           }
-        if (raw.deco_interval)       { window._decoInterval       = raw.deco_interval;                            }
-        if (raw.ej_templates)        { window._ejTemplates        = JSON.parse(raw.ej_templates);        }
-        if (raw.ej_registros)        { window._ejRegistros        = JSON.parse(raw.ej_registros);        }
-        if (raw.dios_data)           { window._diosData           = JSON.parse(raw.dios_data);           }
-        if (raw.versiculos)          { window._versiculos         = JSON.parse(raw.versiculos);           }
-        if (raw.univ_data)           { window._univData           = JSON.parse(raw.univ_data);           }
-        if (raw.belleza_templates)   { window._bellezaTemplates   = JSON.parse(raw.belleza_templates);   }
-        if (raw.belleza_registros)   { window._bellezaRegistros   = JSON.parse(raw.belleza_registros);   }
-        if (raw.braindump_notes)    { window._braindumpNotes    = JSON.parse(raw.braindump_notes);    }
-        if (raw.vb_items)         { window._vbItems         = JSON.parse(raw.vb_items);         }
-        if (raw.metas_data)       { window._metasData       = JSON.parse(raw.metas_data);       }
-        if (raw.mood_data)        { window._moodData        = JSON.parse(raw.mood_data);        }
-        if (raw.metas_data)       { window._metasData       = JSON.parse(raw.metas_data);       }
-        if (raw.ql_lists)         { window._qlLists         = JSON.parse(raw.ql_lists);         }
-        if (raw.wl_items)         { window._wlItems         = JSON.parse(raw.wl_items);         }
-        if (raw.wishlist_items)   { window._wishlistItems   = JSON.parse(raw.wishlist_items);   }
-      if (raw.beauty_tips)      { window._beautyTips      = JSON.parse(raw.beauty_tips);        }
-        if (raw.beauty_tips)      { window._beautyTips      = JSON.parse(raw.beauty_tips);        }
-        if (raw.univ_links)          { window._univLinks          = JSON.parse(raw.univ_links);          }
-        if (raw.univ_proyectos)      { window._univProyectos      = JSON.parse(raw.univ_proyectos);      }
-        if (raw.spark_pins)          { window._sparkPins          = JSON.parse(raw.spark_pins);          }
-        if (raw.spark_historial)     { window._sparkHistorial     = JSON.parse(raw.spark_historial);     }
-        if (raw.spark_total_minutes) { window._sparkTotalMinutes  = parseInt(raw.spark_total_minutes);   }
-        // Mirror Firebase → localStorage para todas las keys conocidas
-        const mirrorKeys = ['sem_data','sem_custom','recurring_tasks','completions',
-          'rutina_templates','rutina_asignaciones','rutina_completions','desglose_items',
-          'gratitud_data','sueno_data','mens_data','deco_imgs','ej_templates','ej_registros','habitos_data','prompt_data',
-          'dios_data','versiculos','univ_data','belleza_templates','belleza_registros',
-          'braindump_notes','vb_items','metas_data','mood_data','ql_lists','wl_items','wishlist_items','beauty_tips',
-          'ci_state','nd_state','calm_tools','water_goal','water_state','food_state',
-          'logros_data','fortalezas','cambio_state','cambio_custom',
-          'univ_links','univ_proyectos','spark_pins','spark_historial','spark_total_minutes',
-          'trans_data','custom_notifs','eventos_prep','recuper_registros',
-          'notas_intereses_data','notas_intereses_cats',
-          'yuki_mascotas','yuki_plantas','yuki_biblioteca_playlists','yuki_biblioteca_dopamina','yuki_diario',
-          'yuki_decisions','yuki_rutina_horarios',
-          'yuki_xp','yuki_xp_streak','yuki_xp_last_date',
-          'yuki_sakura','yuki_tienda_recompensas','yuki_compras_historial','yuki_study_minutes',
-          'yuki_citas','yuki_citas_dias','yuki_citas_last','yuki_citas_idx'];
-        var _now = Date.now();
-        var _lastWrite = window._lastSemanaWrite || 0;
-        var _protegidas = (_now - _lastWrite) < 8000; // 8s de proteccion tras guardar
-        mirrorKeys.forEach(function(k) {
-          if (raw[k] !== undefined) {
-            if (k === 'recurring_tasks' || k === 'completions') {
-              // Solo sobreescribir si NO hay proteccion activa
-              if (_protegidas) return;
-              // Y solo si Firebase tiene MAS tareas que localStorage (nunca borrar)
-              if (k === 'recurring_tasks') {
-                try {
-                  var localRT = JSON.parse(localStorage.getItem('recurring_tasks') || '[]');
-                  var fireRT  = JSON.parse(raw[k]);
-                  if (fireRT.length < localRT.length) return; // Firebase tiene menos, no sobreescribir
-                } catch(e) {}
-              }
-            }
-            try { localStorage.setItem(k, raw[k]); } catch(e) {}
-          }
-        });
-        if (raw.ci_state)     { window._checkinState = JSON.parse(raw.ci_state);     }
-        if (raw.nd_state)     { window._needsState   = JSON.parse(raw.nd_state);     }
-        if (raw.calm_tools)   { window._calmTools    = JSON.parse(raw.calm_tools);   }
-        if (raw.water_goal)   { window._waterGoal    = parseInt(raw.water_goal);     }
-        if (raw.water_state)  { window._waterState   = JSON.parse(raw.water_state);  }
-        if (raw.food_state)   { window._foodState    = JSON.parse(raw.food_state);   }
-        if (raw.logros_data)  { window._logrosData   = JSON.parse(raw.logros_data);  }
-        if (raw.fortalezas)   { window._fortalezas   = JSON.parse(raw.fortalezas);   }
-        if (raw.cambio_state) { window._cambioState  = JSON.parse(raw.cambio_state); }
-        if (raw.cambio_custom){ window._cambioCustom = JSON.parse(raw.cambio_custom);}
-        if (typeof window.syncFromCloud === 'function') window.syncFromCloud();
-      } catch(e) { console.warn("sync parse error", e); }
-    });
+      // Mirror Firebase -> localStorage para todas las keys conocidas
+      const mirrorKeys = ['sem_data','sem_custom','recurring_tasks','completions',
+        'rutina_templates','rutina_asignaciones','rutina_completions','desglose_items',
+        'gratitud_data','sueno_data','mens_data','deco_imgs','ej_templates','ej_registros','habitos_data','prompt_data',
+        'dios_data','versiculos','univ_data','belleza_templates','belleza_registros',
+        'braindump_notes','vb_items','metas_data','mood_data','ql_lists','wl_items','wishlist_items','beauty_tips',
+        'ci_state','nd_state','calm_tools','water_goal','water_state','food_state',
+        'logros_data','fortalezas','cambio_state','cambio_custom',
+        'univ_links','univ_proyectos','spark_pins','spark_historial','spark_total_minutes',
+        'trans_data','custom_notifs','eventos_prep','recuper_registros',
+        'notas_intereses_data','notas_intereses_cats',
+        'yuki_mascotas','yuki_plantas','yuki_biblioteca_playlists','yuki_biblioteca_dopamina','yuki_diario',
+        'yuki_decisions','yuki_rutina_horarios',
+        'yuki_xp','yuki_xp_streak','yuki_xp_last_date',
+        'yuki_sakura','yuki_tienda_recompensas','yuki_compras_historial','yuki_study_minutes',
+        'yuki_citas','yuki_citas_dias','yuki_citas_last','yuki_citas_idx'];
+      mirrorKeys.forEach(function(k) {
+        if (raw[k] !== undefined) {
+          try { localStorage.setItem(k, raw[k]); } catch(e) {}
+        }
+      });
+      if (typeof window.syncFromCloud === 'function') window.syncFromCloud();
+    } catch(e) { console.warn("subscribeToUserDoc error", e); }
   }
 
   // Cola de guardado pendiente por si el usuario no está autenticado aún
@@ -213,14 +151,14 @@ window.kittyConfirm = function(msg, onYes, onNo) {
     // Cancelar timer anterior si existe
     if (_saveTimers[key]) clearTimeout(_saveTimers[key]);
     
-    // Debounce: esperar 3s antes de guardar (para que Firebase confirme antes de recargar)
+    // Debounce: esperar 500ms antes de guardar
     _saveTimers[key] = setTimeout(async () => {
       try {
         await setDoc(getUserDoc(currentUID), { [key]: JSON.stringify(_pendingSaves[key]) }, { merge: true });
         delete _pendingSaves[key]; // éxito, quitar de cola
       } catch(e) { console.warn("cloudSave error", e); }
       delete _saveTimers[key];
-    }, 3000);
+    }, 500);
   };
 
   // Cuando el usuario se autentica, enviar todo lo que estaba en cola
@@ -259,7 +197,6 @@ window.kittyConfirm = function(msg, onYes, onNo) {
   }
 
   async function doSignOut() {
-    if (unsubSnapshot) unsubSnapshot();
     await signOut(auth);
     // Limpiar localStorage para que otra cuenta no vea datos de esta
     localStorage.clear();
