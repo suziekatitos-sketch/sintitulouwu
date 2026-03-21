@@ -107,6 +107,8 @@ window.kittyConfirm = function(msg, onYes, onNo) {
     if (unsubSnapshot) unsubSnapshot();
     unsubSnapshot = onSnapshot(getUserDoc(uid), (snap) => {
       if (!snap.exists()) return;
+      // Si hay saves propios en vuelo, el snapshot lo causamos nosotros → ignorar sync
+      if (_ownSavesInFlight > 0) return;
       const raw = snap.data();
       try {
         if (raw.sem_data)     { window._data        = JSON.parse(raw.sem_data);     }
@@ -187,7 +189,10 @@ window.kittyConfirm = function(msg, onYes, onNo) {
 
   // Debounce para cloudSave
   var _saveTimers = {};
-  
+
+  // Flag: cuántos saves propios están en vuelo → suprimir syncFromCloud mientras > 0
+  var _ownSavesInFlight = 0;
+
   window.cloudSave = async function(key, value) {
     // Guardar siempre en la cola local por si falla
     _pendingSaves[key] = value;
@@ -201,11 +206,14 @@ window.kittyConfirm = function(msg, onYes, onNo) {
     
     // Debounce: esperar 500ms antes de guardar
     _saveTimers[key] = setTimeout(async () => {
+      _ownSavesInFlight++;
       try {
         await setDoc(getUserDoc(currentUID), { [key]: JSON.stringify(_pendingSaves[key]) }, { merge: true });
         delete _pendingSaves[key]; // éxito, quitar de cola
       } catch(e) { console.warn("cloudSave error", e); }
       delete _saveTimers[key];
+      // Bajar el flag después de 2s para que el snapshot propio ya haya pasado
+      setTimeout(function(){ _ownSavesInFlight = Math.max(0, _ownSavesInFlight - 1); }, 2000);
     }, 500);
   };
 
