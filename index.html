@@ -13112,6 +13112,10 @@ function loadTracker() {
   waterGoal  = window._waterGoal  || parseInt(localStorage.getItem('water_goal') || '8');
   waterState = window._waterState || JSON.parse(localStorage.getItem('water_state') || '{}');
   foodState  = window._foodState  || JSON.parse(localStorage.getItem('food_state')  || '{}');
+  // Limpiar refs globales para que syncs posteriores lean el localStorage actualizado
+  window._waterGoal  = undefined;
+  window._waterState = undefined;
+  window._foodState  = undefined;
 }
 
 function saveTracker() {
