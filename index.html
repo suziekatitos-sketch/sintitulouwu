@@ -10036,6 +10036,16 @@ window.calmaShowTab = function(idx) {
     <div id="recuperGuardadoMsg" style="display:none;text-align:center;font-size:.72rem;color:var(--rosa);font-weight:800;margin-top:.5rem">✓ Guardado con amor 🌸</div>
   </div>
 </section>
+
+  <!-- cajón historial de fechas -->
+  <div id="recuperHistorialWrap" style="margin-top:1rem">
+    <button onclick="recuperToggleHistorial()" id="recuperHistorialBtn"
+      style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);font-family:var(--font-body);font-size:.78rem;font-weight:800;color:var(--muted);cursor:pointer;text-align:left">
+      <span>&#128197; Ver mis registros anteriores</span>
+      <span id="recuperHistorialArrow" style="font-size:.7rem;transition:transform .22s">&#9662;</span>
+    </button>
+    <div id="recuperHistorialBody" style="display:none;margin-top:.5rem;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:.9rem 1rem;max-height:340px;overflow-y:auto"></div>
+  </div>
 </div><!-- end calmaTabContent4 -->
 
 </div><!-- end page-calma -->
@@ -18278,6 +18288,59 @@ window.recuperGuardarRegistro = function() {
   document.getElementById('recuperAyudo').value = '';
   var msg = document.getElementById('recuperGuardadoMsg');
   if (msg) { msg.style.display = ''; setTimeout(function(){ msg.style.display = 'none'; }, 2500); }
+  // Si el cajón de historial está abierto, refrescarlo
+  var histBody = document.getElementById('recuperHistorialBody');
+  if (histBody && histBody.style.display !== 'none') recuperRenderHistorial();
+};
+
+
+window.recuperToggleHistorial = function() {
+  var body  = document.getElementById('recuperHistorialBody');
+  var arrow = document.getElementById('recuperHistorialArrow');
+  if (!body) return;
+  var open = body.style.display === 'none';
+  body.style.display = open ? '' : 'none';
+  if (arrow) arrow.style.transform = open ? 'rotate(180deg)' : '';
+  if (open) recuperRenderHistorial();
+};
+
+window.recuperRenderHistorial = function() {
+  var body = document.getElementById('recuperHistorialBody');
+  if (!body) return;
+  var data = {};
+  try { data = JSON.parse(localStorage.getItem('recuper_registros') || '{}'); } catch(e) {}
+  var fechas = Object.keys(data).sort(function(a,b){ return b.localeCompare(a); });
+  if (!fechas.length) {
+    body.innerHTML = '<div style="text-align:center;padding:1.2rem;color:var(--muted);font-size:.8rem;font-style:italic">Aún no tienes registros guardados 🌿</div>';
+    return;
+  }
+  var meses = {'01':'enero','02':'febrero','03':'marzo','04':'abril','05':'mayo','06':'junio',
+    '07':'julio','08':'agosto','09':'septiembre','10':'octubre','11':'noviembre','12':'diciembre'};
+  function fmtFecha(f) {
+    var p = f.split('-');
+    return p[2] + ' de ' + (meses[p[1]] || p[1]) + ' de ' + p[0];
+  }
+  var html = '<div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.8rem">'
+    + fechas.length + ' ' + (fechas.length === 1 ? 'registro' : 'registros') + '</div>';
+  html += fechas.map(function(f) {
+    var entradas = data[f];
+    var n = entradas.length;
+    var textos = entradas.filter(function(e){ return e.que || e.ayudo; });
+    var snippets = textos.map(function(e) {
+      var txt = (e.que || e.ayudo || '').trim();
+      if (txt.length > 80) txt = txt.slice(0, 80) + '…';
+      return '<div style="font-size:.75rem;color:var(--muted);margin-top:.25rem;font-style:italic">&ldquo;' + txt + '&rdquo;</div>';
+    }).join('');
+    return '<div style="display:flex;align-items:flex-start;gap:.75rem;padding:.65rem 0;border-bottom:1px solid var(--border)">'
+      + '<div style="width:8px;height:8px;border-radius:50%;background:var(--rosa);flex-shrink:0;margin-top:.35rem"></div>'
+      + '<div style="flex:1">'
+        + '<div style="font-size:.85rem;font-weight:700;color:var(--text)">' + fmtFecha(f) + '</div>'
+        + (n > 1 ? '<div style="font-size:.72rem;color:var(--muted);margin-top:.1rem">' + n + ' entradas ese día</div>' : '')
+        + snippets
+      + '</div>'
+      + '</div>';
+  }).join('');
+  body.innerHTML = html;
 };
 
 function recuperInit() {
